@@ -14,7 +14,7 @@
 @plugin "@tailwindcss/typography";
 
 /* Hyperfinity Brand Colors */
-/* Pink: #E91E8C / hsl(324 83% 51%) */
+/* Pink: rgb(248, 90, 164) */
 /* Turquoise: #00D9B5 / hsl(168 100% 43%) */
 /* Blue: #3B82F6 / hsl(217 91% 60%) */
 
@@ -27,7 +27,7 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(240 10% 3.9%);
   /* Primary: Hyperfinity Pink */
-  --primary: hsl(324 83% 51%);
+  --primary: rgb(248, 90, 164);
   --primary-foreground: hsl(0 0% 100%);
   /* Secondary: Hyperfinity Turquoise */
   --secondary: hsl(168 100% 43%);
@@ -41,28 +41,28 @@
   --destructive-foreground: hsl(0 0% 98%);
   --border: hsl(168 20% 90%);
   --input: hsl(168 20% 90%);
-  --ring: hsl(324 83% 51%);
+  --ring: rgb(248, 90, 164);
   /* Chart colors using brand palette */
-  --chart-1: hsl(324 83% 51%);
+  --chart-1: rgb(248, 90, 164);
   --chart-2: hsl(168 100% 43%);
   --chart-3: hsl(217 91% 60%);
-  --chart-4: hsl(324 60% 70%);
+  --chart-4: rgb(248, 90, 164);
   --chart-5: hsl(168 70% 60%);
   /* Sidebar - dark navy/charcoal like Hyperfinity platform */
   --sidebar-background: hsl(220 25% 14%);
   --sidebar-foreground: hsl(0 0% 95%);
-  --sidebar-primary: hsl(324 83% 51%);
+  --sidebar-primary: rgb(248, 90, 164);
   --sidebar-primary-foreground: hsl(0 0% 100%);
   --sidebar-accent: hsl(220 20% 20%);
   --sidebar-accent-foreground: hsl(0 0% 95%);
   --sidebar-border: hsl(220 20% 20%);
-  --sidebar-ring: hsl(324 83% 51%);
+  --sidebar-ring: rgb(248, 90, 164);
   /* border radius unit */
   --radius: 0.5rem;
   --sidebar: hsl(220 25% 14%);
   
   /* Hyperfinity brand colors as CSS variables */
-  --hyperfinity-pink: hsl(324 83% 51%);
+  --hyperfinity-pink: rgb(248, 90, 164);
   --hyperfinity-turquoise: hsl(168 100% 43%);
   --hyperfinity-blue: hsl(217 91% 60%);
 }
@@ -75,8 +75,8 @@
   --card-foreground: hsl(0 0% 98%);
   --popover: hsl(220 20% 10%);
   --popover-foreground: hsl(0 0% 98%);
-  /* Primary: Hyperfinity Pink (brighter for dark mode) */
-  --primary: hsl(324 83% 60%);
+  /* Primary: Hyperfinity Pink */
+  --primary: rgb(248, 90, 164);
   --primary-foreground: hsl(0 0% 100%);
   /* Secondary: Hyperfinity Turquoise */
   --secondary: hsl(168 100% 43%);
@@ -90,12 +90,12 @@
   --destructive-foreground: hsl(0 0% 98%);
   --border: hsl(220 15% 20%);
   --input: hsl(220 15% 20%);
-  --ring: hsl(324 83% 60%);
+  --ring: rgb(248, 90, 164);
   /* Chart colors using brand palette */
-  --chart-1: hsl(324 83% 60%);
+  --chart-1: rgb(248, 90, 164);
   --chart-2: hsl(168 100% 50%);
   --chart-3: hsl(217 91% 65%);
-  --chart-4: hsl(324 60% 70%);
+  --chart-4: rgb(248, 90, 164);
   --chart-5: hsl(168 70% 60%);
   /* Dark sidebar with deep blue-gray */
   --sidebar-background: hsl(220 25% 12%);
@@ -105,11 +105,11 @@
   --sidebar-accent: hsl(220 20% 18%);
   --sidebar-accent-foreground: hsl(0 0% 95%);
   --sidebar-border: hsl(220 15% 20%);
-  --sidebar-ring: hsl(324 83% 60%);
+  --sidebar-ring: rgb(248, 90, 164);
   --sidebar: hsl(220 25% 12%);
   
   /* Hyperfinity brand colors */
-  --hyperfinity-pink: hsl(324 83% 60%);
+  --hyperfinity-pink: rgb(248, 90, 164);
   --hyperfinity-turquoise: hsl(168 100% 50%);
   --hyperfinity-blue: hsl(217 91% 65%);
 }

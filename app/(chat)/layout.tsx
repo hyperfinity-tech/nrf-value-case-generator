@@ -22,7 +22,7 @@ export default async function Layout({
       <DataStreamProvider>
         <div className="flex flex-col min-h-screen">
           {/* Pink Header Bar */}
-          <header className="bg-[hsl(324_83%_51%)] text-black px-6 py-4">
+          <header className="bg-[rgb(248_90_164)] text-black px-6 py-4">
             <div className="flex items-center justify-between">
               {/* Left: Title */}
               <h1 className="text-2xl font-bold tracking-tight">
