@@ -7,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
+import { HyperfinityLogo } from "@/components/hyperfinity-logo";
 import { PlusIcon, TrashIcon } from "@/components/icons";
 import { SidebarHistory, getChatHistoryPaginationKey } from "@/components/sidebar-history";
 import { SidebarUserNav } from "@/components/sidebar-user-nav";
@@ -59,71 +60,108 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       <Sidebar className="group-data-[side=left]:border-r-0">
         <SidebarHeader>
           <SidebarMenu>
-            <div className="flex flex-col gap-2">
-              <div className="flex flex-row items-center justify-between">
+            {/* Hyperfinity Logo and Branding */}
+            <div className="flex flex-col gap-4 pb-2">
+              <Link
+                className="flex flex-row items-center gap-3 px-2"
+                href="/"
+                onClick={() => {
+                  setOpenMobile(false);
+                }}
+              >
+                <HyperfinityLogo size={36} />
+                <span className="font-bold text-xl tracking-tight">
+                  Hyperfinity
+                </span>
+              </Link>
+
+              {/* Navigation Links */}
+              <div className="flex flex-col gap-1">
                 <Link
-                  className="flex flex-row items-center gap-3"
+                  className="flex flex-row items-center gap-2 px-2 py-1.5 rounded-md text-sm font-medium hover:bg-sidebar-accent transition-colors"
                   href="/"
                   onClick={() => {
                     setOpenMobile(false);
                   }}
                 >
-                  <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
-                    Chatbot
-                  </span>
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                    />
+                  </svg>
+                  AI Chat
+                </Link>
+                <Link
+                  className="flex flex-row items-center gap-2 px-2 py-1.5 rounded-md text-sm font-medium hover:bg-sidebar-accent transition-colors"
+                  href="/abm"
+                  onClick={() => {
+                    setOpenMobile(false);
+                  }}
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  ABM Pack Generator
                 </Link>
               </div>
-              <Link
-                className="flex flex-row items-center gap-3"
-                href="/abm"
-                onClick={() => {
-                  setOpenMobile(false);
-                }}
-              >
-                <span className="cursor-pointer rounded-md px-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                  ABM Pack Generator
-                </span>
-              </Link>
             </div>
-            <div className="flex flex-row items-center justify-between">
-              <div className="flex flex-row gap-1">
-                {user && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        className="h-8 p-1 md:h-fit md:p-2"
-                        onClick={() => setShowDeleteAllDialog(true)}
-                        type="button"
-                        variant="ghost"
-                      >
-                        <TrashIcon />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent align="end" className="hidden md:block">
-                      Delete All Chats
-                    </TooltipContent>
-                  </Tooltip>
-                )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-row items-center gap-1 px-2 border-t border-sidebar-border pt-3">
+              {user && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       className="h-8 p-1 md:h-fit md:p-2"
-                      onClick={() => {
-                        setOpenMobile(false);
-                        router.push("/");
-                        router.refresh();
-                      }}
+                      onClick={() => setShowDeleteAllDialog(true)}
                       type="button"
                       variant="ghost"
                     >
-                      <PlusIcon />
+                      <TrashIcon />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent align="end" className="hidden md:block">
-                    New Chat
+                    Delete All Chats
                   </TooltipContent>
                 </Tooltip>
-              </div>
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    className="h-8 p-1 md:h-fit md:p-2"
+                    onClick={() => {
+                      setOpenMobile(false);
+                      router.push("/");
+                      router.refresh();
+                    }}
+                    type="button"
+                    variant="ghost"
+                  >
+                    <PlusIcon />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent align="end" className="hidden md:block">
+                  New Chat
+                </TooltipContent>
+              </Tooltip>
             </div>
           </SidebarMenu>
         </SidebarHeader>

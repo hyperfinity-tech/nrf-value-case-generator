@@ -13,6 +13,11 @@
 @plugin "tailwindcss-animate";
 @plugin "@tailwindcss/typography";
 
+/* Hyperfinity Brand Colors */
+/* Pink: #E91E8C / hsl(324 83% 51%) */
+/* Turquoise: #00D9B5 / hsl(168 100% 43%) */
+/* Blue: #3B82F6 / hsl(217 91% 60%) */
+
 /* define design tokens (light mode) */
 :root {
   --background: hsl(0 0% 100%);
@@ -21,77 +26,97 @@
   --card-foreground: hsl(240 10% 3.9%);
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(240 10% 3.9%);
-  --primary: hsl(240 5.9% 10%);
-  --primary-foreground: hsl(0 0% 98%);
-  --secondary: hsl(240 4.8% 95.9%);
-  --secondary-foreground: hsl(240 5.9% 10%);
-  --muted: hsl(240 4.8% 95.9%);
+  /* Primary: Hyperfinity Pink */
+  --primary: hsl(324 83% 51%);
+  --primary-foreground: hsl(0 0% 100%);
+  /* Secondary: Hyperfinity Turquoise */
+  --secondary: hsl(168 100% 43%);
+  --secondary-foreground: hsl(240 10% 3.9%);
+  --muted: hsl(168 30% 95%);
   --muted-foreground: hsl(240 3.8% 46.1%);
-  --accent: hsl(240 4.8% 95.9%);
-  --accent-foreground: hsl(240 5.9% 10%);
+  /* Accent: Hyperfinity Blue */
+  --accent: hsl(217 91% 60%);
+  --accent-foreground: hsl(0 0% 100%);
   --destructive: hsl(0 84.2% 60.2%);
   --destructive-foreground: hsl(0 0% 98%);
-  --border: hsl(240 5.9% 90%);
-  --input: hsl(240 5.9% 90%);
-  --ring: hsl(240 10% 3.9%);
-  --chart-1: hsl(12 76% 61%);
-  --chart-2: hsl(173 58% 39%);
-  --chart-3: hsl(197 37% 24%);
-  --chart-4: hsl(43 74% 66%);
-  --chart-5: hsl(27 87% 67%);
-  --sidebar-background: hsl(0 0% 98%);
-  --sidebar-foreground: hsl(240 5.3% 26.1%);
-  --sidebar-primary: hsl(240 5.9% 10%);
-  --sidebar-primary-foreground: hsl(0 0% 98%);
-  --sidebar-accent: hsl(240 4.8% 95.9%);
-  --sidebar-accent-foreground: hsl(240 5.9% 10%);
-  --sidebar-border: hsl(220 13% 91%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  --border: hsl(168 20% 90%);
+  --input: hsl(168 20% 90%);
+  --ring: hsl(324 83% 51%);
+  /* Chart colors using brand palette */
+  --chart-1: hsl(324 83% 51%);
+  --chart-2: hsl(168 100% 43%);
+  --chart-3: hsl(217 91% 60%);
+  --chart-4: hsl(324 60% 70%);
+  --chart-5: hsl(168 70% 60%);
+  /* Sidebar with turquoise accent */
+  --sidebar-background: hsl(168 100% 43%);
+  --sidebar-foreground: hsl(0 0% 100%);
+  --sidebar-primary: hsl(0 0% 100%);
+  --sidebar-primary-foreground: hsl(168 100% 35%);
+  --sidebar-accent: hsl(168 100% 38%);
+  --sidebar-accent-foreground: hsl(0 0% 100%);
+  --sidebar-border: hsl(168 100% 38%);
+  --sidebar-ring: hsl(324 83% 51%);
   /* border radius unit */
   --radius: 0.5rem;
-  --sidebar: hsl(0 0% 98%);
+  --sidebar: hsl(168 100% 43%);
+  
+  /* Hyperfinity brand colors as CSS variables */
+  --hyperfinity-pink: hsl(324 83% 51%);
+  --hyperfinity-turquoise: hsl(168 100% 43%);
+  --hyperfinity-blue: hsl(217 91% 60%);
 }
 
 /* define design tokens (dark mode) */
 .dark {
-  --background: hsl(240 10% 3.9%);
+  --background: hsl(220 20% 8%);
   --foreground: hsl(0 0% 98%);
-  --card: hsl(240 10% 3.9%);
+  --card: hsl(220 20% 10%);
   --card-foreground: hsl(0 0% 98%);
-  --popover: hsl(240 10% 3.9%);
+  --popover: hsl(220 20% 10%);
   --popover-foreground: hsl(0 0% 98%);
-  --primary: hsl(0 0% 98%);
-  --primary-foreground: hsl(240 5.9% 10%);
-  --secondary: hsl(240 3.7% 15.9%);
-  --secondary-foreground: hsl(0 0% 98%);
-  --muted: hsl(240 3.7% 15.9%);
-  --muted-foreground: hsl(240 5% 64.9%);
-  --accent: hsl(240 3.7% 15.9%);
-  --accent-foreground: hsl(0 0% 98%);
-  --destructive: hsl(0 62.8% 30.6%);
+  /* Primary: Hyperfinity Pink (brighter for dark mode) */
+  --primary: hsl(324 83% 60%);
+  --primary-foreground: hsl(0 0% 100%);
+  /* Secondary: Hyperfinity Turquoise */
+  --secondary: hsl(168 100% 43%);
+  --secondary-foreground: hsl(220 20% 8%);
+  --muted: hsl(220 15% 15%);
+  --muted-foreground: hsl(220 10% 60%);
+  /* Accent: Hyperfinity Blue */
+  --accent: hsl(217 91% 60%);
+  --accent-foreground: hsl(0 0% 100%);
+  --destructive: hsl(0 62.8% 50%);
   --destructive-foreground: hsl(0 0% 98%);
-  --border: hsl(240 3.7% 15.9%);
-  --input: hsl(240 3.7% 15.9%);
-  --ring: hsl(240 4.9% 83.9%);
-  --chart-1: hsl(220 70% 50%);
-  --chart-2: hsl(160 60% 45%);
-  --chart-3: hsl(30 80% 55%);
-  --chart-4: hsl(280 65% 60%);
-  --chart-5: hsl(340 75% 55%);
-  --sidebar-background: hsl(240 5.9% 10%);
-  --sidebar-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-primary: hsl(224.3 76.3% 48%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(240 3.7% 15.9%);
-  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-border: hsl(240 3.7% 15.9%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
-  --sidebar: hsl(240 5.9% 10%);
+  --border: hsl(220 15% 20%);
+  --input: hsl(220 15% 20%);
+  --ring: hsl(324 83% 60%);
+  /* Chart colors using brand palette */
+  --chart-1: hsl(324 83% 60%);
+  --chart-2: hsl(168 100% 50%);
+  --chart-3: hsl(217 91% 65%);
+  --chart-4: hsl(324 60% 70%);
+  --chart-5: hsl(168 70% 60%);
+  /* Dark sidebar with deep blue-gray */
+  --sidebar-background: hsl(220 25% 12%);
+  --sidebar-foreground: hsl(0 0% 95%);
+  --sidebar-primary: hsl(168 100% 43%);
+  --sidebar-primary-foreground: hsl(220 20% 8%);
+  --sidebar-accent: hsl(220 20% 18%);
+  --sidebar-accent-foreground: hsl(0 0% 95%);
+  --sidebar-border: hsl(220 15% 20%);
+  --sidebar-ring: hsl(324 83% 60%);
+  --sidebar: hsl(220 25% 12%);
+  
+  /* Hyperfinity brand colors */
+  --hyperfinity-pink: hsl(324 83% 60%);
+  --hyperfinity-turquoise: hsl(168 100% 50%);
+  --hyperfinity-blue: hsl(217 91% 65%);
 }
 
 /* define theme */
 @theme {
-  --font-sans: var(--font-geist);
+  --font-sans: var(--font-roobert);
   --font-mono: var(--font-geist-mono);
 
   --breakpoint-toast-mobile: 600px;
