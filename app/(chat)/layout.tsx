@@ -1,8 +1,7 @@
-import { cookies } from "next/headers";
 import Script from "next/script";
-import { AppSidebar } from "@/components/app-sidebar";
+import Image from "next/image";
+import Link from "next/link";
 import { DataStreamProvider } from "@/components/data-stream-provider";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "../(auth)/auth";
 
 export const experimental_ppr = true;
@@ -12,8 +11,7 @@ export default async function Layout({
 }: {
   children: React.ReactNode;
 }) {
-  const [session, cookieStore] = await Promise.all([auth(), cookies()]);
-  const isCollapsed = cookieStore.get("sidebar_state")?.value !== "true";
+  await auth();
 
   return (
     <>
@@ -22,10 +20,30 @@ export default async function Layout({
         strategy="beforeInteractive"
       />
       <DataStreamProvider>
-        <SidebarProvider defaultOpen={!isCollapsed}>
-          <AppSidebar user={session?.user} />
-          <SidebarInset>{children}</SidebarInset>
-        </SidebarProvider>
+        <div className="flex flex-col min-h-screen">
+          {/* Pink Header Bar */}
+          <header className="bg-[hsl(324_83%_51%)] text-black px-6 py-4">
+            <div className="flex items-center justify-between">
+              {/* Left: Title */}
+              <h1 className="text-2xl font-bold tracking-tight">
+                Loyalty Opportunity
+              </h1>
+
+              {/* Right: Logo */}
+              <Link href="/" className="inline-block">
+                <Image
+                  alt="Hyperfinity"
+                  height={28}
+                  src="/images/hyperfinity-logo-dark.png"
+                  width={140}
+                />
+              </Link>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <main className="flex-1">{children}</main>
+        </div>
       </DataStreamProvider>
     </>
   );
