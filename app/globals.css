@@ -48,18 +48,18 @@
   --chart-3: hsl(217 91% 60%);
   --chart-4: hsl(324 60% 70%);
   --chart-5: hsl(168 70% 60%);
-  /* Sidebar with turquoise accent */
-  --sidebar-background: hsl(168 100% 43%);
-  --sidebar-foreground: hsl(0 0% 100%);
-  --sidebar-primary: hsl(0 0% 100%);
-  --sidebar-primary-foreground: hsl(168 100% 35%);
-  --sidebar-accent: hsl(168 100% 38%);
-  --sidebar-accent-foreground: hsl(0 0% 100%);
-  --sidebar-border: hsl(168 100% 38%);
+  /* Sidebar - dark navy/charcoal like Hyperfinity platform */
+  --sidebar-background: hsl(220 25% 14%);
+  --sidebar-foreground: hsl(0 0% 95%);
+  --sidebar-primary: hsl(324 83% 51%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(220 20% 20%);
+  --sidebar-accent-foreground: hsl(0 0% 95%);
+  --sidebar-border: hsl(220 20% 20%);
   --sidebar-ring: hsl(324 83% 51%);
   /* border radius unit */
   --radius: 0.5rem;
-  --sidebar: hsl(168 100% 43%);
+  --sidebar: hsl(220 25% 14%);
   
   /* Hyperfinity brand colors as CSS variables */
   --hyperfinity-pink: hsl(324 83% 51%);
