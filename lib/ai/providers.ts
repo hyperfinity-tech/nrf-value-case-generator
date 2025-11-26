@@ -18,6 +18,7 @@ export const myProvider = isTestEnvironment
         languageModels: {
           "chat-model": chatModel,
           "chat-model-reasoning": reasoningModel,
+          "chat-model-gpt5-thinking": reasoningModel, // Mock for testing
           "title-model": titleModel,
           "artifact-model": artifactModel,
         },
@@ -30,7 +31,14 @@ export const myProvider = isTestEnvironment
           model: gateway.languageModel("xai/grok-3-mini"),
           middleware: extractReasoningMiddleware({ tagName: "think" }),
         }),
+        "chat-model-gpt5-thinking": wrapLanguageModel({
+          model: gateway.languageModel("openai/gpt-5.1"),
+          middleware: extractReasoningMiddleware({ tagName: "think" }),
+        }),
         "title-model": gateway.languageModel("xai/grok-2-1212"),
         "artifact-model": gateway.languageModel("xai/grok-2-1212"),
       },
     });
+
+// Models that support web search (always enabled for these)
+export const WEB_SEARCH_ENABLED_MODELS = ["chat-model-gpt5-thinking"];

@@ -18,4 +18,10 @@ export const chatModels: ChatModel[] = [
     description:
       "Uses advanced chain-of-thought reasoning for complex problems",
   },
+  {
+    id: "chat-model-gpt5-thinking",
+    name: "GPT-5.1 Thinking",
+    description:
+      "OpenAI's most advanced reasoning model with web search capabilities",
+  },
 ];
