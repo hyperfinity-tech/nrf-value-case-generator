@@ -59,18 +59,33 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       <Sidebar className="group-data-[side=left]:border-r-0">
         <SidebarHeader>
           <SidebarMenu>
-            <div className="flex flex-row items-center justify-between">
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-row items-center justify-between">
+                <Link
+                  className="flex flex-row items-center gap-3"
+                  href="/"
+                  onClick={() => {
+                    setOpenMobile(false);
+                  }}
+                >
+                  <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
+                    Chatbot
+                  </span>
+                </Link>
+              </div>
               <Link
                 className="flex flex-row items-center gap-3"
-                href="/"
+                href="/abm"
                 onClick={() => {
                   setOpenMobile(false);
                 }}
               >
-                <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
-                  Chatbot
+                <span className="cursor-pointer rounded-md px-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+                  ABM Pack Generator
                 </span>
               </Link>
+            </div>
+            <div className="flex flex-row items-center justify-between">
               <div className="flex flex-row gap-1">
                 {user && (
                   <Tooltip>
