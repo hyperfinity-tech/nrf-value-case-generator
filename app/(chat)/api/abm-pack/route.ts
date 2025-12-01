@@ -10,7 +10,7 @@ import {
   type AbmPackRequest,
 } from "./schema";
 
-export const maxDuration = 1200; // ABM packs may take longer to generate
+export const maxDuration = 600; // ABM packs may take longer to generate
 
 const ABM_SYSTEM_PROMPT = `
 You are ABM Pack Builder, an expert in strategic account-based marketing for retail.
