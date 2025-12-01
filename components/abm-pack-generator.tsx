@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, type ChangeEvent, type FormEvent } from "react";
-import { ChevronDown, ChevronRight, Download, FileText, Loader2 } from "lucide-react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import { ChevronDown, ChevronRight, Download, Loader2 } from "lucide-react";
 import { toast } from "@/components/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -573,9 +573,7 @@ function getNestedValue(obj: FlexibleResponse, path: string): unknown {
 
 export function ABMPackGenerator() {
   const [isLoading, setIsLoading] = useState(false);
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [result, setResult] = useState<FlexibleResponse | null>(null);
-  const reportRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState<FormState>({
     brand: "",
@@ -587,132 +585,6 @@ export function ABMPackGenerator() {
     selectedModel: "chat-model",
     useMockResponse: false,
   });
-
-  // PDF generation function using dynamic imports
-  const handleDownloadPdf = async () => {
-    if (!reportRef.current || !result) return;
-    
-    setIsGeneratingPdf(true);
-    toast({ type: "success", description: "Generating PDF, please wait..." });
-    
-    try {
-      // Dynamic imports to avoid loading heavy libraries until needed
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const html2canvasModule = await (import("html2canvas" as string) as Promise<any>);
-      const html2canvas = html2canvasModule.default;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const jspdfModule = await (import("jspdf" as string) as Promise<any>);
-      const jsPDF = jspdfModule.jsPDF;
-      
-      const element = reportRef.current;
-      const brandName = result?.brandIntake?.brand || "ABM-Pack";
-      
-      // Expand all expandable sections temporarily for PDF capture
-      const expandButtons = element.querySelectorAll('button[class*="hover:bg-muted"]');
-      const originalStates: boolean[] = [];
-      
-      for (const btn of expandButtons) {
-        const chevronDown = btn.querySelector('[class*="lucide-chevron-down"]');
-        originalStates.push(!!chevronDown);
-        if (!chevronDown) {
-          (btn as HTMLButtonElement).click();
-        }
-      }
-      
-      // Wait for DOM to update
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Capture the content
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
-      });
-      
-      // Restore original expand states
-      for (let i = 0; i < expandButtons.length; i++) {
-        const btn = expandButtons[i] as HTMLButtonElement;
-        const chevronDown = btn.querySelector('[class*="lucide-chevron-down"]');
-        const isCurrentlyExpanded = !!chevronDown;
-        if (isCurrentlyExpanded !== originalStates[i]) {
-          btn.click();
-        }
-      }
-      
-      const imgData = canvas.toDataURL("image/png");
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      
-      // A4 dimensions in mm
-      const pdfWidth = 210;
-      const pdfHeight = 297;
-      
-      // Calculate scaling to fit width
-      const ratio = pdfWidth / imgWidth;
-      const scaledHeight = imgHeight * ratio;
-      
-      // Create PDF with multiple pages if needed
-      const pdf = new jsPDF({
-        orientation: scaledHeight > pdfHeight ? "portrait" : "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-      
-      // Add pages as needed
-      let position = 0;
-      let remainingHeight = scaledHeight;
-      let pageNum = 0;
-      
-      while (remainingHeight > 0) {
-        if (pageNum > 0) {
-          pdf.addPage();
-        }
-        
-        // Calculate source y position for this page
-        const sourceY = (pageNum * pdfHeight) / ratio;
-        const sourceHeight = Math.min(pdfHeight / ratio, imgHeight - sourceY);
-        
-        // Create a temporary canvas for this page section
-        const pageCanvas = document.createElement("canvas");
-        pageCanvas.width = imgWidth;
-        pageCanvas.height = sourceHeight;
-        const ctx = pageCanvas.getContext("2d");
-        
-        if (ctx) {
-          ctx.drawImage(
-            canvas,
-            0, sourceY, imgWidth, sourceHeight,
-            0, 0, imgWidth, sourceHeight
-          );
-          
-          const pageImgData = pageCanvas.toDataURL("image/png");
-          const pageScaledHeight = sourceHeight * ratio;
-          
-          pdf.addImage(pageImgData, "PNG", 0, 0, pdfWidth, pageScaledHeight);
-        }
-        
-        remainingHeight -= pdfHeight;
-        pageNum++;
-      }
-      
-      // Download the PDF
-      const fileName = `ABM-Pack-${brandName.replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().split("T")[0]}.pdf`;
-      pdf.save(fileName);
-      
-      toast({ type: "success", description: "PDF downloaded successfully!" });
-    } catch (error) {
-      console.error("PDF generation error:", error);
-      toast({ 
-        type: "error", 
-        description: "Failed to generate PDF. Please try again or use browser print (Ctrl+P)." 
-      });
-    } finally {
-      setIsGeneratingPdf(false);
-    }
-  };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.currentTarget;
@@ -923,44 +795,29 @@ export function ABMPackGenerator() {
       {result && (
         <div className="space-y-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Generated ABM Pack: {getBrandName()}</CardTitle>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const json = JSON.stringify(result, null, 2);
-                    const blob = new Blob([json], { type: "application/json" });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `abm-pack-${getBrandName().replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().split("T")[0]}.json`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                  }}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  JSON
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownloadPdf}
-                  disabled={isGeneratingPdf}
-                >
-                  {isGeneratingPdf ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <FileText className="h-4 w-4 mr-2" />
-                  )}
-                  PDF
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const json = JSON.stringify(result, null, 2);
+                  const blob = new Blob([json], { type: "application/json" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `abm-pack-${getBrandName().replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().split("T")[0]}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download JSON
+              </Button>
             </CardHeader>
-            <CardContent ref={reportRef} className="space-y-6 bg-white dark:bg-gray-950">
+            <CardContent className="space-y-6">
               
               {/* Executive One-Liner */}
               {(result.outputs?.executiveOneLiner || result.executiveOneLiner) && (
