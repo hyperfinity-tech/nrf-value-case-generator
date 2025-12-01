@@ -14,7 +14,7 @@ export const chatModels: ChatModel[] = [
   },
   {
     id: "chat-model-reasoning",
-    name: "GPT-4o (Reasoning)",
-    description: "GPT-4o optimized for analytical and reasoning tasks",
+    name: "GPT-5.1 Thinking",
+    description: "GPT-5.1 with adaptive reasoning for deeper analytical and reasoning tasks",
   },
 ];

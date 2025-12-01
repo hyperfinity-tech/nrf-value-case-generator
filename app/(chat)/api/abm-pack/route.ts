@@ -82,52 +82,145 @@ Please now:
 }
 
 export async function POST(request: Request) {
+  const requestId = crypto.randomUUID();
+  console.log(`[${requestId}] 🚀 ABM Pack generation request received`);
+  console.log(`[${requestId}] Request timestamp: ${new Date().toISOString()}`);
+
   let requestBody: AbmPackRequest;
 
   try {
+    console.log(`[${requestId}] 📖 Parsing request JSON...`);
     const json = await request.json();
+    console.log(`[${requestId}] ✅ Raw JSON parsed successfully`);
+    console.log(`[${requestId}] 📋 Request data:`, JSON.stringify(json, null, 2));
+
+    console.log(`[${requestId}] 🔍 Validating request against schema...`);
     requestBody = abmPackRequestSchema.parse(json);
-  } catch {
+    console.log(`[${requestId}] ✅ Request validation passed`);
+    console.log(`[${requestId}] Brand: ${requestBody.brand}`);
+    console.log(`[${requestId}] Category: ${requestBody.category}`);
+    console.log(`[${requestId}] Brand Type: ${requestBody.brandType}`);
+    console.log(`[${requestId}] Selected Model: ${requestBody.selectedModel}`);
+  } catch (error) {
+    console.error(
+      `[${requestId}] ❌ Request parsing/validation failed:`,
+      error instanceof Error ? error.message : String(error)
+    );
     return new ChatSDKError("bad_request:abm-pack").toResponse();
   }
 
   try {
+    console.log(`[${requestId}] 🔐 Authenticating user...`);
     const session = await auth();
 
     if (!session?.user) {
+      console.error(`[${requestId}] ❌ Authentication failed: No session found`);
       return new ChatSDKError("unauthorized:abm-pack").toResponse();
     }
+
+    console.log(`[${requestId}] ✅ User authenticated`);
+    console.log(`[${requestId}] User ID: ${session.user.id}`);
+    console.log(`[${requestId}] User Type: ${session.user.type}`);
 
     const userType: UserType = session.user.type;
 
     // Rate limiting (shares limits with chat)
+    console.log(`[${requestId}] ⏱️  Checking rate limits (last 24 hours)...`);
     const messageCount = await getMessageCountByUserId({
       id: session.user.id,
       differenceInHours: 24,
     });
+    console.log(
+      `[${requestId}] 📊 Message count in last 24h: ${messageCount}/${entitlementsByUserType[userType].maxMessagesPerDay}`
+    );
 
     if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+      console.error(
+        `[${requestId}] ❌ Rate limit exceeded for user type "${userType}"`
+      );
       return new ChatSDKError("rate_limit:abm-pack").toResponse();
     }
 
+    console.log(`[${requestId}] ✅ Rate limit check passed`);
+
+    console.log(`[${requestId}] 🤖 Initializing AI model...`);
+    const model = myProvider.languageModel(requestBody.selectedModel);
+    console.log(`[${requestId}] ✅ Model initialized: ${requestBody.selectedModel}`);
+
+    console.log(`[${requestId}] 📝 Building user prompt...`);
+    const userPrompt = buildUserPrompt(requestBody);
+    console.log(
+      `[${requestId}] ✅ User prompt generated (length: ${userPrompt.length} chars)`
+    );
+
+    console.log(`[${requestId}] 🎯 Generating structured ABM pack object...`);
+    console.log(`[${requestId}] System prompt length: ${ABM_SYSTEM_PROMPT.length} chars`);
+    console.log(`[${requestId}] ⏳ This may take 30-60 seconds...`);
+
+    const startTime = Date.now();
     const { object, usage } = await generateObject({
-      model: myProvider.languageModel(requestBody.selectedModel),
+      model,
       schema: abmPackOutputSchema,
       system: ABM_SYSTEM_PROMPT,
-      prompt: buildUserPrompt(requestBody),
+      prompt: userPrompt,
     });
+    const generationTime = Date.now() - startTime;
 
-    return Response.json({
+    console.log(`[${requestId}] ✅ Object generation completed in ${generationTime}ms`);
+
+    if (usage) {
+      console.log(`[${requestId}] 📊 Token usage:`);
+      console.log(`[${requestId}]   - Input tokens: ${usage.inputTokens ?? "N/A"}`);
+      console.log(`[${requestId}]   - Output tokens: ${usage.outputTokens ?? "N/A"}`);
+      console.log(
+        `[${requestId}]   - Total tokens: ${(usage.inputTokens ?? 0) + (usage.outputTokens ?? 0)}`
+      );
+    }
+
+    console.log(`[${requestId}] 🔍 Validating generated object structure...`);
+    console.log(
+      `[${requestId}] Brand Intake Brand: ${object.brandIntake.brand}`
+    );
+    console.log(
+      `[${requestId}] Research fields populated: ${Object.keys(object.research).length}`
+    );
+    console.log(
+      `[${requestId}] Value case rows: ${object.outputs.slide4ValueCaseTable.rows.length}`
+    );
+    console.log(`[${requestId}] ✅ Object structure validation passed`);
+
+    console.log(`[${requestId}] 📤 Preparing response...`);
+    const response = Response.json({
       ok: true,
       data: object,
       usage: usage ?? null,
     });
+    console.log(`[${requestId}] ✅ Response prepared and sent`);
+    console.log(
+      `[${requestId}] 🎉 ABM pack generation completed successfully in ${generationTime}ms`
+    );
+
+    return response;
   } catch (error) {
+    const errorTime = new Date().toISOString();
+    const errorMessage =
+      error instanceof Error ? error.message : String(error);
+    const errorStack =
+      error instanceof Error ? error.stack : "No stack trace available";
+
+    console.error(`[${requestId}] ❌ Error occurred at ${errorTime}`);
+    console.error(`[${requestId}] Error message: ${errorMessage}`);
+    console.error(`[${requestId}] Error stack: ${errorStack}`);
+    console.error(`[${requestId}] Full error object:`, error);
+
     if (error instanceof ChatSDKError) {
+      console.error(
+        `[${requestId}] Error is ChatSDKError - returning error response`
+      );
       return error.toResponse();
     }
 
-    console.error("ABM pack generation error:", error);
+    console.error(`[${requestId}] Unexpected error type - returning generic error`);
     return new ChatSDKError("offline:abm-pack").toResponse();
   }
 }

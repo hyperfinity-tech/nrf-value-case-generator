@@ -32,7 +32,7 @@ export const myProvider = isTestEnvironment
   : customProvider({
       languageModels: {
         "chat-model": wrapOpenAIModel(openai("gpt-4o")),
-        "chat-model-reasoning": wrapOpenAIModel(openai("gpt-4o")),
+        "chat-model-reasoning": wrapOpenAIModel(openai("gpt-5.1")),
         "title-model": wrapOpenAIModel(openai("gpt-4o-mini")),
         "artifact-model": wrapOpenAIModel(openai("gpt-4o")),
       } as any,
