@@ -34,7 +34,11 @@ const createLanguageModel = (modelId: string): LanguageModel => {
   }
 
   const resolvedId = resolveModelId(modelId);
-  return openai(modelMap[resolvedId]) as unknown as LanguageModel;
+  // Enable OpenAI's native Structured Outputs for guaranteed schema compliance
+  // This ensures generateObject calls return data that exactly matches the schema
+  return openai(modelMap[resolvedId], {
+    structuredOutputs: true,
+  }) as unknown as LanguageModel;
 };
 
 // Legacy provider interface for backwards compatibility

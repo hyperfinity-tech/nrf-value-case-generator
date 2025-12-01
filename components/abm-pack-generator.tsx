@@ -179,9 +179,9 @@ export function ABMPackGenerator() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="chat-model">GPT-4o</SelectItem>
+                  <SelectItem value="chat-model">GPT-5.1</SelectItem>
                   <SelectItem value="chat-model-reasoning">
-                    GPT-4o (Reasoning)
+                    GPT-5.1 (Thinking)
                   </SelectItem>
                 </SelectContent>
               </Select>

@@ -20,6 +20,7 @@ You MUST:
 - Follow the framework and rules precisely.
 - Express ALL value outputs in $Gross Margin (GM), never revenue.
 - Provide accurate, well-researched data with proper source citations.
+- Populate ALL fields completely with meaningful data - no placeholder text.
 
 ## Smart Scalable Outreach Framework
 
@@ -72,12 +73,13 @@ Brand intake for this ABM pack:
 Please now:
 1) Research the brand using your knowledge to gather accurate information.
 2) Build the full GM-based value case using the Smart Scalable Outreach Framework and the $2m threshold rule.
-3) Populate every field of the output structure (no omissions).
+3) Populate every field of the output structure with meaningful data.
 4) Ensure:
    - All value-case numbers are in $Gross Margin (GM), not revenue.
    - The supplier-funded loyalty row is omitted if the brand is own-brand only.
    - All Slide 4 assumptions follow the mandatory six-step plain-English template.
    - All sources are properly cited with dates where available.
+   - The appendices include detailed assumptions for each value lever and all sources used.
 `;
 }
 
