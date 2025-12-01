@@ -1,5 +1,9 @@
-import { openai } from "@ai-sdk/openai";
-import { customProvider } from "ai";
+import { gateway } from "@ai-sdk/gateway";
+import {
+  customProvider,
+  extractReasoningMiddleware,
+  wrapLanguageModel,
+} from "ai";
 import { isTestEnvironment } from "../constants";
 
 export const myProvider = isTestEnvironment
@@ -14,6 +18,7 @@ export const myProvider = isTestEnvironment
         languageModels: {
           "chat-model": chatModel,
           "chat-model-reasoning": reasoningModel,
+          "chat-model-gpt5-thinking": reasoningModel, // Mock for testing
           "title-model": titleModel,
           "artifact-model": artifactModel,
         },
@@ -21,12 +26,19 @@ export const myProvider = isTestEnvironment
     })()
   : customProvider({
       languageModels: {
-        "chat-model": openai("gpt-4o"),
-        "chat-model-reasoning": openai("gpt-4o"),
-        "title-model": openai("gpt-4o-mini"),
-        "artifact-model": openai("gpt-4o"),
+        "chat-model": gateway.languageModel("xai/grok-2-vision-1212"),
+        "chat-model-reasoning": wrapLanguageModel({
+          model: gateway.languageModel("xai/grok-3-mini"),
+          middleware: extractReasoningMiddleware({ tagName: "think" }),
+        }),
+        "chat-model-gpt5-thinking": wrapLanguageModel({
+          model: gateway.languageModel("openai/gpt-5.1"),
+          middleware: extractReasoningMiddleware({ tagName: "think" }),
+        }),
+        "title-model": gateway.languageModel("xai/grok-2-1212"),
+        "artifact-model": gateway.languageModel("xai/grok-2-1212"),
       },
     });
 
 // Models that support web search (always enabled for these)
-export const WEB_SEARCH_ENABLED_MODELS: string[] = [];
+export const WEB_SEARCH_ENABLED_MODELS = ["chat-model-gpt5-thinking"];

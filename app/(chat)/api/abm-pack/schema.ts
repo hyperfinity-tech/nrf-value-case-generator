@@ -31,8 +31,8 @@ export const abmPackRequestSchema = z.object({
   brandType: brandTypeInternalEnum.optional().nullable(),
   notes: z.string().optional().nullable(),
   selectedModel: z
-    .enum(["chat-model", "chat-model-reasoning"])
-    .default("chat-model"),
+    .enum(["chat-model", "chat-model-reasoning", "chat-model-gpt5-thinking"])
+    .default("chat-model-reasoning"),
 });
 
 export type AbmPackRequest = z.infer<typeof abmPackRequestSchema>;
