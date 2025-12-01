@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Download, Loader2 } from "lucide-react";
 import { toast } from "@/components/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -296,8 +296,27 @@ export function ABMPackGenerator() {
       {result && (
         <div className="space-y-4">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Generated ABM Pack: {result.brandIntake.brand}</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const json = JSON.stringify(result, null, 2);
+                  const blob = new Blob([json], { type: "application/json" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `abm-pack-${result.brandIntake.brand?.replace(/[^a-zA-Z0-9]/g, "-") ?? "export"}-${new Date().toISOString().split("T")[0]}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download JSON
+              </Button>
             </CardHeader>
             <CardContent className="space-y-6">
               
@@ -639,33 +658,57 @@ export function ABMPackGenerator() {
               </ExpandableSection>
 
               {/* Research Details (collapsed by default) */}
-              <ExpandableSection title="Research Details">
-                <div className="space-y-2 text-sm">
-                  <p><strong>Annual Revenue:</strong> {result.research.latestAnnualRevenue} ({result.research.latestAnnualRevenueSource})</p>
-                  <p><strong>Blended GM%:</strong> {result.research.blendedGrossMarginPercent}% ({result.research.blendedGrossMarginSource})</p>
-                  <p><strong>Loyalty Programme:</strong> {result.research.loyaltyProgrammeDetails}</p>
-                  {result.research.loyaltyProgrammePenetration && (
-                    <p><strong>Loyalty Penetration:</strong> {result.research.loyaltyProgrammePenetration}</p>
-                  )}
-                  {result.research.loyaltyProgrammeLaunchDate && (
-                    <p><strong>Loyalty Launch Date:</strong> {result.research.loyaltyProgrammeLaunchDate}</p>
-                  )}
-                  {result.research.loyaltyProgrammeBenefits && (
-                    <p><strong>Loyalty Benefits:</strong> {result.research.loyaltyProgrammeBenefits}</p>
-                  )}
-                  {result.research.activeLoyaltyMembers && (
-                    <p><strong>Active Loyalty Members:</strong> {result.research.activeLoyaltyMembers}</p>
-                  )}
-                  <p><strong>AOV Benchmark:</strong> {result.research.aovBenchmark}</p>
-                  <p><strong>Purchase Frequency:</strong> {result.research.purchaseFrequencyBenchmark}</p>
-                  <p><strong>Paid Media:</strong> {result.research.paidMediaChannels}</p>
-                  <p><strong>Tech Stack:</strong> {result.research.techStack}</p>
-                  <p><strong>Brand Initiatives:</strong> {result.research.brandSpecificInitiatives}</p>
-                  {result.research.inferenceNotes && (
-                    <p><strong>Inference Notes:</strong> {result.research.inferenceNotes}</p>
-                  )}
-                </div>
-              </ExpandableSection>
+              {result.research && (
+                <ExpandableSection title="Research Details">
+                  <div className="space-y-2 text-sm">
+                    {result.research.latestAnnualRevenue && (
+                      <p><strong>Annual Revenue:</strong> {result.research.latestAnnualRevenue} {result.research.latestAnnualRevenueSource && `(${result.research.latestAnnualRevenueSource})`}</p>
+                    )}
+                    {(result.research.blendedGrossMarginPercent !== undefined && result.research.blendedGrossMarginPercent !== null) && (
+                      <p><strong>Blended GM%:</strong> {result.research.blendedGrossMarginPercent}% {result.research.blendedGrossMarginSource && `(${result.research.blendedGrossMarginSource})`}</p>
+                    )}
+                    {result.research.loyaltyProgrammeDetails && (
+                      <p><strong>Loyalty Programme:</strong> {result.research.loyaltyProgrammeDetails}</p>
+                    )}
+                    {result.research.loyaltyProgrammePenetration && (
+                      <p><strong>Loyalty Penetration:</strong> {result.research.loyaltyProgrammePenetration}</p>
+                    )}
+                    {result.research.loyaltyProgrammeLaunchDate && (
+                      <p><strong>Loyalty Launch Date:</strong> {result.research.loyaltyProgrammeLaunchDate}</p>
+                    )}
+                    {result.research.loyaltyProgrammeBenefits && (
+                      <p><strong>Loyalty Benefits:</strong> {result.research.loyaltyProgrammeBenefits}</p>
+                    )}
+                    {result.research.activeLoyaltyMembers && (
+                      <p><strong>Active Loyalty Members:</strong> {result.research.activeLoyaltyMembers}</p>
+                    )}
+                    {result.research.aovBenchmark && (
+                      <p><strong>AOV Benchmark:</strong> {result.research.aovBenchmark}</p>
+                    )}
+                    {result.research.purchaseFrequencyBenchmark && (
+                      <p><strong>Purchase Frequency:</strong> {result.research.purchaseFrequencyBenchmark}</p>
+                    )}
+                    {result.research.paidMediaChannels && (
+                      <p><strong>Paid Media:</strong> {result.research.paidMediaChannels}</p>
+                    )}
+                    {result.research.techStack && (
+                      <p><strong>Tech Stack:</strong> {result.research.techStack}</p>
+                    )}
+                    {result.research.brandSpecificInitiatives && (
+                      <p><strong>Brand Initiatives:</strong> {result.research.brandSpecificInitiatives}</p>
+                    )}
+                    {result.research.inferenceNotes && (
+                      <p><strong>Inference Notes:</strong> {result.research.inferenceNotes}</p>
+                    )}
+                    {/* Show message if no data available */}
+                    {!result.research.latestAnnualRevenue && 
+                     !result.research.loyaltyProgrammeDetails && 
+                     !result.research.aovBenchmark && (
+                      <p className="text-muted-foreground italic">No detailed research data available. Check the Research Sources section above for citation details.</p>
+                    )}
+                  </div>
+                </ExpandableSection>
+              )}
 
             </CardContent>
           </Card>

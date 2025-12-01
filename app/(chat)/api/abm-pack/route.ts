@@ -41,6 +41,19 @@ console.log("  - Has properties:", "properties" in abmPackJsonSchema);
 console.log("  - Property keys:", Object.keys((abmPackJsonSchema.properties as Record<string, unknown>) ?? {}));
 console.log("  - Required fields:", abmPackJsonSchema.required);
 
+// Debug: Log nested schema structure for outputs
+const outputsProps = (abmPackJsonSchema.properties as Record<string, unknown>)?.outputs as Record<string, unknown> | undefined;
+if (outputsProps?.properties) {
+  console.log("  - Outputs property keys:", Object.keys(outputsProps.properties as Record<string, unknown>));
+}
+
+// Debug: Check if arrays are properly defined
+const researchProps = (abmPackJsonSchema.properties as Record<string, unknown>)?.research as Record<string, unknown> | undefined;
+if (researchProps?.properties) {
+  const researchSources = (researchProps.properties as Record<string, unknown>)?.researchSources as Record<string, unknown> | undefined;
+  console.log("  - researchSources type:", researchSources?.type);
+}
+
 export const maxDuration = 600; // ABM packs may take longer to generate
 
 // =============================================================================
@@ -473,14 +486,22 @@ export async function POST(request: Request) {
     console.log(`[${requestId}] 🔍 Validating generated object structure...`);
     console.log(`[${requestId}]   Brand: ${object.brandIntake?.brand ?? "N/A"}`);
     console.log(`[${requestId}]   Research fields: ${Object.keys(object.research ?? {}).length}`);
+    console.log(`[${requestId}]   Research field names: ${Object.keys(object.research ?? {}).join(", ")}`);
     console.log(`[${requestId}]   Research sources: ${object.research?.researchSources?.length ?? 0}`);
+    console.log(`[${requestId}]   Outputs fields: ${Object.keys(object.outputs ?? {}).length}`);
+    console.log(`[${requestId}]   Outputs field names: ${Object.keys(object.outputs ?? {}).join(", ")}`);
     console.log(`[${requestId}]   Slide 1 rows: ${object.outputs?.slide1InputTable?.length ?? 0}`);
+    console.log(`[${requestId}]   Value case table exists: ${!!object.outputs?.slide4ValueCaseTable}`);
     console.log(`[${requestId}]   Value case rows: ${object.outputs?.slide4ValueCaseTable?.rows?.length ?? 0}`);
+    console.log(`[${requestId}]   Sentiment snapshot exists: ${!!object.outputs?.loyaltySentimentSnapshot}`);
     console.log(`[${requestId}]   Sentiment rows: ${object.outputs?.loyaltySentimentSnapshot?.sentimentTable?.length ?? 0}`);
     console.log(`[${requestId}]   Mode applied: ${object.modelling?.modeApplied ?? "N/A"}`);
     console.log(`[${requestId}]   Base case GM: $${object.modelling?.baseCaseGMUpliftMillions ?? "N/A"}m`);
     console.log(`[${requestId}]   Assumptions: ${object.appendices?.assumptionsBlock?.length ?? 0}`);
     console.log(`[${requestId}]   Sources: ${object.appendices?.sources?.length ?? 0}`);
+    
+    // Debug: Log first 2000 chars of raw response for inspection
+    console.log(`[${requestId}] 📝 Response preview (first 2000 chars):`, text.substring(0, 2000));
     console.log(`[${requestId}] ✅ Object structure check complete`);
 
     console.log(`[${requestId}] 📤 Preparing response...`);

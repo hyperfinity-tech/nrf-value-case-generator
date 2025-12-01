@@ -217,8 +217,6 @@ const sentimentTableRowSchema = z.object({
   sentimentSummary: z.string().describe("Short description of sentiment for this aspect"),
   evidence: z
     .array(sentimentEvidenceSchema)
-    .min(1)
-    .max(2)
     .describe("1-2 short quotes with source and month/year"),
 });
 
@@ -233,8 +231,7 @@ const loyaltySentimentSnapshotSchema = z.object({
   ),
   sentimentTable: z
     .array(sentimentTableRowSchema)
-    .length(4)
-    .describe("4-row sentiment table: overall_satisfaction, perceived_value, ease_of_use_ux, key_pain_points"),
+    .describe("Sentiment table with 4 aspects: overall_satisfaction, perceived_value, ease_of_use_ux, key_pain_points"),
 });
 
 // Value Case Table Row (with 6-step methodology)
@@ -255,8 +252,7 @@ const valueCaseRowSchema = z.object({
 const slide4ValueCaseTableSchema = z.object({
   rows: z
     .array(valueCaseRowSchema)
-    .min(3)
-    .describe("Value case rows: A, B (if multi-brand), C, D (total)"),
+    .describe("Value case rows: A (Personalised Loyalty), B (Supplier-funded if multi-brand), C (Price Optimisation), D (Total)"),
 });
 
 // Outputs
@@ -272,8 +268,7 @@ const outputsSchema = z.object({
     .describe("100-200 word consultative narrative explaining GM uplift calculation, evidence, mode applied, and strategic importance"),
   slide1InputTable: z
     .array(slide1InputRowSchema)
-    .length(7)
-    .describe("7-row input table: Total Revenue, Revenue from Loyalty Members, Active Loyalty Members, AOV, Purchase Frequency, Paid Media Channels, Tech Stack"),
+    .describe("Input table with 7 metrics: Total Revenue, Revenue from Loyalty Members, Active Loyalty Members, AOV, Purchase Frequency, Paid Media Channels, Tech Stack"),
   slide1Notes: slide1NotesSchema.describe("Notes for Slide 1"),
   loyaltySentimentSnapshot: loyaltySentimentSnapshotSchema.describe(
     "Loyalty sentiment analysis for last 12 months"
