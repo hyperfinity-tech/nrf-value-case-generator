@@ -1,4 +1,5 @@
 import { generateText } from "ai";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import { myProvider } from "@/lib/ai/providers";
@@ -9,6 +10,12 @@ import {
   abmPackRequestSchema,
   type AbmPackRequest,
 } from "./schema";
+
+// Convert Zod schema to JSON Schema for OpenAI Structured Outputs
+const abmPackJsonSchema = zodToJsonSchema(abmPackOutputSchema, {
+  name: "AbmPack",
+  $refStrategy: "none", // Inline all definitions instead of using $ref
+});
 
 export const maxDuration = 600; // ABM packs may take longer to generate
 
@@ -180,15 +187,25 @@ export async function POST(request: Request) {
 
     const startTime = Date.now();
     
-    // Use generateText with JSON mode and parse manually with Zod
-    // This bypasses AI SDK schema conversion issues
+    // Debug: Log the JSON schema being sent to OpenAI
+    console.log(`[${requestId}] 🔑 JSON Schema keys:`, Object.keys((abmPackJsonSchema as Record<string, unknown>).properties ?? {}));
+    
+    // Use OpenAI's Structured Outputs with exact JSON schema
+    // This GUARANTEES the output matches our schema exactly
     const { text, usage } = await generateText({
       model,
       system: ABM_SYSTEM_PROMPT,
       prompt: userPrompt,
       providerOptions: {
         openai: {
-          response_format: { type: "json_object" },
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "abm_pack",
+              strict: true,
+              schema: abmPackJsonSchema,
+            },
+          },
         },
       },
     });
@@ -208,7 +225,7 @@ export async function POST(request: Request) {
       throw new Error("Failed to parse model response as JSON");
     }
     
-    // Validate with Zod schema
+    // Validate with Zod schema (should always pass now with strict mode)
     const object = abmPackOutputSchema.parse(rawObject);
     console.log(`[${requestId}] ✅ Zod validation passed`);
     console.log(`[${requestId}] 📦 Validated object keys:`, Object.keys(object));

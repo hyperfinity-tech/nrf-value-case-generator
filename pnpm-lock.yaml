@@ -215,6 +215,9 @@ importers:
       zod:
         specifier: ^3.25.76
         version: 3.25.76
+      zod-to-json-schema:
+        specifier: ^3.24.1
+        version: 3.25.0(zod@3.25.76)
     devDependencies:
       '@biomejs/biome':
         specifier: 2.2.2
