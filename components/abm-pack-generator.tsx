@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, useEffect, type ChangeEvent, type FormEvent } from "react";
 import { ChevronDown, ChevronRight, Download, Loader2 } from "lucide-react";
 import { toast } from "@/components/toast";
 import { Button } from "@/components/ui/button";
@@ -586,6 +586,13 @@ export function ABMPackGenerator() {
     useMockResponse: false,
   });
 
+  // Scroll to top when results are displayed
+  useEffect(() => {
+    if (result) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [result]);
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.currentTarget;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -651,171 +658,58 @@ export function ABMPackGenerator() {
     return result?.brandIntake?.brand || result?.brand || "Unknown Brand";
   };
 
+  // Reset form and results
+  const handleStartOver = () => {
+    setResult(null);
+    setIsLoading(false);
+    setFormData({
+      brand: "",
+      website: "",
+      registryUrl: "",
+      category: "",
+      brandType: "own_brand_only",
+      notes: "",
+      selectedModel: "chat-model",
+      useMockResponse: false,
+    });
+  };
+
   return (
     <div className="space-y-6">
-      {/* Input Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>ABM Pack Generator</CardTitle>
-          <CardDescription>
-            Generate CFO-ready Account-Based Marketing packs for retail brands
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="brand">Brand Name *</Label>
-              <Input
-                id="brand"
-                name="brand"
-                value={formData.brand}
-                onChange={handleInputChange}
-                placeholder="e.g., Nike, Adidas"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="website">Website</Label>
-              <Input
-                id="website"
-                name="website"
-                type="url"
-                value={formData.website}
-                onChange={handleInputChange}
-                placeholder="https://example.com"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="registryUrl">SEC / Registry Link</Label>
-              <Input
-                id="registryUrl"
-                name="registryUrl"
-                type="url"
-                value={formData.registryUrl}
-                onChange={handleInputChange}
-                placeholder="https://sec.report/..."
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="category">Category</Label>
-              <Input
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                placeholder="e.g., Premium Activewear"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="brandType">Brand Type</Label>
-              <Select
-                value={formData.brandType}
-                onValueChange={(value) => handleSelectChange("brandType", value)}
-              >
-                <SelectTrigger id="brandType">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="own_brand_only">Own-brand Only</SelectItem>
-                  <SelectItem value="multi_brand">Multi-brand</SelectItem>
-                  <SelectItem value="mixed">Mixed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="selectedModel">AI Model</Label>
-              <Select
-                value={formData.selectedModel}
-                onValueChange={(value) =>
-                  handleSelectChange("selectedModel", value)
-                }
-              >
-                <SelectTrigger id="selectedModel">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="chat-model">GPT-5.1</SelectItem>
-                  <SelectItem value="chat-model-reasoning">
-                    GPT-5.1 (Thinking)
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="notes">Additional Notes</Label>
-              <Textarea
-                id="notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                placeholder="Any additional context or requirements..."
-                rows={4}
-              />
-            </div>
-
-            {/* Dev option: Use mock response to save LLM calls */}
-            <div className="flex items-center space-x-2 p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <input
-                type="checkbox"
-                id="useMockResponse"
-                checked={formData.useMockResponse}
-                onChange={(e) => setFormData(prev => ({ ...prev, useMockResponse: e.target.checked }))}
-                className="h-4 w-4 rounded border-gray-300"
-              />
-              <Label htmlFor="useMockResponse" className="text-sm font-normal cursor-pointer">
-                Use mock response (CVS Health example) — saves LLM calls during development
-              </Label>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={isLoading || !formData.brand}
-              className="w-full"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating (this may take 60-120 seconds)...
-                </>
-              ) : (
-                "Generate ABM Pack"
-              )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Results */}
+      {/* Results - shown at top when available */}
       {result && (
         <div className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Generated ABM Pack: {getBrandName()}</CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const json = JSON.stringify(result, null, 2);
-                  const blob = new Blob([json], { type: "application/json" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `abm-pack-${getBrandName().replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().split("T")[0]}.json`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                }}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download JSON
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleStartOver}
+                >
+                  Start Over
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const json = JSON.stringify(result, null, 2);
+                    const blob = new Blob([json], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `abm-pack-${getBrandName().replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().split("T")[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download JSON
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               
@@ -1199,6 +1093,149 @@ export function ABMPackGenerator() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Loading Spinner - centered when loading and no results */}
+      {isLoading && !result && (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="text-muted-foreground">Generating ABM pack (this may take 60-120 seconds)...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Input Form - only shown when not loading and no results */}
+      {!isLoading && !result && (
+        <Card>
+          <CardHeader>
+            <CardTitle>ABM Pack Generator</CardTitle>
+            <CardDescription>
+              Generate CFO-ready Account-Based Marketing packs for retail brands
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="brand">Brand Name *</Label>
+                <Input
+                  id="brand"
+                  name="brand"
+                  value={formData.brand}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Nike, Adidas"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="website">Website</Label>
+                <Input
+                  id="website"
+                  name="website"
+                  type="url"
+                  value={formData.website}
+                  onChange={handleInputChange}
+                  placeholder="https://example.com"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="registryUrl">SEC / Registry Link</Label>
+                <Input
+                  id="registryUrl"
+                  name="registryUrl"
+                  type="url"
+                  value={formData.registryUrl}
+                  onChange={handleInputChange}
+                  placeholder="https://sec.report/..."
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="category">Category</Label>
+                <Input
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Premium Activewear"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="brandType">Brand Type</Label>
+                <Select
+                  value={formData.brandType}
+                  onValueChange={(value) => handleSelectChange("brandType", value)}
+                >
+                  <SelectTrigger id="brandType">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="own_brand_only">Own-brand Only</SelectItem>
+                    <SelectItem value="multi_brand">Multi-brand</SelectItem>
+                    <SelectItem value="mixed">Mixed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="selectedModel">AI Model</Label>
+                <Select
+                  value={formData.selectedModel}
+                  onValueChange={(value) =>
+                    handleSelectChange("selectedModel", value)
+                  }
+                >
+                  <SelectTrigger id="selectedModel">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="chat-model">GPT-5.1</SelectItem>
+                    <SelectItem value="chat-model-reasoning">
+                      GPT-5.1 (Thinking)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="notes">Additional Notes</Label>
+                <Textarea
+                  id="notes"
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  placeholder="Any additional context or requirements..."
+                  rows={4}
+                />
+              </div>
+
+              {/* Dev option: Use mock response to save LLM calls */}
+              <div className="flex items-center space-x-2 p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="useMockResponse"
+                  checked={formData.useMockResponse}
+                  onChange={(e) => setFormData(prev => ({ ...prev, useMockResponse: e.target.checked }))}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="useMockResponse" className="text-sm font-normal cursor-pointer">
+                  Use mock response (CVS Health example) — saves LLM calls during development
+                </Label>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={!formData.brand}
+                className="w-full"
+              >
+                Generate ABM Pack
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
