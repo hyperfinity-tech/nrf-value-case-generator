@@ -9,6 +9,7 @@ import {
   abmPackOutputSchema,
   abmPackRequestSchema,
   type AbmPackRequest,
+  type AbmPackOutput,
 } from "./schema";
 
 // Convert Zod schema to JSON Schema for OpenAI Structured Outputs
@@ -218,21 +219,16 @@ export async function POST(request: Request) {
     // Debug: Log raw text to see what the model returned
     console.log(`[${requestId}] 📄 Raw text length:`, text.length);
     
-    // Parse the JSON manually
-    let rawObject: unknown;
+    // Parse the JSON - OpenAI strict mode guarantees schema compliance
+    let object: AbmPackOutput;
     try {
-      rawObject = JSON.parse(text);
-      console.log(`[${requestId}] 📦 Parsed JSON keys:`, Object.keys(rawObject as Record<string, unknown>));
-      console.log(`[${requestId}] 📦 Has appendices in raw JSON:`, "appendices" in (rawObject as Record<string, unknown>));
+      object = JSON.parse(text) as AbmPackOutput;
+      console.log(`[${requestId}] 📦 Parsed JSON keys:`, Object.keys(object));
+      console.log(`[${requestId}] 📦 Has appendices:`, "appendices" in object);
     } catch (parseError) {
       console.error(`[${requestId}] ❌ JSON parse error:`, parseError);
       throw new Error("Failed to parse model response as JSON");
     }
-    
-    // Validate with Zod schema (should always pass now with strict mode)
-    const object = abmPackOutputSchema.parse(rawObject);
-    console.log(`[${requestId}] ✅ Zod validation passed`);
-    console.log(`[${requestId}] 📦 Validated object keys:`, Object.keys(object));
 
     console.log(`[${requestId}] ✅ Object generation completed in ${generationTime}ms`);
 
