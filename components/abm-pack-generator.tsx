@@ -24,7 +24,7 @@ interface FormState {
   category: string;
   brandType: "own_brand_only" | "multi_brand" | "mixed";
   notes: string;
-  selectedModel: "chat-model" | "chat-model-reasoning" | "chat-model-gpt5-thinking";
+  selectedModel: "chat-model" | "chat-model-reasoning";
 }
 
 export function ABMPackGenerator() {
@@ -38,7 +38,7 @@ export function ABMPackGenerator() {
     category: "",
     brandType: "own_brand_only",
     notes: "",
-    selectedModel: "chat-model-reasoning",
+    selectedModel: "chat-model",
   });
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -179,12 +179,9 @@ export function ABMPackGenerator() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="chat-model">Grok Vision (Faster)</SelectItem>
+                  <SelectItem value="chat-model">GPT-4o</SelectItem>
                   <SelectItem value="chat-model-reasoning">
-                    Grok Reasoning (More Accurate)
-                  </SelectItem>
-                  <SelectItem value="chat-model-gpt5-thinking">
-                    GPT-5.1 Thinking (Web Search)
+                    GPT-4o (Reasoning)
                   </SelectItem>
                 </SelectContent>
               </Select>

@@ -21,12 +21,11 @@ import type { VisibilityType } from "@/components/visibility-selector";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
-import { myProvider, WEB_SEARCH_ENABLED_MODELS } from "@/lib/ai/providers";
+import { myProvider } from "@/lib/ai/providers";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
-import { webSearch } from "@/lib/ai/tools/web-search";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
   createStreamId,
@@ -188,20 +187,12 @@ export async function POST(request: Request) {
           experimental_activeTools:
             selectedChatModel === "chat-model-reasoning"
               ? []
-              : WEB_SEARCH_ENABLED_MODELS.includes(selectedChatModel)
-                ? [
-                    "getWeather",
-                    "createDocument",
-                    "updateDocument",
-                    "requestSuggestions",
-                    "webSearch",
-                  ]
-                : [
-                    "getWeather",
-                    "createDocument",
-                    "updateDocument",
-                    "requestSuggestions",
-                  ],
+              : [
+                  "getWeather",
+                  "createDocument",
+                  "updateDocument",
+                  "requestSuggestions",
+                ],
           experimental_transform: smoothStream({ chunking: "word" }),
           tools: {
             getWeather,
@@ -211,7 +202,6 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
-            webSearch,
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
