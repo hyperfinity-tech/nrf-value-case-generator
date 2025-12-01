@@ -435,17 +435,31 @@ function ExpandableSection({
 function MarkdownTable({ markdown }: { markdown: string }) {
   if (!markdown) return null;
   
-  const lines = markdown.trim().split("\n").filter(line => line.trim());
-  if (lines.length < 2) return <pre className="text-xs whitespace-pre-wrap">{markdown}</pre>;
+  // Split into lines, but recombine lines that don't start with | (they're continuations of previous cells)
+  const rawLines = markdown.trim().split("\n");
+  const tableLines: string[] = [];
+  
+  for (const line of rawLines) {
+    const trimmed = line.trim();
+    // A new table row starts with | or is a separator line (|---|---|)
+    if (trimmed.startsWith("|") || trimmed.match(/^\|?[-:|\s]+\|?$/)) {
+      tableLines.push(trimmed);
+    } else if (tableLines.length > 0 && trimmed) {
+      // This is a continuation of the previous cell - append to last line
+      tableLines[tableLines.length - 1] += " " + trimmed;
+    }
+  }
+  
+  if (tableLines.length < 2) return <pre className="text-xs whitespace-pre-wrap">{markdown}</pre>;
   
   const parseRow = (line: string) => 
     line.split("|").map(cell => cell.trim()).filter(cell => cell && !cell.match(/^[-:]+$/));
   
-  const headerLine = lines[0];
+  const headerLine = tableLines[0];
   const headerCells = parseRow(headerLine);
   
-  // Find data rows (skip separator line)
-  const dataLines = lines.slice(2);
+  // Find data rows (skip separator line which is at index 1)
+  const dataLines = tableLines.filter((line, idx) => idx > 1 && !line.match(/^\|?[-:|\s]+\|?$/));
   
   return (
     <div className="overflow-x-auto">
@@ -465,7 +479,7 @@ function MarkdownTable({ markdown }: { markdown: string }) {
             return (
               <tr key={rowIdx} className="border-t">
                 {cells.map((cell, cellIdx) => (
-                  <td key={cellIdx} className="py-2 px-3 border align-top">
+                  <td key={cellIdx} className="py-2 px-3 border align-top whitespace-pre-wrap">
                     {cell}
                   </td>
                 ))}
