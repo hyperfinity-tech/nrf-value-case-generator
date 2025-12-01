@@ -268,17 +268,16 @@ export async function POST(request: Request) {
       );
     }
 
+    // Defensive structure validation - use optional chaining and fallbacks
     console.log(`[${requestId}] 🔍 Validating generated object structure...`);
-    console.log(
-      `[${requestId}] Brand Intake Brand: ${object.brandIntake.brand}`
-    );
-    console.log(
-      `[${requestId}] Research fields populated: ${Object.keys(object.research).length}`
-    );
-    console.log(
-      `[${requestId}] Value case rows: ${object.outputs.slide4ValueCaseTable.rows.length}`
-    );
-    console.log(`[${requestId}] ✅ Object structure validation passed`);
+    console.log(`[${requestId}]   Brand: ${object.brandIntake?.brand ?? "N/A"}`);
+    console.log(`[${requestId}]   Research fields: ${Object.keys(object.research ?? {}).length}`);
+    console.log(`[${requestId}]   Slide 1 rows: ${object.outputs?.slide1InputTable?.length ?? 0}`);
+    console.log(`[${requestId}]   Value case rows: ${object.outputs?.slide4ValueCaseTable?.rows?.length ?? 0}`);
+    console.log(`[${requestId}]   Sentiment rows: ${object.outputs?.loyaltySentimentSnapshot?.sentimentTable?.length ?? 0}`);
+    console.log(`[${requestId}]   Assumptions: ${object.appendices?.assumptionsBlock?.length ?? 0}`);
+    console.log(`[${requestId}]   Sources: ${object.appendices?.sources?.length ?? 0}`);
+    console.log(`[${requestId}] ✅ Object structure check complete`);
 
     console.log(`[${requestId}] 📤 Preparing response...`);
     const response = Response.json({
