@@ -270,119 +270,115 @@ export function ABMPackGenerator() {
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-lg font-semibold mb-2">
-                  Value Case Summary
-                </h3>
-                <div className="space-y-3">
-                  {result.outputs.slide4ValueCaseTable.rows.map((row, idx) => (
-                    <div key={idx} className="border rounded-lg p-3">
-                      <p className="font-semibold text-sm">
-                        {row.areaOfImpact}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {row.opportunityType}
-                      </p>
-                      <p className="text-lg font-bold text-green-600 mt-2">
-                        ${row.estimatedUpliftGM}M GM Uplift
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {row.assumptionsMethodology}
+              {result.outputs.slide4ValueCaseTable?.rows && result.outputs.slide4ValueCaseTable.rows.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Value Case Summary
+                  </h3>
+                  <div className="space-y-3">
+                    {result.outputs.slide4ValueCaseTable.rows.map((row, idx) => (
+                      <div key={idx} className="border rounded-lg p-3">
+                        <p className="font-semibold text-sm">
+                          {row.areaOfImpact}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {row.opportunityType}
+                        </p>
+                        <p className="text-lg font-bold text-green-600 mt-2">
+                          ${row.estimatedUpliftGM}M GM Uplift
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {row.assumptionsMethodology}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {result.outputs.loyaltySentimentSnapshot && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Loyalty Sentiment
+                  </h3>
+                  <div className="bg-muted p-4 rounded-lg space-y-3">
+                    <p>
+                      <strong>Overall:</strong>{" "}
+                      <span
+                        className={`font-semibold ${
+                          result.outputs.loyaltySentimentSnapshot
+                            .overallSentimentRating === "positive"
+                            ? "text-green-600"
+                            : result.outputs.loyaltySentimentSnapshot
+                                .overallSentimentRating === "negative"
+                              ? "text-red-600"
+                              : "text-yellow-600"
+                        }`}
+                      >
+                        {result.outputs.loyaltySentimentSnapshot.overallSentimentRating?.toUpperCase() ?? "N/A"}
+                      </span>
+                    </p>
+                    <p className="text-sm">
+                      {result.outputs.loyaltySentimentSnapshot.summaryNarrative ?? "No summary available"}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {result.modelling && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Modelling Results
+                  </h3>
+                  <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
+                    <p>
+                      <strong>Base Case GM Uplift:</strong> $
+                      {result.modelling.baseCaseGMUpliftMillions ?? "N/A"}M
+                    </p>
+                    <p>
+                      <strong>Mode Applied:</strong>{" "}
+                      {result.modelling.modeApplied?.toUpperCase() ?? "N/A"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {result.modelling.modeRationale ?? "No rationale provided"}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {result.outputs.cfoReadinessPanel?.dataConfidence && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Data Confidence
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-muted p-3 rounded-lg text-sm">
+                      <p className="font-semibold">Revenue</p>
+                      <p className="text-lg font-bold">
+                        {result.outputs.cfoReadinessPanel.dataConfidence.revenue ?? "N/A"}
                       </p>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">
-                  Loyalty Sentiment
-                </h3>
-                <div className="bg-muted p-4 rounded-lg space-y-3">
-                  <p>
-                    <strong>Overall:</strong>{" "}
-                    <span
-                      className={`font-semibold ${
-                        result.outputs.loyaltySentimentSnapshot
-                          .overallSentimentRating === "positive"
-                          ? "text-green-600"
-                          : result.outputs.loyaltySentimentSnapshot
-                              .overallSentimentRating === "negative"
-                            ? "text-red-600"
-                            : "text-yellow-600"
-                      }`}
-                    >
-                      {result.outputs.loyaltySentimentSnapshot.overallSentimentRating.toUpperCase()}
-                    </span>
-                  </p>
-                  <p className="text-sm">
-                    {
-                      result.outputs.loyaltySentimentSnapshot
-                        .summaryNarrative
-                    }
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">
-                  Modelling Results
-                </h3>
-                <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
-                  <p>
-                    <strong>Base Case GM Uplift:</strong> $
-                    {result.modelling.baseCaseGMUpliftMillions}M
-                  </p>
-                  <p>
-                    <strong>Mode Applied:</strong>{" "}
-                    {result.modelling.modeApplied.toUpperCase()}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {result.modelling.modeRationale}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">
-                  Data Confidence
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-muted p-3 rounded-lg text-sm">
-                    <p className="font-semibold">Revenue</p>
-                    <p className="text-lg font-bold">
-                      {
-                        result.outputs.cfoReadinessPanel.dataConfidence
-                          .revenue
-                      }
-                    </p>
-                  </div>
-                  <div className="bg-muted p-3 rounded-lg text-sm">
-                    <p className="font-semibold">Loyalty</p>
-                    <p className="text-lg font-bold">
-                      {
-                        result.outputs.cfoReadinessPanel.dataConfidence
-                          .loyalty
-                      }
-                    </p>
-                  </div>
-                  <div className="bg-muted p-3 rounded-lg text-sm">
-                    <p className="font-semibold">AOV</p>
-                    <p className="text-lg font-bold">
-                      {result.outputs.cfoReadinessPanel.dataConfidence.aov}
-                    </p>
-                  </div>
-                  <div className="bg-muted p-3 rounded-lg text-sm">
-                    <p className="font-semibold">Frequency</p>
-                    <p className="text-lg font-bold">
-                      {
-                        result.outputs.cfoReadinessPanel.dataConfidence
-                          .frequency
-                      }
-                    </p>
+                    <div className="bg-muted p-3 rounded-lg text-sm">
+                      <p className="font-semibold">Loyalty</p>
+                      <p className="text-lg font-bold">
+                        {result.outputs.cfoReadinessPanel.dataConfidence.loyalty ?? "N/A"}
+                      </p>
+                    </div>
+                    <div className="bg-muted p-3 rounded-lg text-sm">
+                      <p className="font-semibold">AOV</p>
+                      <p className="text-lg font-bold">
+                        {result.outputs.cfoReadinessPanel.dataConfidence.aov ?? "N/A"}
+                      </p>
+                    </div>
+                    <div className="bg-muted p-3 rounded-lg text-sm">
+                      <p className="font-semibold">Frequency</p>
+                      <p className="text-lg font-bold">
+                        {result.outputs.cfoReadinessPanel.dataConfidence.frequency ?? "N/A"}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
