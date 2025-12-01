@@ -18,11 +18,7 @@
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
   },
   "dependencies": {
-<<<<<<< HEAD
-    /*"@ai-sdk/openai": "^0.0.57",*/
-=======
     "@ai-sdk/gateway": "^1.0.15",
->>>>>>> parent of 7db17ab (switch from ai gateway to open ai sdk)
     "@ai-sdk/provider": "2.0.0",
     "@ai-sdk/react": "2.0.26",
     "@ai-sdk/xai": "2.0.13",
