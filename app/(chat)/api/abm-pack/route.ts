@@ -15,7 +15,7 @@ import {
 const abmPackJsonSchema = zodToJsonSchema(abmPackOutputSchema, {
   name: "AbmPack",
   $refStrategy: "none", // Inline all definitions instead of using $ref
-});
+}) as Record<string, unknown>;
 
 export const maxDuration = 600; // ABM packs may take longer to generate
 
@@ -188,7 +188,18 @@ export async function POST(request: Request) {
     const startTime = Date.now();
     
     // Debug: Log the JSON schema being sent to OpenAI
-    console.log(`[${requestId}] 🔑 JSON Schema keys:`, Object.keys((abmPackJsonSchema as Record<string, unknown>).properties ?? {}));
+    console.log(`[${requestId}] 🔑 JSON Schema keys:`, Object.keys(abmPackJsonSchema.properties ?? {}));
+    
+    // Build the response format for OpenAI Structured Outputs
+    // Use JSON.parse/stringify to ensure clean JSON types
+    const responseFormat = JSON.parse(JSON.stringify({
+      type: "json_schema",
+      json_schema: {
+        name: "abm_pack",
+        strict: true,
+        schema: abmPackJsonSchema,
+      },
+    }));
     
     // Use OpenAI's Structured Outputs with exact JSON schema
     // This GUARANTEES the output matches our schema exactly
@@ -198,14 +209,7 @@ export async function POST(request: Request) {
       prompt: userPrompt,
       providerOptions: {
         openai: {
-          response_format: {
-            type: "json_schema",
-            json_schema: {
-              name: "abm_pack",
-              strict: true,
-              schema: abmPackJsonSchema,
-            },
-          },
+          response_format: responseFormat,
         },
       },
     });
