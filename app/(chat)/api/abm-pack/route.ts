@@ -1,4 +1,4 @@
-import { generateObject } from "ai";
+import { generateText } from "ai";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import { myProvider } from "@/lib/ai/providers";
@@ -15,6 +15,15 @@ export const maxDuration = 600; // ABM packs may take longer to generate
 const ABM_SYSTEM_PROMPT = `
 You are ABM Pack Builder, an expert in strategic account-based marketing for retail.
 Produce a CFO-ready ABM pack using our Smart Scalable Outreach Framework.
+
+CRITICAL: Your response MUST be a valid JSON object with EXACTLY these 5 top-level keys:
+1. "brandIntake" - Brand intake information
+2. "research" - Research findings  
+3. "modelling" - Modelling results
+4. "outputs" - Output deliverables
+5. "appendices" - Supporting appendices (REQUIRED - do NOT omit this)
+
+ALL 5 keys are mandatory. Do not omit any of them.
 
 You MUST:
 - Follow the framework and rules precisely.
@@ -70,16 +79,26 @@ Brand intake for this ABM pack:
 - Brand type (own-brand only / multi-brand / mixed): ${request.brandType ?? "Not provided – infer from catalogue if needed"}
 - Contextual notes: ${request.notes ?? "None provided"}
 
-Please now:
+Please generate an ABM pack with this EXACT JSON structure (all 5 top-level keys required):
+
+{
+  "brandIntake": { "brand": string, "website": string|null, "registryLink": string|null, "category": string, "brandType": "own_brand_only"|"multi_brand"|"mixed", "contextualNotes": string|null },
+  "research": { "latestAnnualRevenue": string, "latestAnnualRevenueSource": string, "loyaltyProgrammeDetails": string, "activeLoyaltyMembers": string|null, "aovBenchmark": string, "purchaseFrequencyBenchmark": string, "paidMediaChannels": string, "techStack": string, "brandSpecificInitiatives": string, "blendedGrossMarginPercent": number, "blendedGrossMarginSource": string, "inferenceNotes": string|null },
+  "modelling": { "baseCaseGMUpliftMillions": number, "modeApplied": "median"|"stretch_up", "modeRationale": string },
+  "outputs": { "executiveOneLiner": string, "cfoReadinessPanel": {...}, "executiveSummary": string, "slide1InputTable": [{metric, valueOrEstimate, sourceOrLogic}...], "slide1Notes": {...}, "loyaltySentimentSnapshot": {...}, "slide4ValueCaseTable": {...} },
+  "appendices": { "assumptionsBlock": [{ "leverId": string, "leverName": string, "upliftPercentageApplied": number, "upliftMode": "median"|"stretch_up", "credibleRange": { "minPercent": number, "maxPercent": number, "source": string } }], "sources": [string array of all sources used] }
+}
+
+Tasks:
 1) Research the brand using your knowledge to gather accurate information.
 2) Build the full GM-based value case using the Smart Scalable Outreach Framework and the $2m threshold rule.
-3) Populate every field of the output structure with meaningful data.
+3) Populate every field with meaningful data.
 4) Ensure:
    - All value-case numbers are in $Gross Margin (GM), not revenue.
    - The supplier-funded loyalty row is omitted if the brand is own-brand only.
    - All Slide 4 assumptions follow the mandatory six-step plain-English template.
    - All sources are properly cited with dates where available.
-   - The appendices include detailed assumptions for each value lever and all sources used.
+5) CRITICAL: The "appendices" key MUST be included with assumptionsBlock and sources arrays.
 `;
 }
 
@@ -160,15 +179,39 @@ export async function POST(request: Request) {
     console.log(`[${requestId}] ⏳ This may take 30-60 seconds...`);
 
     const startTime = Date.now();
-    const { object, usage } = await generateObject({
+    
+    // Use generateText with JSON mode and parse manually with Zod
+    // This bypasses AI SDK schema conversion issues
+    const { text, usage } = await generateText({
       model,
-      schema: abmPackOutputSchema,
       system: ABM_SYSTEM_PROMPT,
       prompt: userPrompt,
-      // Use "json" mode which enables OpenAI's native JSON Schema mode for strict compliance
-      mode: "json",
+      providerOptions: {
+        openai: {
+          response_format: { type: "json_object" },
+        },
+      },
     });
     const generationTime = Date.now() - startTime;
+    
+    // Debug: Log raw text to see what the model returned
+    console.log(`[${requestId}] 📄 Raw text length:`, text.length);
+    
+    // Parse the JSON manually
+    let rawObject: unknown;
+    try {
+      rawObject = JSON.parse(text);
+      console.log(`[${requestId}] 📦 Parsed JSON keys:`, Object.keys(rawObject as Record<string, unknown>));
+      console.log(`[${requestId}] 📦 Has appendices in raw JSON:`, "appendices" in (rawObject as Record<string, unknown>));
+    } catch (parseError) {
+      console.error(`[${requestId}] ❌ JSON parse error:`, parseError);
+      throw new Error("Failed to parse model response as JSON");
+    }
+    
+    // Validate with Zod schema
+    const object = abmPackOutputSchema.parse(rawObject);
+    console.log(`[${requestId}] ✅ Zod validation passed`);
+    console.log(`[${requestId}] 📦 Validated object keys:`, Object.keys(object));
 
     console.log(`[${requestId}] ✅ Object generation completed in ${generationTime}ms`);
 
