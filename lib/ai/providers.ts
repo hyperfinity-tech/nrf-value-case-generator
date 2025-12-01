@@ -42,5 +42,12 @@ export const myProvider = {
   languageModel: (modelId: string): LanguageModel => createLanguageModel(modelId),
 };
 
+// Get the OpenAI model ID string for a given internal model ID
+// Used by TokenLens for usage tracking
+export function getModelIdString(internalModelId: string): string {
+  const resolvedId = resolveModelId(internalModelId);
+  return modelMap[resolvedId];
+}
+
 // Models that support web search (always enabled for these)
 export const WEB_SEARCH_ENABLED_MODELS: string[] = [];
