@@ -19,6 +19,36 @@ export const feedbackDominatedByEnum = z.enum([
   "mixed",
 ]);
 
+// Sentiment aspects matching custom GPT (4 required aspects)
+export const sentimentAspectEnum = z.enum([
+  "overall_satisfaction",
+  "perceived_value",
+  "ease_of_use_ux",
+  "key_pain_points",
+]);
+
+// Research source types for detailed citation
+export const researchSourceTypeEnum = z.enum([
+  "sec_filing_10k",
+  "sec_filing_20f",
+  "sec_filing_10q",
+  "annual_report",
+  "analyst_report",
+  "trade_press",
+  "company_website",
+  "benchmark_mckinsey",
+  "benchmark_bain",
+  "benchmark_kpmg",
+  "benchmark_statista",
+  "category_proxy",
+  "app_store_review",
+  "trustpilot",
+  "google_review",
+  "social_media",
+  "customer_forum",
+  "other",
+]);
+
 // ============================================================================
 // Request Schema
 // ============================================================================
@@ -59,6 +89,21 @@ const brandIntakeSchema = z.object({
     .describe("Any additional context provided"),
 });
 
+// Research Source (for detailed citation tracking)
+const researchSourceSchema = z.object({
+  dataPoint: z.string().describe("What data point this source supports"),
+  sourceType: researchSourceTypeEnum.describe("Type of source used"),
+  sourceName: z.string().describe("Specific source name and date"),
+  confidenceLevel: dataConfidenceEnum.describe(
+    "Confidence level: H (direct disclosure), M (industry benchmark), L (inference/proxy)"
+  ),
+  isProxy: z.boolean().describe("Whether this is a proxy/inferred value"),
+  proxyRationale: z
+    .string()
+    .nullable()
+    .describe("If proxy, explain the inference logic"),
+});
+
 // Research
 const researchSchema = z.object({
   latestAnnualRevenue: z
@@ -70,6 +115,18 @@ const researchSchema = z.object({
   loyaltyProgrammeDetails: z
     .string()
     .describe("Details about the loyalty programme"),
+  loyaltyProgrammePenetration: z
+    .string()
+    .nullable()
+    .describe("Loyalty programme penetration rate if known"),
+  loyaltyProgrammeLaunchDate: z
+    .string()
+    .nullable()
+    .describe("When the loyalty programme was launched"),
+  loyaltyProgrammeBenefits: z
+    .string()
+    .nullable()
+    .describe("Key benefits of the loyalty programme"),
   activeLoyaltyMembers: z
     .string()
     .nullable()
@@ -82,7 +139,7 @@ const researchSchema = z.object({
   techStack: z.string().describe("Known technology stack"),
   brandSpecificInitiatives: z
     .string()
-    .describe("Current brand-specific initiatives"),
+    .describe("Current brand-specific initiatives in loyalty, personalisation, pricing, markdowns"),
   blendedGrossMarginPercent: z
     .number()
     .describe("Blended gross margin percentage"),
@@ -92,20 +149,23 @@ const researchSchema = z.object({
   inferenceNotes: z
     .string()
     .nullable()
-    .describe("Notes on any inferences made"),
+    .describe("Notes on any inferences made, including benchmark sources used"),
+  researchSources: z
+    .array(researchSourceSchema)
+    .describe("Detailed source citations for all research data points"),
 });
 
 // Modelling
 const modellingSchema = z.object({
   baseCaseGMUpliftMillions: z
     .number()
-    .describe("Base case GM uplift in millions of dollars"),
+    .describe("Base case GM uplift in millions of dollars (calculated using MIDPOINT values)"),
   modeApplied: valueCaseModeEnum.describe(
-    "Whether median or stretch_up mode was applied"
+    "Whether median or stretch_up mode was applied based on $2m threshold"
   ),
   modeRationale: z
     .string()
-    .describe("Rationale for the mode selection based on $2m threshold rule"),
+    .describe("Rationale: if base case < $2m use stretch_up, if >= $2m use median"),
 });
 
 // Data Confidence
@@ -127,62 +187,68 @@ const cfoReadinessPanelSchema = z.object({
     "Confidence levels for key metrics"
   ),
   valueCaseMode: valueCaseModeEnum.describe("Mode applied for value case"),
-  valueCaseModeRationale: z.string().describe("Rationale for mode selection"),
+  valueCaseModeRationale: z.string().describe("Rationale for mode selection based on $2m threshold rule"),
 });
 
 // Slide 1 Input Table Row
 const slide1InputRowSchema = z.object({
-  metric: z.string().describe("The metric name"),
+  metric: z.string().describe("The metric name (e.g., '1. Total Revenue')"),
   valueOrEstimate: z.string().describe("The value or estimate"),
   sourceOrLogic: z.string().describe("Source or logic used"),
 });
 
 // Slide 1 Notes
 const slide1NotesSchema = z.object({
-  keyProxies: z.string().describe("Key proxies used"),
-  dataGapsAndInference: z.string().describe("Data gaps and inference notes"),
+  keyProxies: z.string().describe("Key proxies used with sources"),
+  dataGapsAndInference: z.string().describe("Data gaps and what inference was used"),
 });
 
-// Sentiment Evidence
+// Sentiment Evidence (enhanced with source details)
 const sentimentEvidenceSchema = z.object({
-  quote: z.string().describe("Direct quote from source"),
-  source: z.string().describe("Source of the quote"),
-  monthYear: z.string().describe("Month and year of the quote"),
+  quote: z.string().describe("Direct verbatim quote from source"),
+  source: z.string().describe("Source name (e.g., 'Trustpilot', 'App Store', 'Trade press article')"),
+  monthYear: z.string().describe("Month and year of the quote (e.g., 'May 2025')"),
 });
 
-// Sentiment Table Row
+// Sentiment Table Row (with fixed 4 aspects matching custom GPT)
 const sentimentTableRowSchema = z.object({
-  aspect: z.string().describe("Aspect being evaluated"),
-  sentimentSummary: z.string().describe("Summary of sentiment"),
+  aspect: sentimentAspectEnum.describe("One of the 4 required sentiment aspects"),
+  aspectDisplayName: z.string().describe("Human-readable aspect name (e.g., 'Overall satisfaction')"),
+  sentimentSummary: z.string().describe("Short description of sentiment for this aspect"),
   evidence: z
     .array(sentimentEvidenceSchema)
     .min(1)
-    .describe("Evidence supporting the sentiment"),
+    .max(2)
+    .describe("1-2 short quotes with source and month/year"),
 });
 
 // Loyalty Sentiment Snapshot
 const loyaltySentimentSnapshotSchema = z.object({
-  overallSentimentRating: sentimentEnum.describe("Overall sentiment rating"),
-  summaryNarrative: z.string().describe("Summary narrative of sentiment"),
+  overallSentimentRating: sentimentEnum.describe("Overall sentiment rating (positive/mixed/negative)"),
+  summaryNarrative: z
+    .string()
+    .describe("80-150 word summary of how customers feel about the loyalty programme"),
   feedbackDominatedBy: feedbackDominatedByEnum.describe(
-    "Who dominates the feedback"
+    "Whether feedback is dominated by loyalty members, general customers, or mixed"
   ),
   sentimentTable: z
     .array(sentimentTableRowSchema)
     .length(4)
-    .describe("4-row sentiment analysis table"),
+    .describe("4-row sentiment table: overall_satisfaction, perceived_value, ease_of_use_ux, key_pain_points"),
 });
 
-// Value Case Table Row
+// Value Case Table Row (with 6-step methodology)
 const valueCaseRowSchema = z.object({
-  areaOfImpact: z.string().describe("Area of impact"),
+  areaOfImpact: z
+    .string()
+    .describe("Area of impact (e.g., 'A. Personalised Loyalty', 'B. Supplier-funded Loyalty', 'C. Price Optimisation', 'D. Total Cumulative Uplift')"),
   opportunityType: z.string().describe("Type of opportunity"),
   estimatedUpliftGM: z
     .number()
-    .describe("Estimated uplift in GM (raw dollars)"),
+    .describe("Estimated uplift in GM (millions of dollars)"),
   assumptionsMethodology: z
     .string()
-    .describe("6-step plain-English methodology explanation"),
+    .describe("6-step CFO-ready methodology: 1) Uplift point applied, 2) Range & source, 3) Why selected, 4) Simple maths, 5) Result, 6) Reassurance"),
 });
 
 // Slide 4 Value Case Table
@@ -190,53 +256,69 @@ const slide4ValueCaseTableSchema = z.object({
   rows: z
     .array(valueCaseRowSchema)
     .min(3)
-    .describe("Value case rows (minimum 3)"),
+    .describe("Value case rows: A, B (if multi-brand), C, D (total)"),
 });
 
 // Outputs
 const outputsSchema = z.object({
   executiveOneLiner: z
     .string()
-    .describe("Single line executive summary of the opportunity"),
+    .describe("Headline value (Gross Margin): $X.Xm - all figures expressed on a gross-margin basis"),
   cfoReadinessPanel: cfoReadinessPanelSchema.describe(
     "CFO readiness panel data"
   ),
-  executiveSummary: z.string().describe("Full executive summary"),
+  executiveSummary: z
+    .string()
+    .describe("100-200 word consultative narrative explaining GM uplift calculation, evidence, mode applied, and strategic importance"),
   slide1InputTable: z
     .array(slide1InputRowSchema)
     .length(7)
-    .describe("7-row input table for Slide 1"),
+    .describe("7-row input table: Total Revenue, Revenue from Loyalty Members, Active Loyalty Members, AOV, Purchase Frequency, Paid Media Channels, Tech Stack"),
   slide1Notes: slide1NotesSchema.describe("Notes for Slide 1"),
   loyaltySentimentSnapshot: loyaltySentimentSnapshotSchema.describe(
-    "Loyalty sentiment analysis"
+    "Loyalty sentiment analysis for last 12 months"
   ),
   slide4ValueCaseTable: slide4ValueCaseTableSchema.describe(
-    "Value case table for Slide 4"
+    "Value case table with GM-based uplift estimates"
   ),
 });
 
 // Credible Range
 const credibleRangeSchema = z.object({
-  minPercent: z.number().describe("Minimum percentage"),
-  maxPercent: z.number().describe("Maximum percentage"),
-  source: z.string().describe("Source for the range"),
+  minPercent: z.number().describe("Minimum percentage of credible range"),
+  maxPercent: z.number().describe("Maximum percentage of credible range"),
+  source: z.string().describe("Source for the credible range (e.g., McKinsey, Bain, industry benchmark)"),
 });
 
-// Assumptions Block Item
+// Assumptions Block Item (enhanced with 6-step breakdown)
 const assumptionsBlockItemSchema = z.object({
-  leverId: z.string().describe("Unique lever identifier"),
+  leverId: z.string().describe("Unique lever identifier (A, B, C, or D)"),
   leverName: z.string().describe("Human-readable lever name"),
-  upliftPercentageApplied: z.number().describe("Uplift percentage applied"),
-  upliftMode: valueCaseModeEnum.describe("Mode applied for this lever"),
-  credibleRange: credibleRangeSchema.describe("Credible range for the uplift"),
+  upliftPercentageApplied: z.number().describe("The uplift percentage applied"),
+  upliftPointDescription: z
+    .string()
+    .describe("Step 1: Description of the uplift point (median or upper-mid stretch)"),
+  credibleRange: credibleRangeSchema.describe("Step 2: Credible range and source"),
+  selectionRationale: z
+    .string()
+    .describe("Step 3: Why this point was selected based on $2m threshold"),
+  mathsExplanation: z
+    .string()
+    .describe("Step 4: Plain-English calculation explanation"),
+  resultGM: z.number().describe("Step 5: Resulting GM uplift in millions"),
+  resultStatement: z.string().describe("Step 5: Result statement"),
+  reassuranceStatement: z
+    .string()
+    .describe("Step 6: Reassurance about evidence-based bounds"),
+  upliftMode: valueCaseModeEnum.describe("Whether median or stretch_up was applied"),
 });
 
 // Appendices
 const appendicesSchema = z.object({
   assumptionsBlock: z
     .array(assumptionsBlockItemSchema)
-    .describe("Detailed assumptions for each lever"),
-  sources: z.array(z.string()).describe("List of sources used"),
+    .describe("Detailed 6-step assumptions breakdown for each lever"),
+  sources: z.array(z.string()).describe("List of all sources used, one per line"),
 });
 
 // ============================================================================
@@ -245,11 +327,10 @@ const appendicesSchema = z.object({
 
 export const abmPackOutputSchema = z.object({
   brandIntake: brandIntakeSchema.describe("Brand intake information"),
-  research: researchSchema.describe("Research findings"),
-  modelling: modellingSchema.describe("Modelling results"),
+  research: researchSchema.describe("Research findings with detailed sources"),
+  modelling: modellingSchema.describe("Modelling results with $2m threshold rule"),
   outputs: outputsSchema.describe("Output deliverables"),
-  appendices: appendicesSchema.describe("Supporting appendices"),
+  appendices: appendicesSchema.describe("Supporting appendices with 6-step assumptions"),
 });
 
 export type AbmPackOutput = z.infer<typeof abmPackOutputSchema>;
-
