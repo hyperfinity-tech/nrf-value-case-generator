@@ -165,6 +165,8 @@ export async function POST(request: Request) {
       schema: abmPackOutputSchema,
       system: ABM_SYSTEM_PROMPT,
       prompt: userPrompt,
+      // Use "json" mode which enables OpenAI's native JSON Schema mode for strict compliance
+      mode: "json",
     });
     const generationTime = Date.now() - startTime;
 
