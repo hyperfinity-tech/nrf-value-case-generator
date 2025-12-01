@@ -1,4 +1,5 @@
 import { openai } from "@ai-sdk/openai";
+import type { LanguageModel } from "ai";
 import { isTestEnvironment } from "../constants";
 
 // Model mapping for direct OpenAI usage
@@ -11,27 +12,34 @@ const modelMap = {
 
 type ModelId = keyof typeof modelMap;
 
-// Get OpenAI model by our internal ID
-export function getOpenAIModel(modelId: ModelId) {
-  return openai(modelMap[modelId]);
-}
+const resolveModelId = (modelId: string): ModelId => {
+  if ((modelId as ModelId) in modelMap) {
+    return modelId as ModelId;
+  }
+  return "chat-model";
+};
+
+const createLanguageModel = (modelId: string): LanguageModel => {
+  if (isTestEnvironment) {
+    const { chatModel, reasoningModel, titleModel, artifactModel } =
+      require("./models.mock");
+    const mockModels: Record<string, LanguageModel> = {
+      "chat-model": chatModel,
+      "chat-model-reasoning": reasoningModel,
+      "title-model": titleModel,
+      "artifact-model": artifactModel,
+    } as Record<string, LanguageModel>;
+
+    return mockModels[modelId] ?? chatModel;
+  }
+
+  const resolvedId = resolveModelId(modelId);
+  return openai(modelMap[resolvedId]) as unknown as LanguageModel;
+};
 
 // Legacy provider interface for backwards compatibility
 export const myProvider = {
-  languageModel: (modelId: string) => {
-    if (isTestEnvironment) {
-      const { chatModel, reasoningModel, titleModel, artifactModel } =
-        require("./models.mock");
-      const mockModels: Record<string, unknown> = {
-        "chat-model": chatModel,
-        "chat-model-reasoning": reasoningModel,
-        "title-model": titleModel,
-        "artifact-model": artifactModel,
-      };
-      return mockModels[modelId];
-    }
-    return openai(modelMap[modelId as ModelId] ?? "gpt-4o");
-  },
+  languageModel: (modelId: string): LanguageModel => createLanguageModel(modelId),
 };
 
 // Models that support web search (always enabled for these)
