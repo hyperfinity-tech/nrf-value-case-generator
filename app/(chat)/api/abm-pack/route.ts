@@ -13,10 +13,33 @@ import {
 } from "./schema";
 
 // Convert Zod schema to JSON Schema for OpenAI Structured Outputs
-const abmPackJsonSchema = zodToJsonSchema(abmPackOutputSchema, {
+const rawJsonSchema = zodToJsonSchema(abmPackOutputSchema, {
   name: "AbmPack",
   $refStrategy: "none", // Inline all definitions instead of using $ref
 }) as Record<string, unknown>;
+
+// Extract the actual schema definition - zodToJsonSchema may wrap it in definitions/$ref
+// We need the object with "properties", not the wrapper
+const abmPackJsonSchema: Record<string, unknown> = (() => {
+  // If there's a definitions.AbmPack, use that
+  const definitions = rawJsonSchema.definitions as Record<string, unknown> | undefined;
+  if (definitions?.AbmPack) {
+    return definitions.AbmPack as Record<string, unknown>;
+  }
+  // If the schema itself has properties, use it directly
+  if (rawJsonSchema.properties) {
+    return rawJsonSchema;
+  }
+  // Fallback: return as-is and log warning
+  console.warn("⚠️ Could not find properties in JSON schema - structured outputs may not work correctly");
+  return rawJsonSchema;
+})();
+
+// Debug: Log the schema structure at startup
+console.log("🔧 JSON Schema structure check:");
+console.log("  - Has properties:", "properties" in abmPackJsonSchema);
+console.log("  - Property keys:", Object.keys((abmPackJsonSchema.properties as Record<string, unknown>) ?? {}));
+console.log("  - Required fields:", abmPackJsonSchema.required);
 
 export const maxDuration = 600; // ABM packs may take longer to generate
 
@@ -189,7 +212,11 @@ export async function POST(request: Request) {
     const startTime = Date.now();
     
     // Debug: Log the JSON schema being sent to OpenAI
-    console.log(`[${requestId}] 🔑 JSON Schema keys:`, Object.keys(abmPackJsonSchema.properties ?? {}));
+    const schemaProperties = abmPackJsonSchema.properties as Record<string, unknown> | undefined;
+    console.log(`[${requestId}] 🔑 JSON Schema keys:`, Object.keys(schemaProperties ?? {}));
+    if (!schemaProperties || Object.keys(schemaProperties).length === 0) {
+      console.error(`[${requestId}] ❌ WARNING: JSON Schema has no properties! Structured outputs will not be constrained.`);
+    }
     
     // Build the response format for OpenAI Structured Outputs
     // Use JSON.parse/stringify to ensure clean JSON types
