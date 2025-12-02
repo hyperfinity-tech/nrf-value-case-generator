@@ -449,6 +449,9 @@ export async function POST(request: Request) {
       model,
       system: ABM_SYSTEM_PROMPT,
       prompt: userPrompt,
+        tools: {
+    webSearch: webSearch(),
+  },
       providerOptions: {
         openai: {
           response_format: responseFormat,
