@@ -49,5 +49,5 @@ export function getModelIdString(internalModelId: string): string {
   return modelMap[resolvedId];
 }
 
-// Models that support web search (always enabled for these)
-export const WEB_SEARCH_ENABLED_MODELS: string[] = [];
+// OpenAI's built-in web search tool
+export const webSearchTool = openai.tools.webSearch({});

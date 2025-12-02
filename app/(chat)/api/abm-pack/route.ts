@@ -2,7 +2,7 @@ import { generateText } from "ai";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
-import { myProvider } from "@/lib/ai/providers";
+import { myProvider, webSearchTool } from "@/lib/ai/providers";
 import { getMessageCountByUserId } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 import {
@@ -11,7 +11,6 @@ import {
   type AbmPackRequest,
   type AbmPackOutput,
 } from "./schema";
-import { openai } from "@ai-sdk/openai";
 
 // Convert Zod schema to JSON Schema for OpenAI Structured Outputs
 const rawJsonSchema = zodToJsonSchema(abmPackOutputSchema, {
@@ -446,13 +445,14 @@ export async function POST(request: Request) {
     
     // Use OpenAI's Structured Outputs with exact JSON schema
     // This GUARANTEES the output matches our schema exactly
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { text, usage } = await generateText({
       model,
       system: ABM_SYSTEM_PROMPT,
       prompt: userPrompt,
-    tools: {
-    web_search: openai.tools.webSearch({}),
-  },
+      tools: {
+        web_search: webSearchTool,
+      } as any,
       providerOptions: {
         openai: {
           response_format: responseFormat,
