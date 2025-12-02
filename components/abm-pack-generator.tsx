@@ -1056,8 +1056,14 @@ export function ABMPackGenerator() {
                               <h5 className="font-medium mb-1">{formatKey(category)}</h5>
                               {Array.isArray(sources) ? (
                                 <ul className="list-disc list-inside text-muted-foreground">
-                                  {(sources as string[]).map((source: string, idx: number) => (
-                                    <li key={idx}>{source}</li>
+                                  {(sources as unknown[]).map((source: unknown, idx: number) => (
+                                    <li key={idx}>
+                                      {typeof source === "string" 
+                                        ? source 
+                                        : typeof source === "object" && source !== null
+                                          ? (source as Record<string, unknown>).description || (source as Record<string, unknown>).url || JSON.stringify(source)
+                                          : String(source)}
+                                    </li>
                                   ))}
                                 </ul>
                               ) : (
@@ -1069,8 +1075,14 @@ export function ABMPackGenerator() {
                         
                         {Array.isArray(result.appendices.sources) && (
                           <ul className="list-disc list-inside text-muted-foreground">
-                            {result.appendices.sources.map((source: string, idx: number) => (
-                              <li key={idx}>{source}</li>
+                            {result.appendices.sources.map((source: unknown, idx: number) => (
+                              <li key={idx}>
+                                {typeof source === "string" 
+                                  ? source 
+                                  : typeof source === "object" && source !== null
+                                    ? (source as Record<string, unknown>).description || (source as Record<string, unknown>).url || JSON.stringify(source)
+                                    : String(source)}
+                              </li>
                             ))}
                           </ul>
                         )}
