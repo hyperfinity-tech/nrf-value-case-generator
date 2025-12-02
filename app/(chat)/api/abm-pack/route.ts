@@ -11,6 +11,7 @@ import {
   type AbmPackRequest,
   type AbmPackOutput,
 } from "./schema";
+import { openai } from "@ai-sdk/openai";
 
 // Convert Zod schema to JSON Schema for OpenAI Structured Outputs
 const rawJsonSchema = zodToJsonSchema(abmPackOutputSchema, {
@@ -449,8 +450,8 @@ export async function POST(request: Request) {
       model,
       system: ABM_SYSTEM_PROMPT,
       prompt: userPrompt,
-        tools: {
-    webSearch: webSearch(),
+    tools: {
+    webSearch: openai.tools.webSearch({}),
   },
       providerOptions: {
         openai: {
