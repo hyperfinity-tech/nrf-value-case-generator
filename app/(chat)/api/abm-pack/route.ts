@@ -179,15 +179,20 @@ Provide:
 Include a sentiment table with EXACTLY these 4 aspects:
 | Aspect | Sentiment Summary | Evidence (Quotes & Sources) |
 | --- | --- | --- |
-| Overall satisfaction | Short description | 1 to 2 short quotes with source and month/year |
-| Perceived value | Short description | 1 to 2 short quotes with source and month/year |
-| Ease of use / UX | Short description | 1 to 2 short quotes with source and month/year |
-| Key pain points | Short description | 1 to 2 short quotes with source and month/year |
+| Overall satisfaction | Short description | 1 to 2 short quotes with footnote numbers [N] |
+| Perceived value | Short description | 1 to 2 short quotes with footnote numbers [N] |
+| Ease of use / UX | Short description | 1 to 2 short quotes with footnote numbers [N] |
+| Key pain points | Short description | 1 to 2 short quotes with footnote numbers [N] |
 
 Rules for quotes:
 - Use short, representative verbatim excerpts from customer reviews, app stores, public review sites or articles.
-- Each quote should be clearly cited, for example: [Trustpilot, May 2025], [App Store review, March 2025], [Trade press article, July 2025].
+- Cite each quote using a numbered footnote like [1], [2], etc. - NO inline URLs.
+- Full source details and URLs go in the appendices sources section.
 - Focus on the last 12 months. If you must use older material due to limited data, clearly state this in the sentiment summary.
+
+Example of correct quote citation:
+  GOOD: "This is insanely disappointing..." [1] "I would have expected a better perk list." [2]
+  BAD: "Quote" [Reddit r/lululemon](https://reddit.com/...)
 
 6) SLIDE 4 - VALUE CASE TABLE (GM-BASED)
 All values must be $GM.
@@ -245,9 +250,20 @@ ADDITIONAL RULES:
 ===========================================================
 - UK English spelling and grammar; authoritative but accessible tone.
 - Tables must be complete with no missing rows.
-- Always cite credible sources inline.
 - Always state logic when using proxies or inferred values.
-- For loyalty sentiment, always connect quotes directly to their platforms or sources with month and year.
+
+CITATION FORMAT (MANDATORY):
+- Use numbered footnote references in the body text, like [1], [2], [3].
+- Do NOT include URLs inline in the body text or tables.
+- For quotes, use the format: "Quote text" [1] where [1] refers to the numbered source.
+- For data points, cite like: $24.5bn revenue [2] or 45% GM [3].
+- All full URLs go ONLY in the appendices sources section.
+
+Example of correct citation style:
+  GOOD: "This is insanely disappointing..." [1]
+  GOOD: Revenue of $24.5bn [2] with 45% gross margin [3]
+  BAD: "Quote" [Reddit r/lululemon](https://reddit.com/...)
+  BAD: Revenue of $24.5bn (source: https://sec.gov/...)
 
 ===========================================================
 7) APPENDICES
@@ -256,7 +272,14 @@ A) Assumptions Block
 List actual uplift percentages used (median or stretch-up) for each lever, with full 6-step breakdown and sources.
 
 B) Sources Appendix
-One line per citation link, organised by data category.
+Numbered list matching the footnote references used in the body text.
+Each source MUST include the full clickable URL.
+Format each source as: "[N] Source Name - Full URL"
+
+Example:
+  [1] Reddit r/lululemon, Mar 2025 - https://www.reddit.com/r/lululemon/comments/...
+  [2] Lululemon 10-K FY2024 - https://www.sec.gov/cgi-bin/browse-edgar?...
+  [3] McKinsey Retail Report 2024 - https://www.mckinsey.com/...
 
 ===========================================================
 DATA CONFIDENCE RATINGS
