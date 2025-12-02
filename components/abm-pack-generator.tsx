@@ -777,10 +777,30 @@ export function ABMPackGenerator() {
                         </table>
                       </div>
                     )}
-                    {/* Notes */}
-                    {(result.outputs?.slide1InputTable?.notes || result.slide1InputTable?.notes) && (
-                      <div className="p-3 bg-muted/50 rounded text-xs">
-                        {result.outputs?.slide1InputTable?.notes || result.slide1InputTable?.notes}
+                    {/* Notes - handle string, array, and object formats */}
+                    {(result.outputs?.slide1InputTable?.notes || result.slide1InputTable?.notes || result.outputs?.slide1Notes) && (
+                      <div className="p-3 bg-muted/50 rounded text-xs space-y-1">
+                        {/* String format */}
+                        {typeof (result.outputs?.slide1InputTable?.notes || result.slide1InputTable?.notes) === 'string' && (
+                          <p>{result.outputs?.slide1InputTable?.notes || result.slide1InputTable?.notes}</p>
+                        )}
+                        {/* Array format */}
+                        {Array.isArray(result.outputs?.slide1InputTable?.notes || result.slide1InputTable?.notes) && (
+                          (result.outputs?.slide1InputTable?.notes || result.slide1InputTable?.notes).map((note: string, idx: number) => (
+                            <p key={idx}>{note}</p>
+                          ))
+                        )}
+                        {/* Object format (schema with keyProxies/dataGapsAndInference) */}
+                        {result.outputs?.slide1Notes && typeof result.outputs.slide1Notes === 'object' && !Array.isArray(result.outputs.slide1Notes) && (
+                          <>
+                            {result.outputs.slide1Notes.keyProxies && (
+                              <p><strong>Key Proxies:</strong> {result.outputs.slide1Notes.keyProxies}</p>
+                            )}
+                            {result.outputs.slide1Notes.dataGapsAndInference && (
+                              <p><strong>Data Gaps:</strong> {result.outputs.slide1Notes.dataGapsAndInference}</p>
+                            )}
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
