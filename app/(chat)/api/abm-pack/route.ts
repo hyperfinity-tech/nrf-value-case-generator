@@ -2,7 +2,7 @@ import { generateText } from "ai";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
-import { myProvider, webSearchTool } from "@/lib/ai/providers";
+import { myProvider, webSearchTool, codeInterpreterTool } from "@/lib/ai/providers";
 import { getMessageCountByUserId } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 import {
@@ -452,6 +452,7 @@ export async function POST(request: Request) {
       prompt: userPrompt,
       tools: {
         web_search: webSearchTool,
+        code_interpreter: codeInterpreterTool,
       } as any,
       providerOptions: {
         openai: {

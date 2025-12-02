@@ -8,6 +8,7 @@ const modelMap = {
   "chat-model-reasoning": "gpt-5.1",
   "title-model": "gpt-4o-mini",
   "artifact-model": "gpt-5.1",
+  "deep-research-model": "o4-mini-deep-research",
 } as const;
 
 type ModelId = keyof typeof modelMap;
@@ -20,24 +21,12 @@ const resolveModelId = (modelId: string): ModelId => {
 };
 
 const createLanguageModel = (modelId: string): LanguageModel => {
-  if (isTestEnvironment) {
-    const { chatModel, reasoningModel, titleModel, artifactModel } =
-      require("./models.mock");
-    const mockModels: Record<string, LanguageModel> = {
-      "chat-model": chatModel,
-      "chat-model-reasoning": reasoningModel,
-      "title-model": titleModel,
-      "artifact-model": artifactModel,
-    } as Record<string, LanguageModel>;
-
-    return mockModels[modelId] ?? chatModel;
-  }
-
+  
   const resolvedId = resolveModelId(modelId);
   return openai(modelMap[resolvedId]) as unknown as LanguageModel;
 };
 
-// Legacy provider interface for backwards compatibility
+// Provider interface for model resolution
 export const myProvider = {
   languageModel: (modelId: string): LanguageModel => createLanguageModel(modelId),
 };
@@ -49,5 +38,6 @@ export function getModelIdString(internalModelId: string): string {
   return modelMap[resolvedId];
 }
 
-// OpenAI's built-in web search tool
+// OpenAI's built-in tools
 export const webSearchTool = openai.tools.webSearch({});
+export const codeInterpreterTool = openai.tools.codeInterpreter({});
