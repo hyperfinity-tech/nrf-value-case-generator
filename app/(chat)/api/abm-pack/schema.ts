@@ -12,6 +12,8 @@ export const brandTypeInternalEnum = z.enum([
   "multi_brand",
   "mixed",
 ]);
+
+export const regionEnum = z.enum(["US", "UK"]);
 export const brandTypeOutputEnum = z.enum(["Own-brand", "Multi-brand", "Mixed"]);
 export const feedbackDominatedByEnum = z.enum([
   "loyalty_members",
@@ -63,6 +65,7 @@ export const abmPackRequestSchema = z.object({
   selectedModel: z
     .enum(["chat-model", "chat-model-reasoning"])
     .default("chat-model"),
+  region: regionEnum.default("US"),
 });
 
 export type AbmPackRequest = z.infer<typeof abmPackRequestSchema>;
@@ -159,13 +162,13 @@ const researchSchema = z.object({
 const modellingSchema = z.object({
   baseCaseGMUpliftMillions: z
     .number()
-    .describe("Base case GM uplift in millions of dollars (calculated using MIDPOINT values)"),
+    .describe("Base case GM uplift in millions (local currency, calculated using MIDPOINT values)"),
   modeApplied: valueCaseModeEnum.describe(
-    "Whether median or stretch_up mode was applied based on $2m threshold"
+    "Whether median or stretch_up mode was applied based on 2m threshold"
   ),
   modeRationale: z
     .string()
-    .describe("Rationale: if base case < $2m use stretch_up, if >= $2m use median"),
+    .describe("Rationale: if base case < 2m use stretch_up, if >= 2m use median"),
 });
 
 // Data Confidence
@@ -187,7 +190,7 @@ const cfoReadinessPanelSchema = z.object({
     "Confidence levels for key metrics"
   ),
   valueCaseMode: valueCaseModeEnum.describe("Mode applied for value case"),
-  valueCaseModeRationale: z.string().describe("Rationale for mode selection based on $2m threshold rule"),
+  valueCaseModeRationale: z.string().describe("Rationale for mode selection based on 2m threshold rule"),
 });
 
 // Slide 1 Input Table Row
@@ -242,7 +245,7 @@ const valueCaseRowSchema = z.object({
   opportunityType: z.string().describe("Type of opportunity"),
   estimatedUpliftGM: z
     .number()
-    .describe("Estimated uplift in GM (millions of dollars)"),
+    .describe("Estimated uplift in GM (millions, local currency)"),
   assumptionsMethodology: z
     .string()
     .describe("6-step CFO-ready methodology: 1) Uplift point applied, 2) Range & source, 3) Why selected, 4) Simple maths, 5) Result, 6) Reassurance"),
@@ -259,7 +262,7 @@ const slide4ValueCaseTableSchema = z.object({
 const outputsSchema = z.object({
   executiveOneLiner: z
     .string()
-    .describe("Headline value (Gross Margin): $X.Xm - all figures expressed on a gross-margin basis"),
+    .describe("Headline value (Gross Margin) in local currency - all figures expressed on a gross-margin basis"),
   cfoReadinessPanel: cfoReadinessPanelSchema.describe(
     "CFO readiness panel data"
   ),
@@ -296,11 +299,11 @@ const assumptionsBlockItemSchema = z.object({
   credibleRange: credibleRangeSchema.describe("Step 2: Credible range and source"),
   selectionRationale: z
     .string()
-    .describe("Step 3: Why this point was selected based on $2m threshold"),
+    .describe("Step 3: Why this point was selected based on 2m threshold"),
   mathsExplanation: z
     .string()
     .describe("Step 4: Plain-English calculation explanation"),
-  resultGM: z.number().describe("Step 5: Resulting GM uplift in millions"),
+  resultGM: z.number().describe("Step 5: Resulting GM uplift in millions (local currency)"),
   resultStatement: z.string().describe("Step 5: Result statement"),
   reassuranceStatement: z
     .string()
@@ -323,7 +326,7 @@ const appendicesSchema = z.object({
 export const abmPackOutputSchema = z.object({
   brandIntake: brandIntakeSchema.describe("Brand intake information"),
   research: researchSchema.describe("Research findings with detailed sources"),
-  modelling: modellingSchema.describe("Modelling results with $2m threshold rule"),
+  modelling: modellingSchema.describe("Modelling results with 2m threshold rule"),
   outputs: outputsSchema.describe("Output deliverables"),
   appendices: appendicesSchema.describe("Supporting appendices with 6-step assumptions"),
 });

@@ -14,16 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 
 interface FormState {
   brand: string;
-  website: string;
-  registryUrl: string;
-  category: string;
-  brandType: "own_brand_only" | "multi_brand" | "mixed";
-  notes: string;
-  selectedModel: "chat-model" | "chat-model-reasoning";
+  region: "US" | "UK";
   useMockResponse: boolean;
 }
 
@@ -577,12 +571,7 @@ export function ABMPackGenerator() {
 
   const [formData, setFormData] = useState<FormState>({
     brand: "",
-    website: "",
-    registryUrl: "",
-    category: "",
-    brandType: "own_brand_only",
-    notes: "",
-    selectedModel: "chat-model",
+    region: "US",
     useMockResponse: false,
   });
 
@@ -624,12 +613,7 @@ export function ABMPackGenerator() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           brand: formData.brand,
-          website: formData.website || undefined,
-          registryUrl: formData.registryUrl || undefined,
-          category: formData.category || undefined,
-          brandType: formData.brandType,
-          notes: formData.notes || undefined,
-          selectedModel: formData.selectedModel,
+          region: formData.region,
         }),
       });
 
@@ -664,12 +648,7 @@ export function ABMPackGenerator() {
     setIsLoading(false);
     setFormData({
       brand: "",
-      website: "",
-      registryUrl: "",
-      category: "",
-      brandType: "own_brand_only",
-      notes: "",
-      selectedModel: "chat-model",
+      region: "US",
       useMockResponse: false,
     });
   };
@@ -1143,93 +1122,25 @@ export function ABMPackGenerator() {
                   name="brand"
                   value={formData.brand}
                   onChange={handleInputChange}
-                  placeholder="e.g., Nike, Adidas"
+                  placeholder={formData.region === "UK" ? "e.g., Boots, Tesco, M&S" : "e.g., Nike, Adidas, CVS"}
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="website">Website</Label>
-                <Input
-                  id="website"
-                  name="website"
-                  type="url"
-                  value={formData.website}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="registryUrl">SEC / Registry Link</Label>
-                <Input
-                  id="registryUrl"
-                  name="registryUrl"
-                  type="url"
-                  value={formData.registryUrl}
-                  onChange={handleInputChange}
-                  placeholder="https://sec.report/..."
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Input
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Premium Activewear"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="brandType">Brand Type</Label>
+                <Label htmlFor="region">Market Region</Label>
                 <Select
-                  value={formData.brandType}
-                  onValueChange={(value) => handleSelectChange("brandType", value)}
+                  value={formData.region}
+                  onValueChange={(value) => handleSelectChange("region", value)}
                 >
-                  <SelectTrigger id="brandType">
+                  <SelectTrigger id="region">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="own_brand_only">Own-brand Only</SelectItem>
-                    <SelectItem value="multi_brand">Multi-brand</SelectItem>
-                    <SelectItem value="mixed">Mixed</SelectItem>
+                    <SelectItem value="US">🇺🇸 United States (USD)</SelectItem>
+                    <SelectItem value="UK">🇬🇧 United Kingdom (GBP)</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="selectedModel">AI Model</Label>
-                <Select
-                  value={formData.selectedModel}
-                  onValueChange={(value) =>
-                    handleSelectChange("selectedModel", value)
-                  }
-                >
-                  <SelectTrigger id="selectedModel">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="chat-model">GPT-5.1</SelectItem>
-                    <SelectItem value="chat-model-reasoning">
-                      GPT-5.1 (Thinking)
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="notes">Additional Notes</Label>
-                <Textarea
-                  id="notes"
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                  placeholder="Any additional context or requirements..."
-                  rows={4}
-                />
               </div>
 
               {/* Dev option: Use mock response to save LLM calls */}
