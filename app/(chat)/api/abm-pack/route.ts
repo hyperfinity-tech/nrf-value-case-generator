@@ -451,7 +451,7 @@ export async function POST(request: Request) {
       system: ABM_SYSTEM_PROMPT,
       prompt: userPrompt,
     tools: {
-    webSearch: openai.tools.webSearch({}),
+    web_search: openai.tools.webSearch({}),
   },
       providerOptions: {
         openai: {
