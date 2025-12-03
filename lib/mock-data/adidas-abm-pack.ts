@@ -2,6 +2,8 @@
  * Mock ABM Pack data for Adidas - used for testing UI without LLM calls
  */
 export const ADIDAS_MOCK_RESPONSE = {
+
+
   "brandIntake": {
     "brand": "Adidas",
     "website": "https://www.adidas.com/us",
@@ -31,7 +33,7 @@ export const ADIDAS_MOCK_RESPONSE = {
         "description": "Adidas reported gross margin of 47.0% for FY2023 [Adidas Annual Report 2023, Key Figures].",
         "confidence": "H",
         "sources": [
-          "Adidas AG Annual Report 2023 – 'Key Figures' section: Gross margin 47.0% (2023)."
+          "Adidas AG Annual Report 2023 – ‘Key Figures’ section: Gross margin 47.0% (2023)."
         ]
       },
       "notes": "All modelling expressed in $GM, converting revenue to USD using a rounded FX for clarity. Using blended group gross margin as proxy for retail & e‑commerce combined."
@@ -43,7 +45,7 @@ export const ADIDAS_MOCK_RESPONSE = {
         "confidence": "M",
         "sources": [
           "Adidas press materials and site archive referencing Creators Club launch around 2018.",
-          "Adidas 'Adiclub' programme pages referencing updated name and benefits in 2022."
+          "Adidas ‘Adiclub’ programme pages referencing updated name and benefits in 2022."
         ]
       },
       "coreBenefits": [
@@ -58,10 +60,10 @@ export const ADIDAS_MOCK_RESPONSE = {
         "activeMembers": {
           "value": 300,
           "unit": "million",
-          "description": "Adidas stated it had 'over 300 million members' in Adiclub/Creators Club as of 2023–2024 in investor and press commentary.",
+          "description": "Adidas stated it had ‘over 300 million members’ in Adiclub/Creators Club as of 2023–2024 in investor and press commentary.",
           "confidence": "M",
           "sources": [
-            "Adidas Investor Day / strategy communications 2023–2024 referencing 'over 300 million members' (various press summaries)."
+            "Adidas Investor Day / strategy communications 2023–2024 referencing ‘over 300 million members’ (various press summaries)."
           ]
         },
         "revenueFromMembersShare": {
@@ -71,8 +73,8 @@ export const ADIDAS_MOCK_RESPONSE = {
           "confidence": "M",
           "sources": [
             "Nike, Inc. FY2023 reporting citing high loyalty-driven sales contribution (analyst commentary).",
-            "McKinsey 'The value of getting personalization right—or wrong—is multiplying' (2021) – apparel retailers report 40–60% of sales via loyalty.",
-            "Bain & Company 'The New Era of Loyalty in Retail' (2020) – penetration benchmarks for large fashion retailers."
+            "McKinsey ‘The value of getting personalization right—or wrong—is multiplying’ (2021) – apparel retailers report 40–60% of sales via loyalty.",
+            "Bain & Company ‘The New Era of Loyalty in Retail’ (2020) – penetration benchmarks for large fashion retailers."
           ]
         }
       },
@@ -90,8 +92,8 @@ export const ADIDAS_MOCK_RESPONSE = {
         "description": "Sportswear & fashion e‑commerce AOV typically $70–$90; Adidas positioned towards branded mid-premium. Set at $80 as midpoint.",
         "confidence": "M",
         "sources": [
-          "Statista 'Average order value of online fashion purchases in the United States' (various years, typically $75–$85).",
-          "J.P. Morgan 'E‑commerce Payments Trends: Global Insights' (apparel & footwear AOV c.$70–$90)."
+          "Statista ‘Average order value of online fashion purchases in the United States’ (various years, typically $75–$85).",
+          "J.P. Morgan ‘E‑commerce Payments Trends: Global Insights’ (apparel & footwear AOV c.$70–$90)."
         ]
       },
       "purchaseFrequency": {
@@ -100,8 +102,8 @@ export const ADIDAS_MOCK_RESPONSE = {
         "description": "Active sportswear brand customers typically purchase 2–4 times per year; loyalty members skew higher. Using 3.0 for all active Adidas direct customers.",
         "confidence": "M",
         "sources": [
-          "McKinsey 'Sporting Goods 2024' – category commentary on purchase frequency.",
-          "Bain 'How to Make Loyalty Pay' – fashion/apparel frequency benchmarks 2–4x annually."
+          "McKinsey ‘Sporting Goods 2024’ – category commentary on purchase frequency.",
+          "Bain ‘How to Make Loyalty Pay’ – fashion/apparel frequency benchmarks 2–4x annually."
         ]
       },
       "logic": "Benchmarks approximate Adidas direct‑to‑consumer behaviour (e‑commerce + own stores). Wholesale channel not explicitly modelled for AOV/frequency."
@@ -146,49 +148,49 @@ export const ADIDAS_MOCK_RESPONSE = {
         "description": "Proprietary global loyalty platform powering Adiclub, integrated with apps and e‑commerce; likely built on top of CRM/CDP infrastructure.",
         "confidence": "M",
         "sources": [
-          "Adidas career listings for 'Loyalty Product Manager' and 'Adiclub Platform' roles (2023–2024)."
+          "Adidas career listings for ‘Loyalty Product Manager’ and ‘Adiclub Platform’ roles (2023–2024)."
         ]
       }
     },
     "loyaltySentiment": {
       "overallSentiment": "mixed",
-      "summary": "Customer feedback on Adiclub over the last 12 months is mixed but leaning positive among engaged Adidas fans. Members appreciate free membership, birthday rewards, early access and the ability to earn points through purchases and app activity. However, a noticeable minority criticise occasional technical issues with logging in or tracking points, inconsistent application of discounts at checkout, and perceived devaluation of rewards (needing more points for benefits).",
+      "summary": "Customer feedback on Adiclub over the last 12 months is mixed but leaning positive among engaged Adidas fans. Members appreciate free membership, birthday rewards, early access and the ability to earn points through purchases and app activity. However, a noticeable minority criticise occasional technical issues with logging in or tracking points, inconsistent application of discounts at checkout, and perceived devaluation of rewards (needing more points for benefits). Feedback largely comes from existing members reviewing the Adidas app and online store, with fewer comments from non‑members. In markets where shipping thresholds or return policies have tightened, some customers conflate frustration with logistics or customer service with disappointment in the loyalty programme, even though these are operational rather than loyalty‑specific issues.",
       "timeCoverageNote": "Most quotes are from 2024; where 12‑month data was limited, late‑2023 reviews were used and marked.",
       "sentimentTable": [
         {
           "aspectKey": "overall_satisfaction",
           "aspectDisplay": "Overall satisfaction",
-          "sentimentSummary": "Many members are satisfied with Adiclub as a free, easy way to earn some value back on frequent Adidas purchases, especially for core fans.",
+          "sentimentSummary": "Many members are satisfied with Adiclub as a free, easy way to earn some value back on frequent Adidas purchases, especially for core fans. Ratings are generally 3–4 stars where loyalty is mentioned, though there are pockets of frustration when expectations about rewards or service are not met.",
           "evidence": [
-            ""I like Adiclub – points add up fast and I've had a few nice rewards already." [Google Play – Adidas app review, April 2024]",
-            ""The app is ok, club is decent, but when something goes wrong support is slow." [Apple App Store – Adidas app review, November 2023]"
+            "“I like Adiclub – points add up fast and I’ve had a few nice rewards already.” [Google Play – Adidas app review, April 2024]",
+            "“The app is ok, club is decent, but when something goes wrong support is slow.” [Apple App Store – Adidas app review, November 2023]"
           ]
         },
         {
           "aspectKey": "perceived_value",
           "aspectDisplay": "Perceived value",
-          "sentimentSummary": "Customers who shop Adidas regularly feel Adiclub offers worthwhile perks (early access, birthday vouchers, occasional discounts).",
+          "sentimentSummary": "Customers who shop Adidas regularly feel Adiclub offers worthwhile perks (early access, birthday vouchers, occasional discounts). Casual shoppers sometimes see the rewards as modest, noting that they need to spend a lot to unlock attractive benefits, and that some offers are restricted or time‑limited.",
           "evidence": [
-            ""Birthday coupon and member discounts are nice, makes it worth buying direct." [Google Play – Adidas app review, February 2024]",
-            ""You need way too many points to get anything good, feels like a gimmick sometimes." [Trustpilot – Adidas review mentioning Adiclub, January 2024]"
+            "“Birthday coupon and member discounts are nice, makes it worth buying direct.” [Google Play – Adidas app review, February 2024]",
+            "“You need way too many points to get anything good, feels like a gimmick sometimes.” [Trustpilot – Adidas review mentioning Adiclub, January 2024]"
           ]
         },
         {
           "aspectKey": "ease_of_use_ux",
           "aspectDisplay": "Ease of use / UX",
-          "sentimentSummary": "Users generally find enrolling in Adiclub straightforward, especially via the app, and like seeing their points balance and rewards.",
+          "sentimentSummary": "Users generally find enrolling in Adiclub straightforward, especially via the app, and like seeing their points balance and rewards. UX complaints focus on slow app performance, difficulty applying vouchers at checkout and occasional logout or verification loops, which undermine confidence in the programme’s reliability.",
           "evidence": [
-            ""Signing up for Adiclub was super easy and I can see my points in the app." [Apple App Store – Adidas app review, March 2024]",
-            ""Tried to use my Adiclub voucher and the app kept crashing at payment – very frustrating." [Google Play – Adidas app review, July 2024]"
+            "“Signing up for Adiclub was super easy and I can see my points in the app.” [Apple App Store – Adidas app review, March 2024]",
+            "“Tried to use my Adiclub voucher and the app kept crashing at payment – very frustrating.” [Google Play – Adidas app review, July 2024]"
           ]
         },
         {
           "aspectKey": "key_pain_points",
           "aspectDisplay": "Key pain points",
-          "sentimentSummary": "The key issues are: points or rewards not updating promptly after purchases, promo codes not stacking or being rejected, and perceived tightening of benefits.",
+          "sentimentSummary": "The key issues are: points or rewards not updating promptly after purchases, promo codes not stacking or being rejected, and perceived tightening of benefits (e.g., higher points thresholds, exclusions on popular products). Some customers also blame Adiclub for shipping or returns problems, blurring loyalty and operations in their complaints.",
           "evidence": [
-            ""Points from my last order never showed up, support just tells me to wait." [Trustpilot – Adidas review referencing Adiclub, May 2024]",
-            ""Adiclub discount didn't apply to the shoes I wanted, lots of exclusions in the small print." [Google Play – Adidas app review, August 2024]"
+            "“Points from my last order never showed up, support just tells me to wait.” [Trustpilot – Adidas review referencing Adiclub, May 2024]",
+            "“Adiclub discount didn’t apply to the shoes I wanted, lots of exclusions in the small print.” [Google Play – Adidas app review, August 2024]"
           ]
         }
       ]
@@ -215,7 +217,7 @@ export const ADIDAS_MOCK_RESPONSE = {
         "categoryEvidenceRangePercent": {
           "min": 1.5,
           "max": 3,
-          "source": "McKinsey 'Next in Personalization 2021' – personalisation leaders see 1–3% revenue uplift and reduced promo waste."
+          "source": "McKinsey ‘Next in Personalization 2021’ – personalisation leaders see 1–3% revenue uplift and reduced promo waste; Bain ‘Loyalty in Retail’ reports 1–3% sales uplift from more relevant offers."
         },
         "midpointPercent": 2.25,
         "stretchPercent": 2.7,
@@ -226,7 +228,7 @@ export const ADIDAS_MOCK_RESPONSE = {
         "categoryEvidenceRangePercent": {
           "min": 1,
           "max": 3,
-          "source": "McKinsey 'Pricing: The next frontier in retail' (apparel & footwear)."
+          "source": "McKinsey ‘Pricing: The next frontier in retail’ (apparel & footwear); BCG retail pricing case examples indicating 1–3% sales or GM uplift from structured markdown and price architecture optimisation."
         },
         "midpointPercent": 2,
         "stretchPercent": 2.5,
@@ -279,9 +281,9 @@ export const ADIDAS_MOCK_RESPONSE = {
         "frequency": "M"
       },
       "valueCaseMode": "Median",
-      "valueCaseModeReason": "Using midpoint uplift values, the base‑case total GM uplift is ~$348.1m, which is above the $2m threshold."
+      "valueCaseModeReason": "Using midpoint uplift values, the base‑case total GM uplift is ~$348.1m, which is above the $2m threshold. Therefore, per the Smart Scalable Outreach Framework, all levers remain at the median rather than stretch‑up point."
     },
-    "executiveSummary": "This value case estimates that Adidas could unlock around $348m in incremental annual gross margin by sharpening Adiclub personalisation and improving price and markdown management, all expressed on a gross‑margin basis. We start from Adidas' reported FY2023 revenue (~$23.7bn, converted from €21.4bn) and blended gross margin of 47% [Adidas Annual Report 2023]. Using industry benchmarks for large apparel and sportswear brands, we assume c.50% of sales are from loyalty members and apply evidence‑based uplift ranges.",
+    "executiveSummary": "This value case estimates that Adidas could unlock around $348m in incremental annual gross margin by sharpening Adiclub personalisation and improving price and markdown management, all expressed on a gross‑margin basis. We start from Adidas’ reported FY2023 revenue (~$23.7bn, converted from €21.4bn) and blended gross margin of 47% [Adidas Annual Report 2023]. Using industry benchmarks for large apparel and sportswear brands, we assume c.50% of sales are from loyalty members and apply evidence‑based uplift ranges: 1.5–3.0% for personalised loyalty and 1–3% for pricing and markdown optimisation [McKinsey, Bain, BCG retail studies]. The midpoint of these ranges gives a 2.25% uplift on loyalty revenue and 2.0% across total revenue. Converted at 47% GM, this yields c.$125m and c.$223m respectively. Because the base‑case GM uplift at median values already exceeds the $2m threshold, we retain median rather than stretch‑up assumptions. Strategically, this matters now as Adidas leans into direct‑to‑consumer, member‑led growth while managing margin pressure from promotions and inventory normalisation.",
     "slide1InputTable": {
       "table": [
         {
@@ -292,63 +294,63 @@ export const ADIDAS_MOCK_RESPONSE = {
         {
           "metric": "2. Revenue from Loyalty Members",
           "valueOrEstimate": "~$11.9bn (c.50% of total revenue)",
-          "sourceOrLogic": "No direct split disclosed. Assumed 50% based on large fashion/sports brands where 40–60% of sales are from loyalty members. Confidence: M."
+          "sourceOrLogic": "No direct split disclosed. Assumed 50% based on large fashion/sports brands where 40–60% of sales are from loyalty members [McKinsey, Bain; Nike & H&M disclosures]. Confidence: M."
         },
         {
           "metric": "3. Active Loyalty Members",
           "valueOrEstimate": "≈300m global Adiclub members",
-          "sourceOrLogic": "Adidas investor and press commentary 2023–2024 referencing 'over 300 million' members. Confidence: M."
+          "sourceOrLogic": "Adidas investor and press commentary 2023–2024 referencing ‘over 300 million’ members. Confidence: M."
         },
         {
           "metric": "4. AOV",
           "valueOrEstimate": "~$80 per order",
-          "sourceOrLogic": "Apparel & footwear e‑commerce benchmarks (Statista, J.P. Morgan) show $70–$90 AOV; Adidas positioned mid‑premium. Confidence: M."
+          "sourceOrLogic": "Apparel & footwear e‑commerce benchmarks (Statista, J.P. Morgan) show $70–$90 AOV; Adidas positioned mid‑premium, so midpoint used. Confidence: M."
         },
         {
           "metric": "5. Purchase Frequency",
           "valueOrEstimate": "~3.0 orders per active customer per year",
-          "sourceOrLogic": "McKinsey and Bain indicate 2–4 purchases/year for fashion & sportswear. Confidence: M."
+          "sourceOrLogic": "McKinsey and Bain indicate 2–4 purchases/year for fashion & sportswear; used 3.0 as central estimate for active Adidas direct customers. Confidence: M."
         },
         {
           "metric": "6. Paid Media Channels",
           "valueOrEstimate": "Paid social, search, display/video, OOH, influencer, affiliate",
-          "sourceOrLogic": "Observed Adidas campaigns across Google, Meta, TikTok and major events. Confidence: H."
+          "sourceOrLogic": "Observed Adidas campaigns across Google, Meta, TikTok and major events; trade press coverage 2023–2024. Confidence: H."
         },
         {
           "metric": "7. Tech Stack",
-          "valueOrEstimate": "Custom commerce (with SAP/Adobe), enterprise CRM, proprietary Adiclub platform",
-          "sourceOrLogic": "Inferred from Adidas IT/CRM job posts citing SAP, Adobe, Marketing Cloud‑type tools. Confidence: M."
+          "valueOrEstimate": "Custom commerce (with SAP/Adobe), enterprise CRM (e.g. Salesforce/Adobe), proprietary Adiclub platform",
+          "sourceOrLogic": "Inferred from Adidas IT/CRM job posts citing SAP, Adobe, Marketing Cloud‑type tools and loyalty platform roles. Confidence: M."
         }
       ],
-      "notes": "Key proxies: (1) Loyalty revenue share (50%) based on large‑retailer benchmarks; (2) AOV and frequency based on apparel & footwear e‑commerce norms; (3) Tech stack inferred from job postings."
+      "notes": "Key proxies: (1) Loyalty revenue share (50%) based on large‑retailer benchmarks; (2) AOV and frequency based on apparel & footwear e‑commerce norms; (3) Tech stack inferred from job postings. Where Adidas does not disclose figures directly, midpoints of credible category ranges are used and clearly labelled as estimates."
     },
     "slide2LoyaltySentimentSnapshot": {
       "overallSentimentRating": "mixed",
-      "summary": "Adiclub sentiment over the past year is mixed, tilting positive among engaged brand fans. Members like that the programme is free, simple to join and offers occasional tangible value through birthday vouchers, member‑only discounts and early access to product drops.",
+      "summary": "Adiclub sentiment over the past year is mixed, tilting positive among engaged brand fans. Members like that the programme is free, simple to join and offers occasional tangible value through birthday vouchers, member‑only discounts and early access to product drops. Reviews on app stores and Trustpilot show that active Adiclub users appreciate seeing their points balance and earning via purchases and activity. However, there is frustration when points do not update promptly, when vouchers or discounts are hard to apply at checkout, or when exclusions and higher thresholds reduce perceived value. Some reviews also fold general service, shipping and returns complaints into their view of Adiclub, even though these issues sit outside the loyalty design. Overall, satisfaction is solid but there is clear headroom to improve reliability, transparency of rewards and friction at redemption. Feedback is predominantly from existing members using the Adidas app, rather than from non‑members.",
       "sentimentTable": [
         {
           "aspect": "overall_satisfaction",
           "display": "Overall satisfaction",
-          "sentimentSummary": "Most engaged Adidas customers view Adiclub as a positive part of the brand experience, giving 3–4 star feedback when they mention it.",
-          "evidence": ""I like Adiclub – points add up fast and I've had a few nice rewards already." [Google Play – Adidas app review, April 2024]"
+          "sentimentSummary": "Most engaged Adidas customers view Adiclub as a positive part of the brand experience, giving 3–4 star feedback when they mention it. It enhances loyalty for fans who buy regularly, but dissatisfaction spikes when rewards or support fail to meet expectations.",
+          "evidence": "“I like Adiclub – points add up fast and I’ve had a few nice rewards already.” [Google Play – Adidas app review, April 2024]; “The app is ok, club is decent, but when something goes wrong support is slow.” [Apple App Store – Adidas app review, November 2023]"
         },
         {
           "aspect": "perceived_value",
           "display": "Perceived value",
-          "sentimentSummary": "Value is seen as good for frequent buyers thanks to birthday coupons, exclusive access and periodic deals.",
-          "evidence": ""Birthday coupon and member discounts are nice, makes it worth buying direct." [Google Play – Adidas app review, February 2024]"
+          "sentimentSummary": "Value is seen as good for frequent buyers thanks to birthday coupons, exclusive access and periodic deals. Light shoppers often feel rewards accrue too slowly or that attractive items are excluded, which lowers perceived generosity of the programme.",
+          "evidence": "“Birthday coupon and member discounts are nice, makes it worth buying direct.” [Google Play – Adidas app review, February 2024]; “You need way too many points to get anything good, feels like a gimmick sometimes.” [Trustpilot – Adidas review mentioning Adiclub, January 2024]"
         },
         {
           "aspect": "ease_of_use_ux",
           "display": "Ease of use / UX",
-          "sentimentSummary": "Onboarding to Adiclub is easy and in‑app visibility of points is appreciated.",
-          "evidence": ""Signing up for Adiclub was super easy and I can see my points in the app." [Apple App Store – Adidas app review, March 2024]"
+          "sentimentSummary": "Onboarding to Adiclub is easy and in‑app visibility of points is appreciated. The main UX pain points relate to app stability, slow loading and difficulty applying vouchers or discounts at checkout, especially during high‑traffic launches.",
+          "evidence": "“Signing up for Adiclub was super easy and I can see my points in the app.” [Apple App Store – Adidas app review, March 2024]; “Tried to use my Adiclub voucher and the app kept crashing at payment – very frustrating.” [Google Play – Adidas app review, July 2024]"
         },
         {
           "aspect": "key_pain_points",
           "display": "Key pain points",
-          "sentimentSummary": "The most common complaints involve missing or delayed points, promo codes not working or being heavily restricted.",
-          "evidence": ""Adiclub discount didn't apply to the shoes I wanted, lots of exclusions in the small print." [Google Play – Adidas app review, August 2024]"
+          "sentimentSummary": "The most common complaints involve missing or delayed points, promo codes not working or being heavily restricted, and a sense that rewards have become harder to earn. Some reviews also conflate logistics and customer service problems with disappointment in Adiclub.",
+          "evidence": "“Points from my last order never showed up, support just tells me to wait.” [Trustpilot – Adidas review referencing Adiclub, May 2024]; “Adiclub discount didn’t apply to the shoes I wanted, lots of exclusions in the small print.” [Google Play – Adidas app review, August 2024]"
         }
       ]
     },
@@ -358,73 +360,107 @@ export const ADIDAS_MOCK_RESPONSE = {
           "areaOfImpact": "A. Personalised Loyalty (incl. offer waste reduction)",
           "opportunityType": "Incremental GM from better targeting and reduced discount waste",
           "estimatedUpliftGM": "$125.3m",
-          "assumptionsMethodology": "1. UPLIFT POINT APPLIED\nWe have applied a 2.25% uplift, which represents the median of the credible range for this lever.\n\n2. RANGE & SOURCE\nThis sits within the credible category range of 1.5% to 3.0%, based on McKinsey 'Next in Personalization 2021'.\n\n3. WHY THIS POINT WAS SELECTED\nWe selected this point because the total value case was above the 2 million dollar threshold.\n\n4. SIMPLE MATHS EXPLANATION\nApplying the 2.25% uplift to estimated loyalty‑member revenue of about $11.85bn, and converting this into gross margin using the blended GM% of 47%.\n\n5. RESULT\nThis results in an estimated gross margin uplift of $125.3m for this lever.\n\n6. REASSURANCE\nAll assumptions sit comfortably within evidence‑based bounds."
+          "assumptionsMethodology": "1. UPLIFT POINT APPLIED\nWe have applied a 2.25% uplift, which represents the median of the credible range for this lever.\n\n2. RANGE & SOURCE\nThis sits within the credible category range of 1.5% to 3.0%, based on McKinsey ‘Next in Personalization 2021’ and Bain ‘The New Era of Loyalty in Retail’, which show 1–3% sales uplift and reduced promo waste for retailers implementing advanced personalisation and loyalty targeting.\n\n3. WHY THIS POINT WAS SELECTED\nWe selected this point because the total value case was above the 2 million dollar threshold, which means the model uses the median rule rather than stretching assumptions upward.\n\n4. SIMPLE MATHS EXPLANATION\nIn practice, this means applying the 2.25% uplift to estimated loyalty‑member revenue of about $11.85bn (50% of Adidas’ $23.7bn FY2023 revenue), and converting this into gross margin using the blended GM% of 47%. That yields around $266.6m incremental revenue from loyalty personalisation, which at 47% gross margin equates to roughly $125.3m incremental gross margin.\n\n5. RESULT\nThis results in an estimated gross margin uplift of $125.3m for this lever.\n\n6. REASSURANCE\nAll assumptions sit comfortably within evidence‑based bounds and avoid reliance on extreme best‑case scenarios."
         },
         {
           "areaOfImpact": "C. Price Optimisation",
           "opportunityType": "GM uplift from improved price architecture and markdown management",
           "estimatedUpliftGM": "$222.8m",
-          "assumptionsMethodology": "1. UPLIFT POINT APPLIED\nWe have applied a 2.0% uplift, which represents the median of the credible range for this lever.\n\n2. RANGE & SOURCE\nThis sits within the credible category range of 1.0% to 3.0%, based on McKinsey 'Pricing: The next frontier in retail'.\n\n3. WHY THIS POINT WAS SELECTED\nWe selected this point because the total value case was above the 2 million dollar threshold.\n\n4. SIMPLE MATHS EXPLANATION\nApplying the 2.0% uplift across Adidas' total FY2023 revenue base of about $23.7bn.\n\n5. RESULT\nThis results in an estimated gross margin uplift of $222.8m for this lever.\n\n6. REASSURANCE\nAll assumptions sit comfortably within evidence‑based bounds."
+          "assumptionsMethodology": "1. UPLIFT POINT APPLIED\nWe have applied a 2.0% uplift, which represents the median of the credible range for this lever.\n\n2. RANGE & SOURCE\nThis sits within the credible category range of 1.0% to 3.0%, based on McKinsey ‘Pricing: The next frontier in retail’ and BCG retail pricing case studies, which show 1–3% sales or gross margin uplift from more disciplined price architecture, markdown optimisation and promotion rationalisation in apparel and footwear.\n\n3. WHY THIS POINT WAS SELECTED\nWe selected this point because the total value case was above the 2 million dollar threshold, which means the model uses the median rule instead of stretching towards the upper end of the range.\n\n4. SIMPLE MATHS EXPLANATION\nIn practice, this means applying the 2.0% uplift across Adidas’ total FY2023 revenue base of about $23.7bn, reflecting a combination of better initial pricing, fewer unnecessary discounts and smarter markdown timing. Applying a 2.0% uplift to $23.7bn yields around $474.0m incremental revenue, which when converted using the blended 47% gross margin equates to approximately $222.8m incremental gross margin.\n\n5. RESULT\nThis results in an estimated gross margin uplift of $222.8m for this lever.\n\n6. REASSURANCE\nAll assumptions sit comfortably within evidence‑based bounds and avoid reliance on extreme best‑case scenarios."
         },
         {
           "areaOfImpact": "D. Total Cumulative Uplift (GM)",
           "opportunityType": "Sum of A and C",
           "estimatedUpliftGM": "$348.1m",
-          "assumptionsMethodology": "1. UPLIFT POINT APPLIED\nWe have applied the same median uplift points as used in the individual levers.\n\n2. RANGE & SOURCE\nThese lie within evidence‑based category ranges from McKinsey, Bain and BCG.\n\n3. WHY THIS POINT WAS SELECTED\nThe total value case was above the 2 million dollar threshold.\n\n4. SIMPLE MATHS EXPLANATION\nWe calculate approximately $125.3m from personalised loyalty and around $222.8m from price optimisation.\n\n5. RESULT\nThis results in an estimated gross margin uplift of about $348.1m.\n\n6. REASSURANCE\nAll assumptions sit comfortably within evidence‑based bounds."
+          "assumptionsMethodology": "1. UPLIFT POINT APPLIED\nWe have applied the same median uplift points as used in the individual levers: 2.25% for personalised loyalty and 2.0% for price optimisation, both sitting at the midpoint of their credible ranges.\n\n2. RANGE & SOURCE\nThese lie within evidence‑based category ranges of 1.5% to 3.0% for loyalty‑driven personalisation uplift (McKinsey, Bain) and 1.0% to 3.0% for pricing and markdown optimisation (McKinsey, BCG) in apparel and footwear.\n\n3. WHY THIS POINT WAS SELECTED\nWe selected these median points because when applied together, the total value case was above the 2 million dollar threshold, which under the framework requires us to retain median assumptions rather than move to stretch‑up values.\n\n4. SIMPLE MATHS EXPLANATION\nIn practice, we calculate approximately $125.3m incremental gross margin from personalised loyalty and around $222.8m from price and markdown optimisation, based on applying the respective percentage uplifts to $11.85bn loyalty revenue and $23.7bn total revenue, then converting both using the 47% blended gross margin.\n\n5. RESULT\nThis results in an estimated gross margin uplift of about $348.1m when combining both levers, expressed entirely on a gross‑margin basis.\n\n6. REASSURANCE\nAll assumptions sit comfortably within evidence‑based bounds and avoid reliance on extreme best‑case scenarios. The levers are conceptually additive but in practice would be phased, allowing for governance and refinement over time."
         }
       ],
-      "notes": "As Adidas is an own‑brand only proposition, there is no separate supplier‑funded loyalty row."
+      "notes": "As Adidas is an own‑brand only proposition, there is no separate supplier‑funded loyalty row. Any supplier marketing funds are implicitly captured within the price and markdown optimisation lever where relevant."
     }
   },
   "appendices": {
     "assumptionsBlock": {
-      "overview": "This appendix summarises the uplift percentages and core assumptions used in the Adidas value case.",
+      "overview": "This appendix summarises the uplift percentages and core assumptions used in the Adidas value case, with a consistent 6‑step rationale for each lever.",
       "levers": [
         {
           "name": "A. Personalised Loyalty (incl. offer waste reduction)",
           "upliftPercentApplied": 2.25,
           "revenuePoolUSD_m": 11850,
           "blendedGrossMarginPercent": 47,
-          "estimatedGMUpliftUSD_m": 125.3
+          "estimatedGMUpliftUSD_m": 125.3,
+          "sixStepBreakdown": [
+            "1. UPLIFT POINT APPLIED – A 2.25% uplift is applied to loyalty‑member revenue, reflecting the median of the 1.5–3.0% credible range for incremental sales and reduced discount wastage from improved personalisation and targeting.",
+            "2. RANGE & SOURCE – The 1.5–3.0% credible range is derived from McKinsey’s ‘Next in Personalization 2021’ (retailers capturing 1–3% additional revenue via personalisation) and Bain’s ‘The New Era of Loyalty in Retail’, which reports similar uplift for well‑executed loyalty programmes.",
+            "3. WHY THIS POINT WAS SELECTED – Using median values for all levers produced a total GM uplift well above the $2m threshold (c.$348.1m), so under the framework we must retain median rather than stretch‑up values. Hence 2.25% is used.",
+            "4. SIMPLE MATHS EXPLANATION – Adidas total FY2023 revenue (~$23.7bn) is split with 50% attributed to Adiclub members (~$11.85bn). Applying a 2.25% uplift to this revenue yields around $266.6m incremental revenue. With a blended gross margin of 47%, this additional revenue converts into about $125.3m incremental gross margin.",
+            "5. RESULT – The resulting estimated gross margin uplift from enhanced personalisation, reduced blanket discounting and smarter targeting within Adiclub is approximately $125.3m per year.",
+            "6. REASSURANCE – The uplift and penetration assumptions are aligned with well‑documented outcomes from personalisation leaders and do not rely on extreme or unproven best‑case scenarios. If Adidas started from a lower current maturity, realised uplift could initially sit towards the lower end of the range, providing further prudence."
+          ]
         },
         {
           "name": "C. Price Optimisation",
           "upliftPercentApplied": 2,
           "revenuePoolUSD_m": 23700,
           "blendedGrossMarginPercent": 47,
-          "estimatedGMUpliftUSD_m": 222.8
+          "estimatedGMUpliftUSD_m": 222.8,
+          "sixStepBreakdown": [
+            "1. UPLIFT POINT APPLIED – A 2.0% uplift is applied across Adidas’ total revenue base, reflecting the median of a 1.0–3.0% credible range for price and markdown optimisation impacts in apparel and footwear.",
+            "2. RANGE & SOURCE – The 1.0–3.0% range is supported by McKinsey’s retail pricing research (‘Pricing: The next frontier in retail’) and BCG case studies, which show that systematic improvements to price architecture, markdown timing and promotion discipline can deliver 1–3% sales or GM uplift in fashion and sporting goods.",
+            "3. WHY THIS POINT WAS SELECTED – When both levers use median values, the combined GM uplift is already substantially above $2m, so the framework stipulates we retain median rather than stretch‑up assumptions. A 2.0% uplift is therefore applied.",
+            "4. SIMPLE MATHS EXPLANATION – Applying a 2.0% uplift to Adidas’ FY2023 revenue of roughly $23.7bn yields incremental revenue of about $474.0m. Using the blended gross margin of 47%, this incremental revenue translates into approximately $222.8m additional gross margin, reflecting fewer unnecessary discounts and more effective markdowns rather than pure top‑line chasing.",
+            "5. RESULT – The estimated gross margin uplift from price architecture refinement, cleaner promo rules and improved markdown management is around $222.8m per year.",
+            "6. REASSURANCE – This assumes Adidas is able to move towards disciplined best practice but not to unrealistic perfection. The uplift lies well within documented case outcomes and explicitly avoids using the top of the 1–3% range as a target."
+          ]
         },
         {
           "name": "D. Total Cumulative Uplift (GM)",
           "upliftPercentApplied": null,
           "revenuePoolUSD_m": null,
           "blendedGrossMarginPercent": 47,
-          "estimatedGMUpliftUSD_m": 348.1
+          "estimatedGMUpliftUSD_m": 348.1,
+          "sixStepBreakdown": [
+            "1. UPLIFT POINT APPLIED – The total combines the two levers above, each at its median uplift point: 2.25% on loyalty revenue for personalisation and 2.0% on total revenue for pricing and markdown optimisation.",
+            "2. RANGE & SOURCE – Both levers fall within conservative, evidence‑backed ranges from McKinsey, Bain and BCG on loyalty personalisation (1.5–3.0%) and pricing optimisation (1.0–3.0%) for apparel and sportswear retailers.",
+            "3. WHY THIS POINT WAS SELECTED – Applying median values yields a combined GM uplift estimate of c.$348.1m, comfortably above the $2m rule‑of‑thumb threshold. Under the Smart Scalable Outreach Framework this means the model must remain at median rather than stretch‑up points, preserving conservatism.",
+            "4. SIMPLE MATHS EXPLANATION – The combined effect is simply the sum of the lever‑level gross margin uplifts: about $125.3m from personalised loyalty and about $222.8m from pricing and markdown optimisation, calculated from their respective revenue pools and converted using the 47% gross margin.",
+            "5. RESULT – The resulting total estimated annual gross margin uplift is approximately $348.1m, expressed entirely on a gross‑margin basis and before any implementation costs.",
+            "6. REASSURANCE – While the levers interact in practice, they operate on different aspects of the commercial model (who to incentivise and at what depth of discount versus how to structure base prices and markdowns). Treating them as additive at median uplift points is therefore reasonable and remains within conservative bounds compared to published case studies."
+          ]
         }
       ]
     },
     "sourcesAppendix": {
       "financialAndCorporate": [
-        "Adidas AG Annual Report 2023, published 13 March 2024 – Consolidated Financial Statements and Key Figures.",
+        "Adidas AG Annual Report 2023, published 13 March 2024 – Consolidated Financial Statements and Key Figures (Revenue €21,427m; Gross margin 47.0%).",
         "Adidas AG corporate website – investor relations and strategy sections (accessed 2024).",
+        "Nasdaq ADDDF filings page – link to Adidas AG filings and disclosures.",
         "European Central Bank – Statistical Data Warehouse, 2023 average EUR/USD exchange rate (~1.08)."
       ],
       "loyaltyAndCustomer": [
-        "Adidas official website – Adiclub programme pages (benefits, tiers, earn & redeem mechanics).",
-        "Adidas investor/strategy presentations referencing 'over 300 million' Adiclub members (2023–2024).",
-        "Google Play Store – Adidas app reviews mentioning Adiclub, April–August 2024.",
-        "Apple App Store – Adidas app reviews mentioning Adiclub, March–November 2023/2024.",
+        "Adidas official website – Adiclub programme pages (benefits, tiers, earn & redeem mechanics; accessed 2024).",
+        "Adidas investor/strategy presentations and press articles referencing ‘over 300 million’ Adiclub/Creators Club members (2023–2024).",
+        "Google Play Store – Adidas app reviews mentioning Adiclub and loyalty, April–August 2024.",
+        "Apple App Store – Adidas app reviews mentioning Adiclub and loyalty, March–November 2023/2024.",
         "Trustpilot – Adidas brand reviews referencing Adiclub, January–May 2024."
       ],
       "benchmarksAndInsights": [
-        "McKinsey & Company, 'Next in Personalization 2021' – uplift benchmarks for personalisation in retail.",
-        "Bain & Company, 'The New Era of Loyalty in Retail' (2020) – loyalty programme penetration benchmarks.",
-        "McKinsey & Company, 'Pricing: The next frontier in retail' – pricing and markdown optimisation.",
-        "Boston Consulting Group (BCG) – retail pricing case studies.",
-        "Statista – Average order value for online fashion purchases in the US.",
-        "J.P. Morgan, 'E‑Commerce Payments Trends: Global Insights' – category AOV benchmarks."
+        "McKinsey & Company, ‘Next in Personalization 2021: The value of getting personalization right—or wrong’ – uplift benchmarks (1–3% revenue) for personalisation in retail.",
+        "Bain & Company, ‘The New Era of Loyalty in Retail’ (2020) – loyalty programme penetration and uplift benchmarks for fashion and general retail.",
+        "McKinsey & Company, ‘Pricing: The next frontier in retail’ – 1–3% sales/GM uplift potential from improved pricing and markdown optimisation.",
+        "Boston Consulting Group (BCG) – retail pricing and markdown optimisation case studies (various, apparel and sporting goods) citing 1–3% uplift ranges.",
+        "Statista – Average order value for online fashion purchases in the US (indicative $75–$85 range).",
+        "J.P. Morgan, ‘E‑Commerce Payments Trends: Global Insights’ – category AOV benchmarks for apparel and footwear.",
+        "McKinsey ‘Sporting Goods 2024’ – commentary on purchase frequency and channel mix in sportswear.",
+        "Bain & Company, ‘How to Make Loyalty Pay’ – fashion & apparel frequency and loyalty benchmarks."
+      ],
+      "techStackAndMedia": [
+        "Adidas job postings on LinkedIn and careers.adidas-group.com for roles in e‑commerce, CRM, loyalty and data platforms (2023–2024), referencing SAP, Adobe Experience Cloud and CRM/marketing automation tools.",
+        "Campaign, AdAge, WARC and similar trade publications covering Adidas global marketing campaigns and media strategy (2023–2024).",
+        "Direct observation of Adidas paid search ads on Google and social ads on Instagram, Facebook and TikTok in 2024."
       ]
     }
   }
+
+
 } as const;
 
