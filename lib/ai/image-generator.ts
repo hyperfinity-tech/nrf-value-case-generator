@@ -56,25 +56,16 @@ export async function generateInfographicImage(
   });
 
   // Extract the image from the response
-  // The AI SDK returns image data in the response files or experimental outputs
-  // We need to check multiple possible locations based on SDK version
+  // The AI SDK returns image data in the response files array
+  // Each GeneratedFile has a base64 property
   
-  // Check for files in the response (newer SDK versions)
+  // Check for files in the response
   if (response.files && response.files.length > 0) {
-    const imageFile = response.files.find(f => 
-      f.mimeType?.startsWith("image/")
-    );
+    // Get the first file (assuming it's the generated image)
+    const imageFile = response.files.at(0);
     if (imageFile?.base64) {
-      return `data:${imageFile.mimeType};base64,${imageFile.base64}`;
-    }
-  }
-
-  // Check experimental_output for base64 image data
-  if (response.experimental_output) {
-    // If it's already a data URL, return it
-    if (typeof response.experimental_output === "string" && 
-        response.experimental_output.startsWith("data:image/")) {
-      return response.experimental_output;
+      // Default to PNG mime type for generated images
+      return `data:image/png;base64,${imageFile.base64}`;
     }
   }
 
