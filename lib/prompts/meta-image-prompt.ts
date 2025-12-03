@@ -23,7 +23,7 @@ You must write a prompt that will generate a high-fidelity "Strategic Value Info
         *   **Active Members:** \`brandIntake.research.loyaltyProgramme.penetrationAndMembers.activeMembers.value\` + \`unit\`
         *   **Penetration:** \`brandIntake.research.loyaltyProgramme.penetrationAndMembers.penetrationRateRetailSales.value\`%
         *   **Total Opportunity:** \`modelling.finalUpliftUsingStretchUp.totalGMUplift.value\` (Format as Billions, e.g., "$1.2bn").
-        *   **Split Uplifts:** Personalisation Uplift vs. Pricing Uplift (found in \`modelling.finalUpliftUsingStretchUp\`).
+        *   **Split Uplifts:** Personalisation Uplift vs. Pricing Uplift vs Supply Funded Loyalty (found in \`modelling.finalUpliftUsingStretchUp\`).
         *   **Sentiment:** Extract a short, punchy negative quote from \`brandIntake.research.loyaltySentiment.narrativeSummary\` or evidence list.
         *   **Pain Points:** Identify 3 keywords from \`brandIntake.research.loyaltySentiment.sentimentTable\` (e.g., "Expired Rewards").
 
@@ -65,6 +65,7 @@ Create a high-resolution, professional strategic infographic. The design must be
     *   **Breakdown:** Two visual bubbles/boxes showing:
         *   Personalisation: "[Insert Personalisation Uplift]"
         *   Pricing: "[Insert Pricing Uplift]"
+        *   Supply Funded Loyalty: "[Insert Supply Funded Loyalty Uplift]" (if present)
 
 *   **Right Column: The Reality (Sentiment)**
     *   **Header:** "CUSTOMER SENTIMENT".
