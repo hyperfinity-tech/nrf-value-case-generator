@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const session = await auth();
     if (!session?.user) {
       console.error(`[${requestId}] ❌ Authentication failed`);
-      return new ChatSDKError("unauthorized:abm-pack-image").toResponse();
+      return new ChatSDKError("unauthorized:abm-pack").toResponse();
     }
 
     // Parse request body
