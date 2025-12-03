@@ -386,13 +386,13 @@ export function ABMPackGenerator() {
             className="absolute inset-0 bg-cover bg-center"
             style={{ 
               backgroundImage: `url(${infographicImage})`,
-              filter: "blur(30px) brightness(0.3)",
+              filter: "blur(30px) brightness(0.5)",
               transform: "scale(1.1)",
             }}
           />
           
-          {/* Dark overlay for better contrast */}
-          <div className="absolute inset-0 bg-black/40" />
+          {/* Subtle overlay for contrast */}
+          <div className="absolute inset-0 bg-black/20" />
           
           {/* Content container */}
           <div className="relative z-10 flex flex-col items-center gap-8 p-8 max-w-6xl w-full">
@@ -422,7 +422,7 @@ export function ABMPackGenerator() {
               <Button
                 size="lg"
                 onClick={() => setShowReport(true)}
-                className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 text-white font-semibold px-8 py-6 text-lg rounded-xl shadow-lg transition-all hover:scale-105"
+                className="bg-primary hover:bg-primary/90 text-white font-medium px-8 py-6 text-base rounded-lg shadow-md transition-colors"
               >
                 Advance to Report
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -433,7 +433,7 @@ export function ABMPackGenerator() {
                   variant="outline"
                   size="lg"
                   onClick={downloadInfographic}
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Download PNG
@@ -442,7 +442,7 @@ export function ABMPackGenerator() {
                   variant="outline"
                   size="lg"
                   onClick={handleStartOver}
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm"
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
                 >
                   Start Over
                 </Button>
