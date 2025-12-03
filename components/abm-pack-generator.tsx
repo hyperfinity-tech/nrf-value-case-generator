@@ -19,6 +19,7 @@ interface FormState {
   brand: string;
   region: "US" | "UK";
   useMockResponse: boolean;
+  generateInfographic: boolean;
 }
 
 // Mock response for testing UI without LLM calls
@@ -567,12 +568,15 @@ function getNestedValue(obj: FlexibleResponse, path: string): unknown {
 
 export function ABMPackGenerator() {
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Generating ABM pack...");
   const [result, setResult] = useState<FlexibleResponse | null>(null);
+  const [infographicImage, setInfographicImage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<FormState>({
     brand: "",
     region: "US",
     useMockResponse: false,
+    generateInfographic: false,
   });
 
   // Scroll to top when results are displayed
@@ -597,6 +601,8 @@ export function ABMPackGenerator() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setLoadingMessage("Generating ABM pack...");
+    setInfographicImage(null);
 
     try {
       // Use mock response if checkbox is checked (saves LLM calls during development)
@@ -604,10 +610,17 @@ export function ABMPackGenerator() {
         // Simulate network delay for realistic UX
         await new Promise(resolve => setTimeout(resolve, 500));
         setResult(MOCK_RESPONSE);
+        
+        // Use static debug image for infographic in mock mode
+        if (formData.generateInfographic) {
+          setInfographicImage("/images/debug/gemini_image_0006_final.png");
+        }
+        
         toast({ type: "success", description: "Mock ABM pack loaded (CVS Health example)" });
         return;
       }
 
+      // Stage 1: Generate JSON pack
       const response = await fetch("/api/abm-pack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -623,7 +636,37 @@ export function ABMPackGenerator() {
       }
 
       const data = (await response.json()) as { data: FlexibleResponse };
+      
+      // Stage 2: Generate infographic if requested
+      let imageData: string | null = null;
+      if (formData.generateInfographic) {
+        setLoadingMessage("Generating strategic infographic...");
+        try {
+          const imageResponse = await fetch("/api/abm-pack-image", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ packData: data.data }),
+          });
+          
+          if (imageResponse.ok) {
+            const imgResult = (await imageResponse.json()) as { 
+              ok: boolean; 
+              imageBase64?: string;
+            };
+            if (imgResult.ok && imgResult.imageBase64) {
+              imageData = imgResult.imageBase64;
+            }
+          }
+          // If image generation fails, silently continue without image
+        } catch (imgError) {
+          // Silently ignore image generation errors - show pack results anyway
+          console.error("Image generation failed:", imgError);
+        }
+      }
+      
+      // Show results together
       setResult(data.data);
+      setInfographicImage(imageData);
       toast({ type: "success", description: "ABM pack generated successfully!" });
     } catch (error) {
       toast({
@@ -645,12 +688,26 @@ export function ABMPackGenerator() {
   // Reset form and results
   const handleStartOver = () => {
     setResult(null);
+    setInfographicImage(null);
     setIsLoading(false);
     setFormData({
       brand: "",
       region: "US",
       useMockResponse: false,
+      generateInfographic: false,
     });
+  };
+
+  // Download infographic image
+  const downloadInfographic = () => {
+    if (!infographicImage) return;
+    
+    const link = document.createElement("a");
+    link.href = infographicImage;
+    link.download = `infographic-${getBrandName().replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().split("T")[0]}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -658,6 +715,32 @@ export function ABMPackGenerator() {
       {/* Results - shown at top when available */}
       {result && (
         <div className="space-y-4">
+          {/* Infographic Image - Prominent Display */}
+          {infographicImage && (
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Strategic Value Infographic</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadInfographic}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PNG
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
+                  <img
+                    src={infographicImage}
+                    alt={`${getBrandName()} Strategic Value Case Infographic`}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Generated ABM Pack: {getBrandName()}</CardTitle>
@@ -1109,7 +1192,12 @@ export function ABMPackGenerator() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            <p className="text-muted-foreground">Generating ABM pack (this may take 60-120 seconds)...</p>
+            <p className="text-muted-foreground">{loadingMessage}</p>
+            <p className="text-sm text-muted-foreground/70">
+              {formData.generateInfographic 
+                ? "This may take 2-3 minutes with infographic generation..." 
+                : "This may take 60-120 seconds..."}
+            </p>
           </div>
         </div>
       )}
@@ -1151,6 +1239,20 @@ export function ABMPackGenerator() {
                     <SelectItem value="UK">🇬🇧 United Kingdom (GBP)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Option: Generate strategic infographic */}
+              <div className="flex items-center space-x-2 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="generateInfographic"
+                  checked={formData.generateInfographic}
+                  onChange={(e) => setFormData(prev => ({ ...prev, generateInfographic: e.target.checked }))}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="generateInfographic" className="text-sm font-normal cursor-pointer">
+                  Generate Strategic Infographic (adds ~60-90 seconds)
+                </Label>
               </div>
 
               {/* Dev option: Use mock response to save LLM calls */}

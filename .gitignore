@@ -42,3 +42,9 @@ yarn-error.log*
 /playwright-report/
 /blob-report/
 /playwright/*
+
+outputs/
+
+*.txt
+
+abm-pack-*.json

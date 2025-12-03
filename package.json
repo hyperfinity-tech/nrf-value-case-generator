@@ -22,6 +22,7 @@
     "react-dom": "19.0.0-rc-45804af1-20241021"
   },
   "dependencies": {
+    "@ai-sdk/google": "^2.0.44",
     "@ai-sdk/openai": "^2.0.0",
     "@ai-sdk/provider": "^2.0.0",
     "@ai-sdk/react": "2.0.26",
