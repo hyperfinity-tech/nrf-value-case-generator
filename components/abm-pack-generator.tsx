@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, type ChangeEvent, type FormEvent } from "react";
-import { ChevronDown, ChevronRight, Download, Loader2, ArrowRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Download, Loader2, ArrowRight, FileText, ImageIcon } from "lucide-react";
 import { toast } from "@/components/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ADIDAS_MOCK_RESPONSE } from "@/lib/mock-data/adidas-abm-pack";
 
 interface FormState {
@@ -364,8 +370,8 @@ export function ABMPackGenerator() {
     });
   };
 
-  // Download infographic image
-  const downloadInfographic = () => {
+  // Download infographic as PNG
+  const downloadAsPng = () => {
     if (!infographicImage) return;
     
     const link = document.createElement("a");
@@ -374,6 +380,60 @@ export function ABMPackGenerator() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Download infographic as PDF
+  const downloadAsPdf = async () => {
+    if (!infographicImage) return;
+    
+    try {
+      // Dynamic import to avoid SSR issues
+      const { jsPDF } = await import("jspdf");
+      
+      // Create a temporary image to get dimensions
+      const img = new Image();
+      img.src = infographicImage;
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+      
+      // Calculate PDF dimensions (A4 landscape by default, but fit to image aspect ratio)
+      const imgWidth = img.width;
+      const imgHeight = img.height;
+      const aspectRatio = imgWidth / imgHeight;
+      
+      // Use landscape orientation for wide infographics
+      const orientation = aspectRatio > 1 ? "landscape" : "portrait";
+      const pdf = new jsPDF({ orientation, unit: "mm", format: "a4" });
+      
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      // Calculate dimensions to fit image within page with padding
+      const padding = 10;
+      const maxWidth = pageWidth - padding * 2;
+      const maxHeight = pageHeight - padding * 2;
+      
+      let finalWidth = maxWidth;
+      let finalHeight = finalWidth / aspectRatio;
+      
+      if (finalHeight > maxHeight) {
+        finalHeight = maxHeight;
+        finalWidth = finalHeight * aspectRatio;
+      }
+      
+      // Center the image
+      const x = (pageWidth - finalWidth) / 2;
+      const y = (pageHeight - finalHeight) / 2;
+      
+      pdf.addImage(infographicImage, "PNG", x, y, finalWidth, finalHeight);
+      pdf.save(`infographic-${getBrandName().replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().split("T")[0]}.pdf`);
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+      toast({ type: "error", description: "Failed to generate PDF" });
+    }
   };
 
   return (
@@ -429,15 +489,29 @@ export function ABMPackGenerator() {
               </Button>
               
               <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={downloadInfographic}
-                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download PNG
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                      <ChevronDown className="h-4 w-4 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" className="min-w-[140px]">
+                    <DropdownMenuItem onClick={downloadAsPdf} className="cursor-pointer">
+                      <FileText className="h-4 w-4 mr-2" />
+                      PDF
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={downloadAsPng} className="cursor-pointer">
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      PNG
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button
                   variant="outline"
                   size="lg"

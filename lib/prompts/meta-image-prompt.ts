@@ -39,7 +39,7 @@ You must write a prompt that will generate a high-fidelity "Strategic Value Info
 **Style & Aesthetic:**
 Create a high-resolution, professional strategic infographic. The design must be **90% [Brand Name] Corporate Style** ([Insert 3 descriptive keywords about their style, e.g., "Bold, Industrial, High-Contrast"]), with **HyperFinity Branding** strictly limited to the existing, unedit logo and footer accent.
 
-*   **[Brand Name] Aesthetic:** Primary Color: [Insert Hex Code or Color Name]. Font Style: [Insert Font Style, e.g., "Heavy Geometric" or "Clean Serif"]. Background: [Insert appropriate background, e.g., "White" or "Black"].
+*   **[Brand Name] Aesthetic:** Primary Color: [Insert Hex Code or Color Name]. Font Style: [Insert Font Style, e.g., "Heavy Geometric" or "Clean Serif"]. Background: [Insert appropriate light coloured background].
 *   **HyperFinity Aesthetic:** Retain the logo and triple bottom stripe.
 
 **Layout & Composition:**
@@ -69,12 +69,12 @@ Create a high-resolution, professional strategic infographic. The design must be
 
 *   **Right Column: The Reality (Sentiment)**
     *   **Header:** "CUSTOMER SENTIMENT".
-    *   **Visual:** A sentiment gauge pointing to the relevant place on the gauge for [overallSentiment (or similar metric)]. Indicator color: [Brand Warning Color, usually Red or Orange].
+    *   **Visual:** A sentiment gauge pointing to the relevant place on the gauge for [overallSentiment (or similar metric)]. Labeled from negative (left) to positive (right).
     *   **Quote Box:** A box styled like [Brand UI/App style] containing text: *"[Insert Short Extracted Quote]"*
     *   **Pain Points:** List 3 bullet points: [Insert 3 Pain Point Keywords].
 
 **3. Footer Section (Bottom 10%):**
-*   **Text:** "Source: [Brand Name] 10-K" | "Powered by HyperFinity Decision Intelligence".
+*   **Text:** "Source: [Brand Name] 10-K" | "Powered by HyperFinity Actionable Intelligence".
 *   **The Branding Accent:** At the very bottom edge, include the **HyperFinity Stripe**: A distinct block of **Hot Pink (#FF3399)**, **Bright Teal (#00E5CC)**, and **Electric Blue (#0066FF)**. This must contrast against the [Brand Background Color].
 
 **Technical Specifications:**
