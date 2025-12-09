@@ -887,19 +887,19 @@ export async function POST(request: Request) {
     console.log(`[${requestId}]   Research sources: ${object.research?.researchSources?.length ?? 0}`);
     console.log(`[${requestId}]   Outputs fields: ${Object.keys(object.outputs ?? {}).length}`);
     console.log(`[${requestId}]   Outputs field names: ${Object.keys(object.outputs ?? {}).join(", ")}`);
+    const slide1TableAsArray =
+      object.outputs?.slide1InputTable &&
+      !Array.isArray(object.outputs.slide1InputTable) &&
+      (object.outputs.slide1InputTable as Record<string, unknown>)?.table &&
+      Array.isArray((object.outputs.slide1InputTable as Record<string, unknown>).table as unknown[])
+        ? ((object.outputs.slide1InputTable as Record<string, unknown>).table as unknown[]).length
+        : undefined;
+
     const slide1Rows =
       (object.outputs?.slide1InputTable &&
-        ((Array.isArray(object.outputs.slide1InputTable)
+        (Array.isArray(object.outputs.slide1InputTable)
           ? object.outputs.slide1InputTable.length
-          : object.outputs.slide1InputTable.rows?.length ??
-            // legacy alias: table
-            (object.outputs.slide1InputTable as Record<string, unknown>)?.table &&
-              Array.isArray(
-                (object.outputs.slide1InputTable as Record<string, unknown>).table as unknown[]
-              )
-              ? ((object.outputs.slide1InputTable as Record<string, unknown>)
-                  .table as unknown[]).length
-              : undefined))) ||
+          : object.outputs.slide1InputTable.rows?.length ?? slide1TableAsArray)) ||
       0;
     console.log(`[${requestId}]   Slide 1 rows: ${slide1Rows}`);
     console.log(`[${requestId}]   Value case table exists: ${!!object.outputs?.slide4ValueCaseTable}`);
