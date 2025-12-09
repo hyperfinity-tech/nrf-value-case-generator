@@ -1,5 +1,6 @@
 // Attachment parsing and safeguards for ABM pack uploads
-// @ts-expect-error - mammoth has no bundled types
+import type { Result as MammothResult } from "mammoth";
+// @ts-ignore - mammoth has no bundled types; using implicit any
 import mammoth from "mammoth";
 import pdf from "pdf-parse";
 import { ChatSDKError } from "@/lib/errors";
@@ -28,8 +29,8 @@ async function extractFileText(file: File, requestId: string): Promise<string> {
     name.endsWith(".docx") ||
     name.endsWith(".doc")
   ) {
-    const result = await mammoth.extractRawText({ buffer });
-    return result.value ?? "";
+    const result = (await mammoth.extractRawText({ buffer })) as MammothResult;
+    return (result as { value?: string }).value ?? "";
   }
 
   console.warn(`[${requestId}] ⚠️ Unsupported file type for ${file.name}, skipping.`);
