@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Cog } from "lucide-react";
+import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -89,7 +89,7 @@ export function AbmPageClient({
           className="border-muted-foreground/40 bg-background/80 backdrop-blur-sm"
           onClick={() => setIsSettingsOpen((prev) => !prev)}
         >
-          <Cog className="h-4 w-4" />
+          <Settings className="h-6 w-6" />
         </Button>
 
         {isSettingsOpen && (
