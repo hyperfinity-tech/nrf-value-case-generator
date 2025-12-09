@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, DM_Sans } from "next/font/google";
+import { branding } from "@/lib/branding";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -8,8 +9,8 @@ import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
-  title: "Hyperfinity AI",
-  description: "Hyperfinity AI-powered chatbot and ABM pack generator.",
+  title: branding.toolName,
+  description: branding.homepageTagline,
 };
 
 export const viewport = {
@@ -74,7 +75,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">
+      <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

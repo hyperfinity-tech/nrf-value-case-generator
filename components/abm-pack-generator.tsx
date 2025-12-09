@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { branding } from "@/lib/branding";
 import {
   Select,
   SelectContent,
@@ -238,7 +239,7 @@ function getNestedValue(obj: FlexibleResponse, path: string): unknown {
 
 export function ABMPackGenerator() {
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("Generating ABM pack...");
+  const [loadingMessage, setLoadingMessage] = useState("Generating value case...");
   const [result, setResult] = useState<FlexibleResponse | null>(null);
   const [infographicImage, setInfographicImage] = useState<string | null>(null);
   const [showReport, setShowReport] = useState(false);
@@ -272,7 +273,7 @@ export function ABMPackGenerator() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    setLoadingMessage("Generating ABM pack...");
+    setLoadingMessage("Generating value case...");
     setInfographicImage(null);
 
     try {
@@ -287,7 +288,7 @@ export function ABMPackGenerator() {
           setInfographicImage("/images/debug/gemini_image_0006_final.png");
         }
         
-        toast({ type: "success", description: "Mock ABM pack loaded (Adidas example)" });
+        toast({ type: "success", description: "Mock value case loaded (Adidas example)" });
         return;
       }
 
@@ -338,7 +339,7 @@ export function ABMPackGenerator() {
       // Show results together
       setResult(data.data);
       setInfographicImage(imageData);
-      toast({ type: "success", description: "ABM pack generated successfully!" });
+      toast({ type: "success", description: "Value case generated successfully!" });
     } catch (error) {
       toast({
         type: "error",
@@ -531,7 +532,7 @@ export function ABMPackGenerator() {
         <div className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Generated ABM Pack: {getBrandName()}</CardTitle>
+              <CardTitle>Generated Value Case: {getBrandName()}</CardTitle>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -549,7 +550,7 @@ export function ABMPackGenerator() {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
-                    a.download = `abm-pack-${getBrandName().replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().split("T")[0]}.json`;
+                    a.download = `value-case-${getBrandName().replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().split("T")[0]}.json`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
@@ -994,9 +995,9 @@ export function ABMPackGenerator() {
       {!isLoading && !result && (
         <Card>
           <CardHeader>
-            <CardTitle>ABM Pack Generator</CardTitle>
+            <CardTitle>{branding.toolName}</CardTitle>
             <CardDescription>
-              Generate CFO-ready Account-Based Marketing packs for retail brands
+              {branding.homepageSubtext}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -1062,7 +1063,7 @@ export function ABMPackGenerator() {
                 disabled={!formData.brand}
                 className="w-full"
               >
-                Generate ABM Pack
+                Generate Value Case
               </Button>
             </form>
           </CardContent>

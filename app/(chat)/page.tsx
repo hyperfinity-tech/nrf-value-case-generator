@@ -8,6 +8,6 @@ export default async function Page() {
     redirect("/api/auth/guest");
   }
 
-  // Redirect to ABM Pack Generator as the default page
+  // Redirect to the Value Case Generator as the default page
   redirect("/abm");
 }
