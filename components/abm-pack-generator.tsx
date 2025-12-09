@@ -379,18 +379,41 @@ export function ABMPackGenerator() {
   };
 
   const buildTabs = (res: FlexibleResponse): TabConfig[] => {
-    const executiveOneLiner = res.outputs?.executiveOneLiner || res.executiveOneLiner;
-    const cfoReadinessPanel = res.outputs?.cfoReadinessPanel || res.cfoReadinessPanel;
-    const executiveSummary = res.outputs?.executiveSummary || res.executiveSummary;
-    const slide1InputTable = res.outputs?.slide1InputTable || res.slide1InputTable;
-    const slide1Notes = res.outputs?.slide1InputTable?.notes || res.slide1InputTable?.notes || res.outputs?.slide1Notes;
+    const outputs = res.outputs ?? res;
+
+    const executiveOneLiner = outputs.executiveOneLiner;
+    const cfoReadinessPanel = outputs.cfoReadinessPanel;
+    const executiveSummary = outputs.executiveSummary;
+
+    const slide1InputTable =
+      outputs.slide1InputTable || outputs.slide1_inputTable || res.slide1InputTable;
+    const slide1Notes =
+      outputs.slide1InputTable?.notes ||
+      outputs.slide1_inputTable?.notes ||
+      res.slide1InputTable?.notes ||
+      outputs.slide1Notes;
+
     const loyaltySentiment =
-      res.outputs?.loyaltySentimentSnapshot ||
-      res.outputs?.slide2LoyaltySentimentSnapshot ||
-      res.research?.loyaltySentiment;
-    const valueCase = res.outputs?.slide4ValueCaseTable || res.valueCase;
-    const modelling = res.modelling || res.outputs?.modelling;
-    const modellingFallback = res.appendices?.assumptionsBlock?.overallModel;
+      outputs.loyaltySentimentSnapshot ||
+      outputs.slide2LoyaltySentimentSnapshot ||
+      outputs.slide2_loyaltySentimentSnapshot ||
+      res.research?.loyaltySentiment ||
+      outputs.loyaltySentimentLast12Months;
+
+    const valueCase =
+      outputs.slide4ValueCaseTable ||
+      outputs.slide4_valueCaseTable ||
+      res.valueCase ||
+      outputs.valueCase;
+
+    const modelling =
+      res.modelling ||
+      outputs.modelling ||
+      outputs.modellingDetails ||
+      outputs.modelling_details;
+    const modellingFallback =
+      res.appendices?.assumptionsBlock?.overallModel ||
+      outputs.appendices?.assumptionsBlock?.overallModel;
     const research = res.research;
     const appendices = res.appendices;
     const brandIntake = res.brandIntake;
@@ -432,15 +455,18 @@ export function ABMPackGenerator() {
           <div>
             <h3 className="text-lg font-semibold mb-2">Slide 1 - Input Metrics</h3>
             <div className="space-y-3">
-              {(res.outputs?.slide1InputTable?.tableMarkdown || res.slide1InputTable?.tableMarkdown) && (
+              {(outputs.slide1InputTable?.tableMarkdown ||
+                outputs.slide1_inputTable?.tableMarkdown ||
+                res.slide1InputTable?.tableMarkdown) && (
                 <MarkdownTable
                   markdown={
-                    res.outputs?.slide1InputTable?.tableMarkdown ||
+                    outputs.slide1InputTable?.tableMarkdown ||
+                    outputs.slide1_inputTable?.tableMarkdown ||
                     res.slide1InputTable?.tableMarkdown
                   }
                 />
               )}
-              {Array.isArray(res.outputs?.slide1InputTable) && (
+              {Array.isArray(outputs.slide1InputTable) && (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm border-collapse">
                     <thead>
@@ -451,7 +477,7 @@ export function ABMPackGenerator() {
                       </tr>
                     </thead>
                     <tbody>
-                      {res.outputs.slide1InputTable.map((row: FlexibleResponse, idx: number) => (
+                      {outputs.slide1InputTable.map((row: FlexibleResponse, idx: number) => (
                         <tr key={idx}>
                           <td className="py-2 px-3 border">{row.metric}</td>
                           <td className="py-2 px-3 border">{row.valueOrEstimate || row.value}</td>
@@ -469,18 +495,18 @@ export function ABMPackGenerator() {
                   {typeof slide1Notes === "string" && <p>{slide1Notes}</p>}
                   {Array.isArray(slide1Notes) &&
                     slide1Notes.map((note: string, idx: number) => <p key={idx}>{note}</p>)}
-                  {res.outputs?.slide1Notes &&
-                    typeof res.outputs.slide1Notes === "object" &&
-                    !Array.isArray(res.outputs.slide1Notes) && (
+                  {outputs.slide1Notes &&
+                    typeof outputs.slide1Notes === "object" &&
+                    !Array.isArray(outputs.slide1Notes) && (
                       <>
-                        {res.outputs.slide1Notes.keyProxies && (
+                        {outputs.slide1Notes.keyProxies && (
                           <p>
-                            <strong>Key Proxies:</strong> {res.outputs.slide1Notes.keyProxies}
+                            <strong>Key Proxies:</strong> {outputs.slide1Notes.keyProxies}
                           </p>
                         )}
-                        {res.outputs.slide1Notes.dataGapsAndInference && (
+                        {outputs.slide1Notes.dataGapsAndInference && (
                           <p>
-                            <strong>Data Gaps:</strong> {res.outputs.slide1Notes.dataGapsAndInference}
+                            <strong>Data Gaps:</strong> {outputs.slide1Notes.dataGapsAndInference}
                           </p>
                         )}
                       </>
@@ -580,7 +606,42 @@ export function ABMPackGenerator() {
             <div className="space-y-4">
               {valueCase.tableMarkdown && <MarkdownTable markdown={valueCase.tableMarkdown} />}
 
-              {Array.isArray(valueCase.rows) && valueCase.rows.length > 0 &&
+              {Array.isArray(valueCase.table) &&
+                valueCase.table.length > 0 &&
+                valueCase.table.map((row: FlexibleResponse, idx: number) => {
+                  const uplift =
+                    row.estimatedUpliftGM ??
+                    row.estimatedUpliftGmUsd ??
+                    row.estimatedUpliftGmGbp ??
+                    row.estimatedUpliftGMGBP ??
+                    row.estimatedUpliftGm;
+                  const methodology =
+                    row.assumptionsMethodology || row.assumptionsAndMethodology || row.assumptions;
+                  return (
+                    <div key={idx} className="border rounded-lg overflow-hidden">
+                      <div className="p-4 flex justify-between items-start bg-muted/30">
+                        <div>
+                          <p className="font-semibold">{row.areaOfImpact}</p>
+                          <p className="text-sm text-muted-foreground">{row.opportunityType}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                            {typeof uplift === "number" ? `$${uplift.toFixed(2)}m` : uplift}
+                          </p>
+                          <p className="text-xs text-muted-foreground">GM Uplift</p>
+                        </div>
+                      </div>
+                      {methodology && (
+                        <ExpandableSection title="View Methodology">
+                          <div className="text-sm whitespace-pre-wrap">{methodology}</div>
+                        </ExpandableSection>
+                      )}
+                    </div>
+                  );
+                })}
+
+              {Array.isArray(valueCase.rows) &&
+                valueCase.rows.length > 0 &&
                 valueCase.rows.map((row: FlexibleResponse, idx: number) => (
                   <div key={idx} className="border rounded-lg overflow-hidden">
                     <div className="p-4 flex justify-between items-start bg-muted/30">
@@ -600,9 +661,7 @@ export function ABMPackGenerator() {
                     </div>
                     {row.assumptionsMethodology && (
                       <ExpandableSection title="View Methodology">
-                        <div className="text-sm whitespace-pre-wrap">
-                          {row.assumptionsMethodology}
-                        </div>
+                        <div className="text-sm whitespace-pre-wrap">{row.assumptionsMethodology}</div>
                       </ExpandableSection>
                     )}
                   </div>
@@ -620,6 +679,15 @@ export function ABMPackGenerator() {
             <h3 className="text-lg font-semibold mb-2">Modelling Details</h3>
             <ExpandableSection title="View Full Modelling Breakdown" defaultOpen>
               <div className="space-y-4">
+                {modelling?.baseModellingAssumptions && (
+                  <div>
+                    <h4 className="font-medium mb-2">Base Modelling Assumptions</h4>
+                    <div className="bg-muted/30 p-3 rounded text-sm">
+                      <RenderValue value={modelling.baseModellingAssumptions} />
+                    </div>
+                  </div>
+                )}
+
                 {modelling?.scopeAndBaseAssumptions && (
                   <div>
                     <h4 className="font-medium mb-2">Scope & Base Assumptions</h4>
@@ -638,14 +706,45 @@ export function ABMPackGenerator() {
                   </div>
                 )}
 
+                {modelling?.upliftRangesAndChosenPoints && (
+                  <div>
+                    <h4 className="font-medium mb-2">Uplift Ranges & Chosen Points</h4>
+                    <div className="bg-muted/30 p-3 rounded text-sm">
+                      <RenderValue value={modelling.upliftRangesAndChosenPoints} />
+                    </div>
+                  </div>
+                )}
+
+                {modelling?.detailedCalculations && (
+                  <div>
+                    <h4 className="font-medium mb-2">Detailed Calculations</h4>
+                    <div className="bg-muted/30 p-3 rounded text-sm">
+                      <RenderValue value={modelling.detailedCalculations} />
+                    </div>
+                  </div>
+                )}
+
                 {modelling?.finalModeApplied && (
                   <div>
                     <h4 className="font-medium mb-2">Mode Applied</h4>
                     <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded">
-                      <p className="font-semibold">{modelling.finalModeApplied.valueCaseMode}</p>
+                      <p className="font-semibold">
+                        {modelling.finalModeApplied.valueCaseMode ||
+                          modelling.finalModeApplied.mode ||
+                          modelling.finalModeApplied.value_case_mode}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {modelling.finalModeApplied.reason}
                       </p>
+                    </div>
+                  </div>
+                )}
+
+                {modelling?.thresholdRuleApplication && (
+                  <div>
+                    <h4 className="font-medium mb-2">Threshold Rule Application</h4>
+                    <div className="bg-muted/30 p-3 rounded text-sm">
+                      <RenderValue value={modelling.thresholdRuleApplication} />
                     </div>
                   </div>
                 )}
