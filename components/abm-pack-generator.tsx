@@ -245,6 +245,7 @@ export function ABMPackGenerator() {
   const [result, setResult] = useState<FlexibleResponse | null>(null);
   const [infographicImage, setInfographicImage] = useState<string | null>(null);
   const [showReport, setShowReport] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("summary");
 
   const [formData, setFormData] = useState<FormState>({
     brand: "",
@@ -258,6 +259,15 @@ export function ABMPackGenerator() {
   useEffect(() => {
     if (result) {
       window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [result]);
+
+  useEffect(() => {
+    if (!result) return;
+
+    const tabs = buildTabs(result);
+    if (tabs.length > 0) {
+      setActiveTab(tabs[0].id);
     }
   }, [result]);
 
@@ -359,6 +369,479 @@ export function ABMPackGenerator() {
   // Extract brand name from various possible locations
   const getBrandName = () => {
     return result?.brandIntake?.brand || result?.brand || "Unknown Brand";
+  };
+
+  type TabConfig = {
+    id: string;
+    label: string;
+    content: JSX.Element;
+    available: boolean;
+  };
+
+  const buildTabs = (res: FlexibleResponse): TabConfig[] => {
+    const executiveOneLiner = res.outputs?.executiveOneLiner || res.executiveOneLiner;
+    const cfoReadinessPanel = res.outputs?.cfoReadinessPanel || res.cfoReadinessPanel;
+    const executiveSummary = res.outputs?.executiveSummary || res.executiveSummary;
+    const slide1InputTable = res.outputs?.slide1InputTable || res.slide1InputTable;
+    const slide1Notes = res.outputs?.slide1InputTable?.notes || res.slide1InputTable?.notes || res.outputs?.slide1Notes;
+    const loyaltySentiment =
+      res.outputs?.loyaltySentimentSnapshot ||
+      res.outputs?.slide2LoyaltySentimentSnapshot ||
+      res.research?.loyaltySentiment;
+    const valueCase = res.outputs?.slide4ValueCaseTable || res.valueCase;
+    const modelling = res.modelling;
+    const research = res.research;
+    const appendices = res.appendices;
+    const brandIntake = res.brandIntake;
+
+    const summaryContent = (
+      <>
+        {executiveOneLiner && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Executive One-Liner</h3>
+            <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border-l-4 border-blue-500">
+              <p className="text-lg font-medium">{executiveOneLiner}</p>
+            </div>
+          </div>
+        )}
+
+        {cfoReadinessPanel && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2">CFO Readiness Panel</h3>
+            <div className="bg-muted p-4 rounded-lg space-y-3">
+              <RenderValue value={cfoReadinessPanel} />
+            </div>
+          </div>
+        )}
+
+        {executiveSummary && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Executive Summary</h3>
+            <div className="bg-muted p-4 rounded-lg text-sm whitespace-pre-wrap">
+              {executiveSummary}
+            </div>
+          </div>
+        )}
+      </>
+    );
+
+    const inputsContent = (
+      <>
+        {slide1InputTable && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Slide 1 - Input Metrics</h3>
+            <div className="space-y-3">
+              {(res.outputs?.slide1InputTable?.tableMarkdown || res.slide1InputTable?.tableMarkdown) && (
+                <MarkdownTable
+                  markdown={
+                    res.outputs?.slide1InputTable?.tableMarkdown ||
+                    res.slide1InputTable?.tableMarkdown
+                  }
+                />
+              )}
+              {Array.isArray(res.outputs?.slide1InputTable) && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-muted">
+                        <th className="text-left py-2 px-3 border">Metric</th>
+                        <th className="text-left py-2 px-3 border">Value</th>
+                        <th className="text-left py-2 px-3 border">Source</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {res.outputs.slide1InputTable.map((row: FlexibleResponse, idx: number) => (
+                        <tr key={idx}>
+                          <td className="py-2 px-3 border">{row.metric}</td>
+                          <td className="py-2 px-3 border">{row.valueOrEstimate || row.value}</td>
+                          <td className="py-2 px-3 border text-xs text-muted-foreground">
+                            {row.sourceOrLogic || row.source}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {slide1Notes && (
+                <div className="p-3 bg-muted/50 rounded text-xs space-y-1">
+                  {typeof slide1Notes === "string" && <p>{slide1Notes}</p>}
+                  {Array.isArray(slide1Notes) &&
+                    slide1Notes.map((note: string, idx: number) => <p key={idx}>{note}</p>)}
+                  {res.outputs?.slide1Notes &&
+                    typeof res.outputs.slide1Notes === "object" &&
+                    !Array.isArray(res.outputs.slide1Notes) && (
+                      <>
+                        {res.outputs.slide1Notes.keyProxies && (
+                          <p>
+                            <strong>Key Proxies:</strong> {res.outputs.slide1Notes.keyProxies}
+                          </p>
+                        )}
+                        {res.outputs.slide1Notes.dataGapsAndInference && (
+                          <p>
+                            <strong>Data Gaps:</strong> {res.outputs.slide1Notes.dataGapsAndInference}
+                          </p>
+                        )}
+                      </>
+                    )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </>
+    );
+
+    const sentimentContent = (
+      <>
+        {loyaltySentiment && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Loyalty Sentiment Snapshot</h3>
+            <div className="bg-muted p-4 rounded-lg space-y-4">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Overall Sentiment:</span>
+                  <SentimentBadge
+                    sentiment={
+                      loyaltySentiment.overallSentimentRating ||
+                      loyaltySentiment.overallSentiment ||
+                      "mixed"
+                    }
+                  />
+                </div>
+              </div>
+
+              {(loyaltySentiment.summaryNarrative ||
+                loyaltySentiment.summary ||
+                loyaltySentiment.narrativeSummary) && (
+                <p className="text-sm">
+                  {loyaltySentiment.summaryNarrative ||
+                    loyaltySentiment.summary ||
+                    loyaltySentiment.narrativeSummary}
+                </p>
+              )}
+
+              {loyaltySentiment.sentimentTableMarkdown && (
+                <MarkdownTable markdown={loyaltySentiment.sentimentTableMarkdown} />
+              )}
+
+              {Array.isArray(loyaltySentiment.sentimentTable) &&
+                loyaltySentiment.sentimentTable.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-2 font-semibold">Aspect</th>
+                          <th className="text-left py-2 font-semibold">Summary</th>
+                          <th className="text-left py-2 font-semibold">Evidence</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {loyaltySentiment.sentimentTable.map((row: FlexibleResponse, idx: number) => (
+                          <tr key={idx} className="border-b align-top">
+                            <td className="py-3 font-medium">
+                              {row.aspectDisplay || row.aspectDisplayName || row.aspect}
+                            </td>
+                            <td className="py-3">{row.sentimentSummary}</td>
+                            <td className="py-3">
+                              {Array.isArray(row.evidence) ? (
+                                <div className="space-y-2">
+                                  {row.evidence.map((ev: string | FlexibleResponse, evIdx: number) => (
+                                    <div
+                                      key={evIdx}
+                                      className="text-xs bg-background p-2 rounded italic"
+                                    >
+                                      {typeof ev === "string" ? ev : ev.quote || JSON.stringify(ev)}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-xs">{row.evidence}</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+            </div>
+          </div>
+        )}
+      </>
+    );
+
+    const valueCaseContent = (
+      <>
+        {valueCase && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Value Case (GM-Based)</h3>
+            <div className="space-y-4">
+              {valueCase.tableMarkdown && <MarkdownTable markdown={valueCase.tableMarkdown} />}
+
+              {Array.isArray(valueCase.rows) && valueCase.rows.length > 0 &&
+                valueCase.rows.map((row: FlexibleResponse, idx: number) => (
+                  <div key={idx} className="border rounded-lg overflow-hidden">
+                    <div className="p-4 flex justify-between items-start bg-muted/30">
+                      <div>
+                        <p className="font-semibold">{row.areaOfImpact}</p>
+                        <p className="text-sm text-muted-foreground">{row.opportunityType}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                          ${typeof row.estimatedUpliftGM === "number"
+                            ? row.estimatedUpliftGM.toFixed(2)
+                            : row.estimatedUpliftGM}
+                          m
+                        </p>
+                        <p className="text-xs text-muted-foreground">GM Uplift</p>
+                      </div>
+                    </div>
+                    {row.assumptionsMethodology && (
+                      <ExpandableSection title="View Methodology">
+                        <div className="text-sm whitespace-pre-wrap">
+                          {row.assumptionsMethodology}
+                        </div>
+                      </ExpandableSection>
+                    )}
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+      </>
+    );
+
+    const modellingContent = (
+      <>
+        {modelling && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Modelling Details</h3>
+            <ExpandableSection title="View Full Modelling Breakdown" defaultOpen>
+              <div className="space-y-4">
+                {modelling.scopeAndBaseAssumptions && (
+                  <div>
+                    <h4 className="font-medium mb-2">Scope & Base Assumptions</h4>
+                    <div className="bg-muted/30 p-3 rounded text-sm">
+                      <RenderValue value={modelling.scopeAndBaseAssumptions} />
+                    </div>
+                  </div>
+                )}
+
+                {modelling.upliftRanges && (
+                  <div>
+                    <h4 className="font-medium mb-2">Uplift Ranges (Evidence-Based)</h4>
+                    <div className="bg-muted/30 p-3 rounded text-sm">
+                      <RenderValue value={modelling.upliftRanges} />
+                    </div>
+                  </div>
+                )}
+
+                {modelling.finalModeApplied && (
+                  <div>
+                    <h4 className="font-medium mb-2">Mode Applied</h4>
+                    <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded">
+                      <p className="font-semibold">{modelling.finalModeApplied.valueCaseMode}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {modelling.finalModeApplied.reason}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {modelling.finalUpliftUsingStretchUp && (
+                  <div>
+                    <h4 className="font-medium mb-2">Final Uplift Calculations</h4>
+                    <div className="bg-green-50 dark:bg-green-950 p-3 rounded">
+                      <RenderValue value={modelling.finalUpliftUsingStretchUp} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ExpandableSection>
+          </div>
+        )}
+      </>
+    );
+
+    const researchContent = (
+      <>
+        {research && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Research Details</h3>
+
+            {research.financials && (
+              <ExpandableSection title="Financial Data">
+                <div className="space-y-2 text-sm">
+                  <RenderValue value={research.financials} />
+                </div>
+              </ExpandableSection>
+            )}
+
+            {research.loyaltyProgramme && (
+              <ExpandableSection title="Loyalty Programme Details">
+                <div className="space-y-2 text-sm">
+                  <RenderValue value={research.loyaltyProgramme} />
+                </div>
+              </ExpandableSection>
+            )}
+
+            {research.benchmarks && (
+              <ExpandableSection title="Category Benchmarks">
+                <div className="space-y-2 text-sm">
+                  <RenderValue value={research.benchmarks} />
+                </div>
+              </ExpandableSection>
+            )}
+
+            {research.paidMediaAndTech && (
+              <ExpandableSection title="Paid Media & Tech Stack">
+                <div className="space-y-2 text-sm">
+                  <RenderValue value={research.paidMediaAndTech} />
+                </div>
+              </ExpandableSection>
+            )}
+
+            {research.dataConfidenceSummary && (
+              <div className="mt-4">
+                <h4 className="font-medium mb-2">Data Confidence Summary</h4>
+                <div className="flex flex-wrap gap-3">
+                  {Object.entries(research.dataConfidenceSummary).map(([key, level]) => (
+                    <div key={key} className="flex items-center gap-2">
+                      <span className="text-sm capitalize">{key}:</span>
+                      <ConfidenceBadge level={level as string} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </>
+    );
+
+    const appendicesContent = (
+      <>
+        {appendices && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Appendices</h3>
+
+            {appendices.assumptionsBlock && (
+              <ExpandableSection title="A) Detailed Assumptions">
+                <div className="space-y-4">
+                  {typeof appendices.assumptionsBlock === "object" &&
+                    !Array.isArray(appendices.assumptionsBlock) &&
+                    Object.entries(appendices.assumptionsBlock).map(([key, lever]) => (
+                      <div key={key} className="border rounded p-3">
+                        <h5 className="font-medium mb-2">
+                          {(lever as FlexibleResponse).leverName || formatKey(key)}
+                        </h5>
+                        {Array.isArray((lever as FlexibleResponse).sixStepBreakdown) ? (
+                          <div className="space-y-2 text-sm">
+                            {((lever as FlexibleResponse).sixStepBreakdown as string[]).map(
+                              (step: string, idx: number) => (
+                                <div key={idx} className="p-2 bg-muted/30 rounded whitespace-pre-wrap">
+                                  {step}
+                                </div>
+                              ),
+                            )}
+                          </div>
+                        ) : (
+                          <RenderValue value={lever} />
+                        )}
+                      </div>
+                    ))}
+
+                  {Array.isArray(appendices.assumptionsBlock) &&
+                    appendices.assumptionsBlock.map((item: FlexibleResponse, idx: number) => (
+                      <div key={idx} className="border rounded p-3">
+                        <h5 className="font-medium mb-2">{item.leverName || `Lever ${idx + 1}`}</h5>
+                        <RenderValue value={item} />
+                      </div>
+                    ))}
+                </div>
+              </ExpandableSection>
+            )}
+
+            {(appendices.sourcesAppendix || appendices.sources) && (
+              <ExpandableSection title="B) Sources">
+                <div className="space-y-3 text-sm">
+                  {appendices.sourcesAppendix &&
+                    typeof appendices.sourcesAppendix === "object" &&
+                    Object.entries(appendices.sourcesAppendix).map(([category, sources]) => (
+                      <div key={category}>
+                        <h5 className="font-medium mb-1">{formatKey(category)}</h5>
+                        {Array.isArray(sources) ? (
+                          <ul className="list-disc list-inside text-muted-foreground">
+                            {(sources as unknown[]).map((source: unknown, idx: number) => {
+                              const sourceText =
+                                typeof source === "string"
+                                  ? source
+                                  : typeof source === "object" && source !== null
+                                    ? String(
+                                      (source as Record<string, unknown>).description ??
+                                        (source as Record<string, unknown>).url ??
+                                        JSON.stringify(source),
+                                    )
+                                    : String(source);
+                              return <li key={idx}>{sourceText}</li>;
+                            })}
+                          </ul>
+                        ) : (
+                          <p className="text-muted-foreground">{String(sources)}</p>
+                        )}
+                      </div>
+                    ))}
+
+                  {Array.isArray(appendices.sources) && (
+                    <ul className="list-disc list-inside text-muted-foreground">
+                      {appendices.sources.map((source: unknown, idx: number) => {
+                        const sourceText =
+                          typeof source === "string"
+                            ? source
+                            : typeof source === "object" && source !== null
+                              ? String(
+                                (source as Record<string, unknown>).description ??
+                                  (source as Record<string, unknown>).url ??
+                                  JSON.stringify(source),
+                              )
+                              : String(source);
+                        return <li key={idx}>{sourceText}</li>;
+                      })}
+                    </ul>
+                  )}
+                </div>
+              </ExpandableSection>
+            )}
+          </div>
+        )}
+      </>
+    );
+
+    const brandIntakeContent = (
+      <>
+        {brandIntake && (
+          <ExpandableSection title="Brand Intake Details">
+            <div className="space-y-2 text-sm">
+              <RenderValue value={brandIntake} />
+            </div>
+          </ExpandableSection>
+        )}
+      </>
+    );
+
+    const tabs: TabConfig[] = [
+      { id: "summary", label: "Summary", content: summaryContent, available: Boolean(executiveOneLiner || cfoReadinessPanel || executiveSummary) },
+      { id: "inputs", label: "Input Metrics", content: inputsContent, available: Boolean(slide1InputTable) },
+      { id: "sentiment", label: "Loyalty Sentiment", content: sentimentContent, available: Boolean(loyaltySentiment) },
+      { id: "value-case", label: "Value Case", content: valueCaseContent, available: Boolean(valueCase) },
+      { id: "modelling", label: "Modelling", content: modellingContent, available: Boolean(modelling) },
+      { id: "research", label: "Research", content: researchContent, available: Boolean(research) },
+      { id: "appendices", label: "Appendices", content: appendicesContent, available: Boolean(appendices) },
+      { id: "brand-intake", label: "Brand Intake", content: brandIntakeContent, available: Boolean(brandIntake) },
+    ];
+
+    return tabs.filter((tab) => tab.available);
   };
 
   // Reset form and results
@@ -568,414 +1051,44 @@ export function ABMPackGenerator() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              
-              {/* Executive One-Liner */}
-              {(result.outputs?.executiveOneLiner || result.executiveOneLiner) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Executive One-Liner</h3>
-                  <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border-l-4 border-blue-500">
-                    <p className="text-lg font-medium">
-                      {result.outputs?.executiveOneLiner || result.executiveOneLiner}
-                    </p>
-                  </div>
-                </div>
-              )}
+              {(() => {
+                const tabs = buildTabs(result);
+                const currentTab = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
 
-              {/* CFO Readiness Panel */}
-              {(result.outputs?.cfoReadinessPanel || result.cfoReadinessPanel) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">CFO Readiness Panel</h3>
-                  <div className="bg-muted p-4 rounded-lg space-y-3">
-                    <RenderValue value={result.outputs?.cfoReadinessPanel || result.cfoReadinessPanel} />
-                  </div>
-                </div>
-              )}
+                if (!currentTab) {
+                  return <p className="text-sm text-muted-foreground">No sections available.</p>;
+                }
 
-              {/* Executive Summary */}
-              {(result.outputs?.executiveSummary || result.executiveSummary) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Executive Summary</h3>
-                  <div className="bg-muted p-4 rounded-lg text-sm whitespace-pre-wrap">
-                    {result.outputs?.executiveSummary || result.executiveSummary}
-                  </div>
-                </div>
-              )}
-
-              {/* Slide 1 - Input Table */}
-              {(result.outputs?.slide1InputTable || result.slide1InputTable) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Slide 1 - Input Metrics</h3>
-                  <div className="space-y-3">
-                    {/* Handle markdown table format */}
-                    {(result.outputs?.slide1InputTable?.tableMarkdown || result.slide1InputTable?.tableMarkdown) && (
-                      <MarkdownTable markdown={result.outputs?.slide1InputTable?.tableMarkdown || result.slide1InputTable?.tableMarkdown} />
-                    )}
-                    {/* Handle array format */}
-                    {Array.isArray(result.outputs?.slide1InputTable) && (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm border-collapse">
-                          <thead>
-                            <tr className="bg-muted">
-                              <th className="text-left py-2 px-3 border">Metric</th>
-                              <th className="text-left py-2 px-3 border">Value</th>
-                              <th className="text-left py-2 px-3 border">Source</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {result.outputs.slide1InputTable.map((row: FlexibleResponse, idx: number) => (
-                              <tr key={idx}>
-                                <td className="py-2 px-3 border">{row.metric}</td>
-                                <td className="py-2 px-3 border">{row.valueOrEstimate || row.value}</td>
-                                <td className="py-2 px-3 border text-xs text-muted-foreground">{row.sourceOrLogic || row.source}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                    {/* Notes - handle string, array, and object formats */}
-                    {(result.outputs?.slide1InputTable?.notes || result.slide1InputTable?.notes || result.outputs?.slide1Notes) && (
-                      <div className="p-3 bg-muted/50 rounded text-xs space-y-1">
-                        {/* String format */}
-                        {typeof (result.outputs?.slide1InputTable?.notes || result.slide1InputTable?.notes) === 'string' && (
-                          <p>{result.outputs?.slide1InputTable?.notes || result.slide1InputTable?.notes}</p>
-                        )}
-                        {/* Array format */}
-                        {Array.isArray(result.outputs?.slide1InputTable?.notes || result.slide1InputTable?.notes) && (
-                          (result.outputs?.slide1InputTable?.notes || result.slide1InputTable?.notes).map((note: string, idx: number) => (
-                            <p key={idx}>{note}</p>
-                          ))
-                        )}
-                        {/* Object format (schema with keyProxies/dataGapsAndInference) */}
-                        {result.outputs?.slide1Notes && typeof result.outputs.slide1Notes === 'object' && !Array.isArray(result.outputs.slide1Notes) && (
-                          <>
-                            {result.outputs.slide1Notes.keyProxies && (
-                              <p><strong>Key Proxies:</strong> {result.outputs.slide1Notes.keyProxies}</p>
-                            )}
-                            {result.outputs.slide1Notes.dataGapsAndInference && (
-                              <p><strong>Data Gaps:</strong> {result.outputs.slide1Notes.dataGapsAndInference}</p>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Loyalty Sentiment - handles both naming conventions */}
-              {(result.outputs?.loyaltySentimentSnapshot || 
-                result.outputs?.slide2LoyaltySentimentSnapshot || 
-                result.research?.loyaltySentiment) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Loyalty Sentiment Snapshot</h3>
-                  <div className="bg-muted p-4 rounded-lg space-y-4">
-                    {/* Get sentiment data from whichever location it exists */}
-                    {(() => {
-                      const sentiment = result.outputs?.loyaltySentimentSnapshot || 
-                                       result.outputs?.slide2LoyaltySentimentSnapshot || 
-                                       result.research?.loyaltySentiment;
-                      return (
-                        <>
-                          {/* Overall rating */}
-                          <div className="flex flex-wrap items-center gap-4">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">Overall Sentiment:</span>
-                              <SentimentBadge sentiment={sentiment?.overallSentimentRating || sentiment?.overallSentiment || "mixed"} />
-                            </div>
-                          </div>
-                          
-                          {/* Summary */}
-                          {(sentiment?.summaryNarrative || sentiment?.summary || sentiment?.narrativeSummary) && (
-                            <p className="text-sm">{sentiment.summaryNarrative || sentiment.summary || sentiment.narrativeSummary}</p>
-                          )}
-                          
-                          {/* Markdown table */}
-                          {sentiment?.sentimentTableMarkdown && (
-                            <MarkdownTable markdown={sentiment.sentimentTableMarkdown} />
-                          )}
-                          
-                          {/* Array sentiment table */}
-                          {Array.isArray(sentiment?.sentimentTable) && sentiment.sentimentTable.length > 0 && (
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <thead>
-                                  <tr className="border-b">
-                                    <th className="text-left py-2 font-semibold">Aspect</th>
-                                    <th className="text-left py-2 font-semibold">Summary</th>
-                                    <th className="text-left py-2 font-semibold">Evidence</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {sentiment.sentimentTable.map((row: FlexibleResponse, idx: number) => (
-                                    <tr key={idx} className="border-b align-top">
-                                      <td className="py-3 font-medium">{row.aspectDisplay || row.aspectDisplayName || row.aspect}</td>
-                                      <td className="py-3">{row.sentimentSummary}</td>
-                                      <td className="py-3">
-                                        {Array.isArray(row.evidence) ? (
-                                          <div className="space-y-2">
-                                            {row.evidence.map((ev: string | FlexibleResponse, evIdx: number) => (
-                                              <div key={evIdx} className="text-xs bg-background p-2 rounded italic">
-                                                {typeof ev === "string" ? ev : ev.quote || JSON.stringify(ev)}
-                                              </div>
-                                            ))}
-                                          </div>
-                                        ) : (
-                                          <span className="text-xs">{row.evidence}</span>
-                                        )}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
-              )}
-
-              {/* Value Case Table */}
-              {(result.outputs?.slide4ValueCaseTable || result.valueCase) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Value Case (GM-Based)</h3>
-                  <div className="space-y-4">
-                    {/* Markdown table */}
-                    {(result.outputs?.slide4ValueCaseTable?.tableMarkdown) && (
-                      <MarkdownTable markdown={result.outputs.slide4ValueCaseTable.tableMarkdown} />
-                    )}
-                    
-                    {/* Array of rows */}
-                    {Array.isArray(result.outputs?.slide4ValueCaseTable?.rows) && result.outputs.slide4ValueCaseTable.rows.length > 0 && (
-                      result.outputs.slide4ValueCaseTable.rows.map((row: FlexibleResponse, idx: number) => (
-                        <div key={idx} className="border rounded-lg overflow-hidden">
-                          <div className="p-4 flex justify-between items-start bg-muted/30">
-                            <div>
-                              <p className="font-semibold">{row.areaOfImpact}</p>
-                              <p className="text-sm text-muted-foreground">{row.opportunityType}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                ${typeof row.estimatedUpliftGM === "number" ? row.estimatedUpliftGM.toFixed(2) : row.estimatedUpliftGM}m
-                              </p>
-                              <p className="text-xs text-muted-foreground">GM Uplift</p>
-                            </div>
-                          </div>
-                          {row.assumptionsMethodology && (
-                            <ExpandableSection title="View Methodology">
-                              <div className="text-sm whitespace-pre-wrap">{row.assumptionsMethodology}</div>
-                            </ExpandableSection>
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Modelling Section */}
-              {result.modelling && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Modelling Details</h3>
-                  <ExpandableSection title="View Full Modelling Breakdown" defaultOpen>
-                    <div className="space-y-4">
-                      {result.modelling.scopeAndBaseAssumptions && (
-                        <div>
-                          <h4 className="font-medium mb-2">Scope & Base Assumptions</h4>
-                          <div className="bg-muted/30 p-3 rounded text-sm">
-                            <RenderValue value={result.modelling.scopeAndBaseAssumptions} />
-                          </div>
-                        </div>
-                      )}
-                      
-                      {result.modelling.upliftRanges && (
-                        <div>
-                          <h4 className="font-medium mb-2">Uplift Ranges (Evidence-Based)</h4>
-                          <div className="bg-muted/30 p-3 rounded text-sm">
-                            <RenderValue value={result.modelling.upliftRanges} />
-                          </div>
-                        </div>
-                      )}
-                      
-                      {result.modelling.finalModeApplied && (
-                        <div>
-                          <h4 className="font-medium mb-2">Mode Applied</h4>
-                          <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded">
-                            <p className="font-semibold">{result.modelling.finalModeApplied.valueCaseMode}</p>
-                            <p className="text-sm text-muted-foreground">{result.modelling.finalModeApplied.reason}</p>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {result.modelling.finalUpliftUsingStretchUp && (
-                        <div>
-                          <h4 className="font-medium mb-2">Final Uplift Calculations</h4>
-                          <div className="bg-green-50 dark:bg-green-950 p-3 rounded">
-                            <RenderValue value={result.modelling.finalUpliftUsingStretchUp} />
-                          </div>
-                        </div>
-                      )}
+                return (
+                  <>
+                    <div className="flex flex-wrap gap-2" role="tablist" aria-label="Value case sections">
+                      {tabs.map((tab) => {
+                        const isActive = tab.id === currentTab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            role="tab"
+                            aria-selected={isActive}
+                            className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                              isActive
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-muted text-foreground hover:bg-muted/80"
+                            }`}
+                            onClick={() => setActiveTab(tab.id)}
+                          >
+                            {tab.label}
+                          </button>
+                        );
+                      })}
                     </div>
-                  </ExpandableSection>
-                </div>
-              )}
 
-              {/* Research Section */}
-              {result.research && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Research Details</h3>
-                  
-                  {/* Financials */}
-                  {result.research.financials && (
-                    <ExpandableSection title="Financial Data">
-                      <div className="space-y-2 text-sm">
-                        <RenderValue value={result.research.financials} />
-                      </div>
-                    </ExpandableSection>
-                  )}
-                  
-                  {/* Loyalty Programme */}
-                  {result.research.loyaltyProgramme && (
-                    <ExpandableSection title="Loyalty Programme Details">
-                      <div className="space-y-2 text-sm">
-                        <RenderValue value={result.research.loyaltyProgramme} />
-                      </div>
-                    </ExpandableSection>
-                  )}
-                  
-                  {/* Benchmarks */}
-                  {result.research.benchmarks && (
-                    <ExpandableSection title="Category Benchmarks">
-                      <div className="space-y-2 text-sm">
-                        <RenderValue value={result.research.benchmarks} />
-                      </div>
-                    </ExpandableSection>
-                  )}
-                  
-                  {/* Tech & Media */}
-                  {result.research.paidMediaAndTech && (
-                    <ExpandableSection title="Paid Media & Tech Stack">
-                      <div className="space-y-2 text-sm">
-                        <RenderValue value={result.research.paidMediaAndTech} />
-                      </div>
-                    </ExpandableSection>
-                  )}
-                  
-                  {/* Data Confidence */}
-                  {result.research.dataConfidenceSummary && (
-                    <div className="mt-4">
-                      <h4 className="font-medium mb-2">Data Confidence Summary</h4>
-                      <div className="flex flex-wrap gap-3">
-                        {Object.entries(result.research.dataConfidenceSummary).map(([key, level]) => (
-                          <div key={key} className="flex items-center gap-2">
-                            <span className="text-sm capitalize">{key}:</span>
-                            <ConfidenceBadge level={level as string} />
-                          </div>
-                        ))}
-                      </div>
+                    <div className="space-y-6" role="tabpanel">
+                      {currentTab.content}
                     </div>
-                  )}
-                </div>
-              )}
-
-              {/* Appendices */}
-              {result.appendices && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Appendices</h3>
-                  
-                  {/* Assumptions Block */}
-                  {result.appendices.assumptionsBlock && (
-                    <ExpandableSection title="A) Detailed Assumptions">
-                      <div className="space-y-4">
-                        {/* Handle object structure with named levers */}
-                        {typeof result.appendices.assumptionsBlock === "object" && !Array.isArray(result.appendices.assumptionsBlock) && (
-                          Object.entries(result.appendices.assumptionsBlock).map(([key, lever]) => (
-                            <div key={key} className="border rounded p-3">
-                              <h5 className="font-medium mb-2">{(lever as FlexibleResponse).leverName || formatKey(key)}</h5>
-                              {Array.isArray((lever as FlexibleResponse).sixStepBreakdown) && (
-                                <div className="space-y-2 text-sm">
-                                  {((lever as FlexibleResponse).sixStepBreakdown as string[]).map((step: string, idx: number) => (
-                                    <div key={idx} className="p-2 bg-muted/30 rounded whitespace-pre-wrap">
-                                      {step}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                              {!(lever as FlexibleResponse).sixStepBreakdown && (
-                                <RenderValue value={lever} />
-                              )}
-                            </div>
-                          ))
-                        )}
-                        
-                        {/* Handle array structure */}
-                        {Array.isArray(result.appendices.assumptionsBlock) && (
-                          result.appendices.assumptionsBlock.map((item: FlexibleResponse, idx: number) => (
-                            <div key={idx} className="border rounded p-3">
-                              <h5 className="font-medium mb-2">{item.leverName || `Lever ${idx + 1}`}</h5>
-                              <RenderValue value={item} />
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </ExpandableSection>
-                  )}
-                  
-                  {/* Sources */}
-                  {(result.appendices.sourcesAppendix || result.appendices.sources) && (
-                    <ExpandableSection title="B) Sources">
-                      <div className="space-y-3 text-sm">
-                        {result.appendices.sourcesAppendix && typeof result.appendices.sourcesAppendix === "object" && (
-                          Object.entries(result.appendices.sourcesAppendix).map(([category, sources]) => (
-                            <div key={category}>
-                              <h5 className="font-medium mb-1">{formatKey(category)}</h5>
-                              {Array.isArray(sources) ? (
-                                <ul className="list-disc list-inside text-muted-foreground">
-                                  {(sources as unknown[]).map((source: unknown, idx: number) => {
-                                    const sourceText = typeof source === "string" 
-                                      ? source 
-                                      : typeof source === "object" && source !== null
-                                        ? String((source as Record<string, unknown>).description ?? (source as Record<string, unknown>).url ?? JSON.stringify(source))
-                                        : String(source);
-                                    return <li key={idx}>{sourceText}</li>;
-                                  })}
-                                </ul>
-                              ) : (
-                                <p className="text-muted-foreground">{String(sources)}</p>
-                              )}
-                            </div>
-                          ))
-                        )}
-                        
-                        {Array.isArray(result.appendices.sources) && (
-                          <ul className="list-disc list-inside text-muted-foreground">
-                            {result.appendices.sources.map((source: unknown, idx: number) => {
-                              const sourceText = typeof source === "string" 
-                                ? source 
-                                : typeof source === "object" && source !== null
-                                  ? String((source as Record<string, unknown>).description ?? (source as Record<string, unknown>).url ?? JSON.stringify(source))
-                                  : String(source);
-                              return <li key={idx}>{sourceText}</li>;
-                            })}
-                          </ul>
-                        )}
-                      </div>
-                    </ExpandableSection>
-                  )}
-                </div>
-              )}
-
-              {/* Brand Intake */}
-              {result.brandIntake && (
-                <ExpandableSection title="Brand Intake Details">
-                  <div className="space-y-2 text-sm">
-                    <RenderValue value={result.brandIntake} />
-                  </div>
-                </ExpandableSection>
-              )}
-
+                  </>
+                );
+              })()}
             </CardContent>
           </Card>
         </div>
