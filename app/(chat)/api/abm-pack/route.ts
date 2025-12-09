@@ -892,7 +892,14 @@ export async function POST(request: Request) {
         ((Array.isArray(object.outputs.slide1InputTable)
           ? object.outputs.slide1InputTable.length
           : object.outputs.slide1InputTable.rows?.length ??
-            object.outputs.slide1InputTable.table?.length))) ||
+            // legacy alias: table
+            (object.outputs.slide1InputTable as Record<string, unknown>)?.table &&
+              Array.isArray(
+                (object.outputs.slide1InputTable as Record<string, unknown>).table as unknown[]
+              )
+              ? ((object.outputs.slide1InputTable as Record<string, unknown>)
+                  .table as unknown[]).length
+              : undefined))) ||
       0;
     console.log(`[${requestId}]   Slide 1 rows: ${slide1Rows}`);
     console.log(`[${requestId}]   Value case table exists: ${!!object.outputs?.slide4ValueCaseTable}`);
