@@ -242,7 +242,15 @@ function getNestedValue(obj: FlexibleResponse, path: string): unknown {
   return path.split(".").reduce((acc, part) => acc?.[part], obj);
 }
 
-export function ABMPackGenerator() {
+export function ABMPackGenerator({
+  brandingOverride,
+}: {
+  brandingOverride?: {
+    toolName?: string;
+    homepageTagline?: string;
+    homepageSubtext?: string;
+  };
+} = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Generating value case...");
   const [result, setResult] = useState<FlexibleResponse | null>(null);
@@ -1297,9 +1305,9 @@ export function ABMPackGenerator() {
       {!isLoading && !result && (
         <Card>
           <CardHeader>
-            <CardTitle>{branding.toolName}</CardTitle>
+            <CardTitle>{brandingOverride?.toolName ?? branding.toolName}</CardTitle>
             <CardDescription>
-              {branding.homepageSubtext}
+              {brandingOverride?.homepageSubtext ?? branding.homepageSubtext}
             </CardDescription>
           </CardHeader>
           <CardContent>
