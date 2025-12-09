@@ -47,14 +47,10 @@ export async function readAttachmentsText(formData: FormData, requestId: string)
   for (const file of files) {
     total += file.size;
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      throw new ChatSDKError("bad_request:abm-pack", {
-        message: `${file.name} exceeds 5MB limit`,
-      });
+      throw new ChatSDKError("bad_request:abm-pack", `${file.name} exceeds 5MB limit`);
     }
     if (total > MAX_TOTAL_SIZE_BYTES) {
-      throw new ChatSDKError("bad_request:abm-pack", {
-        message: "Combined attachment size exceeds 12MB limit",
-      });
+      throw new ChatSDKError("bad_request:abm-pack", "Combined attachment size exceeds 12MB limit");
     }
 
     const text = (await extractFileText(file, requestId)).trim();
