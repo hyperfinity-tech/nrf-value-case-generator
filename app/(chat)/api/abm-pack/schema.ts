@@ -158,18 +158,36 @@ const researchSchema = z.object({
     .describe("Detailed source citations for all research data points"),
 });
 
-// Modelling
-const modellingSchema = z.object({
-  baseCaseGMUpliftMillions: z
-    .number()
-    .describe("Base case GM uplift in millions (local currency, calculated using MIDPOINT values)"),
-  modeApplied: valueCaseModeEnum.describe(
-    "Whether median or stretch_up mode was applied based on 2m threshold"
-  ),
-  modeRationale: z
-    .string()
-    .describe("Rationale: if base case < 2m use stretch_up, if >= 2m use median"),
-});
+// Modelling (broader to match frontend expectations and legacy outputs)
+const modellingSchema = z
+  .object({
+    baseCaseGMUpliftMillions: z
+      .number()
+      .optional()
+      .describe("Base case GM uplift in millions (local currency, calculated using MIDPOINT values)"),
+    modeApplied: valueCaseModeEnum
+      .optional()
+      .describe("Whether median or stretch_up mode was applied based on 2m threshold"),
+    modeRationale: z.string().optional().describe("Rationale for selected mode"),
+
+    // Canonical richer blocks (all optional to allow partial completions)
+    baseModellingAssumptions: z.record(z.string(), z.unknown()).optional(),
+    scopeAndBaseAssumptions: z.record(z.string(), z.unknown()).optional(),
+    upliftRanges: z.record(z.string(), z.unknown()).optional(),
+    upliftRangesAndChosenPoints: z.record(z.string(), z.unknown()).optional(),
+    detailedCalculations: z.record(z.string(), z.unknown()).optional(),
+    thresholdRuleApplication: z.unknown().optional(),
+    finalModeApplied: z
+      .object({
+        valueCaseMode: valueCaseModeEnum.or(z.string()).optional(),
+        mode: z.string().optional(),
+        value_case_mode: z.string().optional(),
+        reason: z.string().optional(),
+      })
+      .optional(),
+    finalUpliftUsingStretchUp: z.unknown().optional(),
+  })
+  .passthrough();
 
 // Data Confidence
 const dataConfidenceSchema = z.object({
@@ -244,18 +262,30 @@ const valueCaseRowSchema = z.object({
     .describe("Area of impact (e.g., 'A. Personalised Loyalty', 'B. Supplier-funded Loyalty', 'C. Price Optimisation', 'D. Total Cumulative Uplift')"),
   opportunityType: z.string().describe("Type of opportunity"),
   estimatedUpliftGM: z
-    .number()
+    .union([z.number(), z.string()])
     .describe("Estimated uplift in GM (millions, local currency)"),
   assumptionsMethodology: z
     .string()
     .describe("6-step CFO-ready methodology: 1) Uplift point applied, 2) Range & source, 3) Why selected, 4) Simple maths, 5) Result, 6) Reassurance"),
 });
 
+// Slide 1 Input Table (canonical object shape)
+const slide1InputTableSchema = z.object({
+  tableMarkdown: z.string().optional(),
+  rows: z.array(slide1InputRowSchema).optional(),
+  notes: z
+    .union([z.string(), z.array(z.string()), slide1NotesSchema, z.record(z.string(), z.unknown())])
+    .optional(),
+});
+
 // Slide 4 Value Case Table
 const slide4ValueCaseTableSchema = z.object({
+  tableMarkdown: z.string().optional(),
   rows: z
     .array(valueCaseRowSchema)
-    .describe("Value case rows: A (Personalised Loyalty), B (Supplier-funded if multi-brand), C (Price Optimisation), D (Total)"),
+    .describe("Value case rows: A (Personalised Loyalty), B (Supplier-funded if multi-brand), C (Price Optimisation), D (Total)")
+    .optional(),
+  table: z.array(valueCaseRowSchema).optional(), // legacy alias
 });
 
 // Outputs
@@ -269,10 +299,10 @@ const outputsSchema = z.object({
   executiveSummary: z
     .string()
     .describe("100-200 word consultative narrative explaining GM uplift calculation, evidence, mode applied, and strategic importance"),
-  slide1InputTable: z
-    .array(slide1InputRowSchema)
-    .describe("Input table with 7 metrics: Total Revenue, Revenue from Loyalty Members, Active Loyalty Members, AOV, Purchase Frequency, Paid Media Channels, Tech Stack"),
-  slide1Notes: slide1NotesSchema.describe("Notes for Slide 1"),
+  slide1InputTable: slide1InputTableSchema.describe(
+    "Input table with 7 metrics (tableMarkdown or rows) plus optional notes"
+  ),
+  slide1Notes: slide1NotesSchema.optional().describe("Notes for Slide 1 (legacy separate notes)"),
   loyaltySentimentSnapshot: loyaltySentimentSnapshotSchema.describe(
     "Loyalty sentiment analysis for last 12 months"
   ),
@@ -314,7 +344,10 @@ const assumptionsBlockItemSchema = z.object({
 // Appendices
 const appendicesSchema = z.object({
   assumptionsBlock: z
-    .array(assumptionsBlockItemSchema)
+    .union([
+      z.array(assumptionsBlockItemSchema),
+      z.record(z.string(), z.unknown()), // legacy object shape with lever keys or overallModel
+    ])
     .describe("Detailed 6-step assumptions breakdown for each lever"),
   sources: z.array(z.string()).describe("List of all sources used, one per line"),
 });

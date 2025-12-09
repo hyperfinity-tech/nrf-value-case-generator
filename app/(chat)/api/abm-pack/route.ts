@@ -12,6 +12,51 @@ import {
   type AbmPackOutput,
 } from "./schema";
 
+// Normalize legacy/variant key shapes into the canonical structure the frontend expects
+function normalizeAbmPackOutput(data: AbmPackOutput): AbmPackOutput {
+  // Use a shallow clone to avoid mutating the original
+  const normalized: AbmPackOutput = JSON.parse(JSON.stringify(data));
+
+  // Outputs aliasing
+  const outputs: Record<string, any> = normalized.outputs ?? {};
+  outputs.slide1InputTable ??= outputs.slide1_inputTable;
+  outputs.slide4ValueCaseTable ??= outputs.slide4_valueCaseTable;
+  outputs.loyaltySentimentSnapshot ??=
+    outputs.slide2LoyaltySentimentSnapshot ??
+    outputs.slide2_loyaltySentimentSnapshot ??
+    outputs.loyaltySentimentLast12Months;
+  outputs.slide1Notes ??= outputs.slide1_notes;
+
+  // Slide 1 input table: ensure object shape with rows/tableMarkdown/notes
+  if (Array.isArray(outputs.slide1InputTable)) {
+    outputs.slide1InputTable = { rows: outputs.slide1InputTable };
+  }
+  if (outputs.slide1InputTable?.table && !outputs.slide1InputTable.rows) {
+    outputs.slide1InputTable.rows = outputs.slide1InputTable.table;
+  }
+
+  // Value case table: accept table -> rows
+  if (outputs.slide4ValueCaseTable?.table && !outputs.slide4ValueCaseTable.rows) {
+    outputs.slide4ValueCaseTable.rows = outputs.slide4ValueCaseTable.table;
+  }
+
+  // Modelling: pull from outputs.modelling if present; fallback to appendices.assumptionsBlock.overallModel
+  if (!normalized.modelling && outputs.modelling) {
+    normalized.modelling = outputs.modelling;
+  }
+  if (!normalized.modelling && normalized.appendices) {
+    const assumptionsBlock: any = normalized.appendices.assumptionsBlock;
+    if (assumptionsBlock && typeof assumptionsBlock === "object" && !Array.isArray(assumptionsBlock)) {
+      if (assumptionsBlock.overallModel) {
+        normalized.modelling = assumptionsBlock.overallModel as any;
+      }
+    }
+  }
+
+  normalized.outputs = outputs as AbmPackOutput["outputs"];
+  return normalized;
+}
+
 // Convert Zod schema to JSON Schema for OpenAI Structured Outputs
 const rawJsonSchema = zodToJsonSchema(abmPackOutputSchema, {
   name: "AbmPack",
@@ -820,6 +865,9 @@ export async function POST(request: Request) {
       throw new Error("Failed to parse model response as JSON");
     }
 
+    // Normalize for frontend consumption (handles legacy key variants)
+    object = normalizeAbmPackOutput(object);
+
     console.log(`[${requestId}] ✅ Object generation completed in ${generationTime}ms`);
 
     if (usage) {
@@ -839,13 +887,39 @@ export async function POST(request: Request) {
     console.log(`[${requestId}]   Research sources: ${object.research?.researchSources?.length ?? 0}`);
     console.log(`[${requestId}]   Outputs fields: ${Object.keys(object.outputs ?? {}).length}`);
     console.log(`[${requestId}]   Outputs field names: ${Object.keys(object.outputs ?? {}).join(", ")}`);
-    console.log(`[${requestId}]   Slide 1 rows: ${object.outputs?.slide1InputTable?.length ?? 0}`);
+    const slide1Rows =
+      (object.outputs?.slide1InputTable &&
+        ((Array.isArray(object.outputs.slide1InputTable)
+          ? object.outputs.slide1InputTable.length
+          : object.outputs.slide1InputTable.rows?.length ??
+            object.outputs.slide1InputTable.table?.length))) ||
+      0;
+    console.log(`[${requestId}]   Slide 1 rows: ${slide1Rows}`);
     console.log(`[${requestId}]   Value case table exists: ${!!object.outputs?.slide4ValueCaseTable}`);
-    console.log(`[${requestId}]   Value case rows: ${object.outputs?.slide4ValueCaseTable?.rows?.length ?? 0}`);
+    console.log(
+      `[${requestId}]   Value case rows: ${
+        object.outputs?.slide4ValueCaseTable?.rows?.length ??
+        object.outputs?.slide4ValueCaseTable?.table?.length ??
+        0
+      }`
+    );
     console.log(`[${requestId}]   Sentiment snapshot exists: ${!!object.outputs?.loyaltySentimentSnapshot}`);
-    console.log(`[${requestId}]   Sentiment rows: ${object.outputs?.loyaltySentimentSnapshot?.sentimentTable?.length ?? 0}`);
-    console.log(`[${requestId}]   Mode applied: ${object.modelling?.modeApplied ?? "N/A"}`);
-    console.log(`[${requestId}]   Base case GM: $${object.modelling?.baseCaseGMUpliftMillions ?? "N/A"}m`);
+    console.log(
+      `[${requestId}]   Sentiment rows: ${
+        object.outputs?.loyaltySentimentSnapshot?.sentimentTable?.length ?? 0
+      }`
+    );
+    console.log(
+      `[${requestId}]   Mode applied: ${
+        object.modelling?.modeApplied ??
+        object.modelling?.finalModeApplied?.valueCaseMode ??
+        object.modelling?.finalModeApplied?.mode ??
+        "N/A"
+      }`
+    );
+    console.log(
+      `[${requestId}]   Base case GM: $${object.modelling?.baseCaseGMUpliftMillions ?? "N/A"}m`
+    );
     console.log(`[${requestId}]   Assumptions: ${object.appendices?.assumptionsBlock?.length ?? 0}`);
     console.log(`[${requestId}]   Sources: ${object.appendices?.sources?.length ?? 0}`);
     
