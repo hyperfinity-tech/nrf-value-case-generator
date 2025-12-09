@@ -389,7 +389,8 @@ export function ABMPackGenerator() {
       res.outputs?.slide2LoyaltySentimentSnapshot ||
       res.research?.loyaltySentiment;
     const valueCase = res.outputs?.slide4ValueCaseTable || res.valueCase;
-    const modelling = res.modelling;
+    const modelling = res.modelling || res.outputs?.modelling;
+    const modellingFallback = res.appendices?.assumptionsBlock?.overallModel;
     const research = res.research;
     const appendices = res.appendices;
     const brandIntake = res.brandIntake;
@@ -614,12 +615,12 @@ export function ABMPackGenerator() {
 
     const modellingContent = (
       <>
-        {modelling && (
+        {(modelling || modellingFallback) && (
           <div>
             <h3 className="text-lg font-semibold mb-2">Modelling Details</h3>
             <ExpandableSection title="View Full Modelling Breakdown" defaultOpen>
               <div className="space-y-4">
-                {modelling.scopeAndBaseAssumptions && (
+                {modelling?.scopeAndBaseAssumptions && (
                   <div>
                     <h4 className="font-medium mb-2">Scope & Base Assumptions</h4>
                     <div className="bg-muted/30 p-3 rounded text-sm">
@@ -628,7 +629,7 @@ export function ABMPackGenerator() {
                   </div>
                 )}
 
-                {modelling.upliftRanges && (
+                {modelling?.upliftRanges && (
                   <div>
                     <h4 className="font-medium mb-2">Uplift Ranges (Evidence-Based)</h4>
                     <div className="bg-muted/30 p-3 rounded text-sm">
@@ -637,7 +638,7 @@ export function ABMPackGenerator() {
                   </div>
                 )}
 
-                {modelling.finalModeApplied && (
+                {modelling?.finalModeApplied && (
                   <div>
                     <h4 className="font-medium mb-2">Mode Applied</h4>
                     <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded">
@@ -649,11 +650,37 @@ export function ABMPackGenerator() {
                   </div>
                 )}
 
-                {modelling.finalUpliftUsingStretchUp && (
+                {modelling?.finalUpliftUsingStretchUp && (
                   <div>
                     <h4 className="font-medium mb-2">Final Uplift Calculations</h4>
                     <div className="bg-green-50 dark:bg-green-950 p-3 rounded">
                       <RenderValue value={modelling.finalUpliftUsingStretchUp} />
+                    </div>
+                  </div>
+                )}
+
+                {!modelling && modellingFallback && (
+                  <div>
+                    <h4 className="font-medium mb-2">Overall Model Summary</h4>
+                    <div className="space-y-3 text-sm">
+                      {modellingFallback.thresholdRuleApplication && (
+                        <div className="bg-muted/30 p-3 rounded">
+                          <p className="font-semibold mb-1">Threshold Rule</p>
+                          <p>{modellingFallback.thresholdRuleApplication}</p>
+                        </div>
+                      )}
+                      {modellingFallback.sensitivityNotes && (
+                        <div className="bg-muted/30 p-3 rounded">
+                          <p className="font-semibold mb-1">Sensitivity</p>
+                          <p>{modellingFallback.sensitivityNotes}</p>
+                        </div>
+                      )}
+                      {modellingFallback.dataConfidenceSummary && (
+                        <div className="bg-muted/30 p-3 rounded">
+                          <p className="font-semibold mb-1">Data Confidence</p>
+                          <RenderValue value={modellingFallback.dataConfidenceSummary} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -835,7 +862,7 @@ export function ABMPackGenerator() {
       { id: "inputs", label: "Input Metrics", content: inputsContent, available: Boolean(slide1InputTable) },
       { id: "sentiment", label: "Loyalty Sentiment", content: sentimentContent, available: Boolean(loyaltySentiment) },
       { id: "value-case", label: "Value Case", content: valueCaseContent, available: Boolean(valueCase) },
-      { id: "modelling", label: "Modelling", content: modellingContent, available: Boolean(modelling) },
+      { id: "modelling", label: "Modelling", content: modellingContent, available: Boolean(modelling || modellingFallback) },
       { id: "research", label: "Research", content: researchContent, available: Boolean(research) },
       { id: "appendices", label: "Appendices", content: appendicesContent, available: Boolean(appendices) },
       { id: "brand-intake", label: "Brand Intake", content: brandIntakeContent, available: Boolean(brandIntake) },
