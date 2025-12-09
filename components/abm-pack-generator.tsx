@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { branding } from "@/lib/branding";
 import {
   Select,
@@ -26,6 +27,7 @@ import { ADIDAS_MOCK_RESPONSE } from "@/lib/mock-data/adidas-abm-pack";
 interface FormState {
   brand: string;
   region: "US" | "UK";
+  notes: string;
   useMockResponse: boolean;
   generateInfographic: boolean;
 }
@@ -247,6 +249,7 @@ export function ABMPackGenerator() {
   const [formData, setFormData] = useState<FormState>({
     brand: "",
     region: "US",
+    notes: "",
     useMockResponse: false,
     generateInfographic: false,
   });
@@ -299,6 +302,7 @@ export function ABMPackGenerator() {
         body: JSON.stringify({
           brand: formData.brand,
           region: formData.region,
+          notes: formData.notes?.trim() ? formData.notes.trim() : undefined,
         }),
       });
 
@@ -366,6 +370,7 @@ export function ABMPackGenerator() {
     setFormData({
       brand: "",
       region: "US",
+      notes: "",
       useMockResponse: false,
       generateInfographic: false,
     });
@@ -1028,6 +1033,21 @@ export function ABMPackGenerator() {
                     <SelectItem value="UK">🇬🇧 United Kingdom (GBP)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="notes">Special notes (optional)</Label>
+                <Textarea
+                  id="notes"
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  placeholder="Discovery call highlights, internal context, constraints, key assumptions, evidence pointers..."
+                  rows={4}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  These notes go straight into the value-case prompt to guide research, assumptions, and tone.
+                </p>
               </div>
 
               {/* Option: Generate strategic infographic */}

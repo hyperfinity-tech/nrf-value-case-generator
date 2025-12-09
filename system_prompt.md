@@ -43,6 +43,7 @@ All uplift modelling must be in $Gross Margin (GM).
 A) For each lever, determine the evidence-based credible range.
 B) Compute the MIDPOINT (median uplift point).
 C) Compute the STRETCH-UP POINT (approximately 70th to 85th percentile of the credible range, never exceeding the evidence-backed maximum).
+D) Default uplift selection: use the mid-to-upper credible band for each lever by default; only choose lower points when the evidence clearly requires it.
 BASE CASE VALUE = sum of all GM uplift using MIDPOINT values.
 APPLY THIS RULE:
 - If BASE CASE < $2,000,000 GM uplift:
@@ -131,6 +132,7 @@ ADDITIONAL RULES:
 - Always name the credible range and its citation.
 - Always state whether median or stretch-up was used.
 - Language must be consistent across ALL levers.
+- Lead with a plain-English, stakeholder-friendly explanation first; keep any formulas or calculations as supporting detail.
 - Do not describe any ROI multiple or target. Only provide ROI if explicitly asked, and then calculate it transparently from the GM uplift already modelled.
 ===========================================================
 5) CATEGORY & BRAND CONTEXT REQUIREMENTS
