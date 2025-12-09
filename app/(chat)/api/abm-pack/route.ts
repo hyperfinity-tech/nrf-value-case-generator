@@ -6,56 +6,18 @@ import { myProvider, webSearchTool, codeInterpreterTool } from "@/lib/ai/provide
 import { getMessageCountByUserId } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 import {
+  MAX_ATTACHMENT_CHARS,
+  MAX_FILE_SIZE_BYTES,
+  MAX_TOTAL_SIZE_BYTES,
+  readAttachmentsText,
+} from "@/lib/abm/attachments";
+import { normalizeAbmPackOutput } from "@/lib/abm/normalize";
+import {
   abmPackOutputSchema,
   abmPackRequestSchema,
   type AbmPackRequest,
   type AbmPackOutput,
 } from "./schema";
-
-// Normalize legacy/variant key shapes into the canonical structure the frontend expects
-function normalizeAbmPackOutput(data: AbmPackOutput): AbmPackOutput {
-  // Use a shallow clone to avoid mutating the original
-  const normalized: AbmPackOutput = JSON.parse(JSON.stringify(data));
-
-  // Outputs aliasing
-  const outputs: Record<string, any> = normalized.outputs ?? {};
-  outputs.slide1InputTable ??= outputs.slide1_inputTable;
-  outputs.slide4ValueCaseTable ??= outputs.slide4_valueCaseTable;
-  outputs.loyaltySentimentSnapshot ??=
-    outputs.slide2LoyaltySentimentSnapshot ??
-    outputs.slide2_loyaltySentimentSnapshot ??
-    outputs.loyaltySentimentLast12Months;
-  outputs.slide1Notes ??= outputs.slide1_notes;
-
-  // Slide 1 input table: ensure object shape with rows/tableMarkdown/notes
-  if (Array.isArray(outputs.slide1InputTable)) {
-    outputs.slide1InputTable = { rows: outputs.slide1InputTable };
-  }
-  if (outputs.slide1InputTable?.table && !outputs.slide1InputTable.rows) {
-    outputs.slide1InputTable.rows = outputs.slide1InputTable.table;
-  }
-
-  // Value case table: accept table -> rows
-  if (outputs.slide4ValueCaseTable?.table && !outputs.slide4ValueCaseTable.rows) {
-    outputs.slide4ValueCaseTable.rows = outputs.slide4ValueCaseTable.table;
-  }
-
-  // Modelling: pull from outputs.modelling if present; fallback to appendices.assumptionsBlock.overallModel
-  if (!normalized.modelling && outputs.modelling) {
-    normalized.modelling = outputs.modelling;
-  }
-  if (!normalized.modelling && normalized.appendices) {
-    const assumptionsBlock: any = normalized.appendices.assumptionsBlock;
-    if (assumptionsBlock && typeof assumptionsBlock === "object" && !Array.isArray(assumptionsBlock)) {
-      if (assumptionsBlock.overallModel) {
-        normalized.modelling = assumptionsBlock.overallModel as any;
-      }
-    }
-  }
-
-  normalized.outputs = outputs as AbmPackOutput["outputs"];
-  return normalized;
-}
 
 // Convert Zod schema to JSON Schema for OpenAI Structured Outputs
 const rawJsonSchema = zodToJsonSchema(abmPackOutputSchema, {
@@ -739,15 +701,51 @@ export async function POST(request: Request) {
   console.log(`[${requestId}] Request timestamp: ${new Date().toISOString()}`);
 
   let requestBody: AbmPackRequest;
+  let attachmentsText = "";
 
   try {
-    console.log(`[${requestId}] 📖 Parsing request JSON...`);
-    const json = await request.json();
-    console.log(`[${requestId}] ✅ Raw JSON parsed successfully`);
-    console.log(`[${requestId}] 📋 Request data:`, JSON.stringify(json, null, 2));
+    const contentType = request.headers.get("content-type") ?? "";
 
-    console.log(`[${requestId}] 🔍 Validating request against schema...`);
-    requestBody = abmPackRequestSchema.parse(json);
+    if (contentType.includes("multipart/form-data")) {
+      console.log(`[${requestId}] 📖 Parsing multipart/form-data...`);
+      const formData = await request.formData();
+
+      const brand = formData.get("brand")?.toString() ?? "";
+      const region = (formData.get("region")?.toString() as AbmPackRequest["region"] | undefined) ?? "US";
+      const notes = formData.get("notes")?.toString() ?? undefined;
+
+      attachmentsText = await readAttachmentsText(formData, requestId);
+
+      const base = {
+        brand,
+        region,
+        notes,
+        selectedModel: "chat-model" as const,
+      };
+
+      console.log(`[${requestId}] 🔍 Validating multipart request against schema...`);
+      requestBody = abmPackRequestSchema.parse(base);
+    } else {
+      console.log(`[${requestId}] 📖 Parsing request JSON...`);
+      const json = await request.json();
+      console.log(`[${requestId}] ✅ Raw JSON parsed successfully`);
+      console.log(`[${requestId}] 📋 Request data:`, JSON.stringify(json, null, 2));
+
+      attachmentsText = "";
+
+      console.log(`[${requestId}] 🔍 Validating request against schema...`);
+      requestBody = abmPackRequestSchema.parse(json);
+    }
+
+    if (attachmentsText) {
+      requestBody = {
+        ...requestBody,
+        notes: requestBody.notes
+          ? `${requestBody.notes}\n\n[Attachments]\n${attachmentsText}`
+          : `[Attachments]\n${attachmentsText}`,
+      };
+    }
+
     console.log(`[${requestId}] ✅ Request validation passed`);
     console.log(`[${requestId}] Brand: ${requestBody.brand}`);
     console.log(`[${requestId}] Category: ${requestBody.category}`);

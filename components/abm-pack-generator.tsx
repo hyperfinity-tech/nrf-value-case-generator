@@ -32,6 +32,9 @@ interface FormState {
   generateInfographic: boolean;
 }
 
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB per file
+const MAX_TOTAL_SIZE_BYTES = 12 * 1024 * 1024; // combined cap
+
 // Mock response imported from separate file for cleaner code
 const MOCK_RESPONSE: FlexibleResponse = ADIDAS_MOCK_RESPONSE as FlexibleResponse;
 
@@ -246,6 +249,7 @@ export function ABMPackGenerator() {
   const [infographicImage, setInfographicImage] = useState<string | null>(null);
   const [showReport, setShowReport] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("summary");
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   const [formData, setFormData] = useState<FormState>({
     brand: "",
@@ -274,6 +278,56 @@ export function ABMPackGenerator() {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.currentTarget;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.currentTarget.files;
+    if (!files) return;
+
+    const newFiles = Array.from(files);
+
+    // Validate types
+    const allowedMime = new Set([
+      "text/plain",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ]);
+
+    // Size checks
+    const existingTotal = attachments.reduce((sum, f) => sum + f.size, 0);
+    const newTotal = newFiles.reduce((sum, f) => sum + f.size, 0);
+
+    if (newFiles.some((f) => f.size > MAX_FILE_SIZE_BYTES)) {
+      toast({
+        type: "error",
+        description: "Each file must be under 5MB (PDF/DOCX/TXT).",
+      });
+      return;
+    }
+
+    if (existingTotal + newTotal > MAX_TOTAL_SIZE_BYTES) {
+      toast({
+        type: "error",
+        description: "Total attachments must be under 12MB.",
+      });
+      return;
+    }
+
+    const rejected = newFiles.filter((f) => !allowedMime.has(f.type));
+    if (rejected.length > 0) {
+      toast({
+        type: "error",
+        description: "Only TXT, PDF, and DOC/DOCX files are allowed.",
+      });
+      return;
+    }
+
+    setAttachments((prev) => [...prev, ...newFiles]);
+  };
+
+  const handleRemoveAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSelectChange = (name: string, value: string) => {
@@ -306,14 +360,17 @@ export function ABMPackGenerator() {
       }
 
       // Stage 1: Generate JSON pack
+      const fd = new FormData();
+      fd.append("brand", formData.brand);
+      fd.append("region", formData.region);
+      if (formData.notes?.trim()) {
+        fd.append("notes", formData.notes.trim());
+      }
+      attachments.forEach((file) => fd.append("files", file));
+
       const response = await fetch("/api/abm-pack", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          brand: formData.brand,
-          region: formData.region,
-          notes: formData.notes?.trim() ? formData.notes.trim() : undefined,
-        }),
+        body: fd,
       });
 
       if (!response.ok) {
@@ -983,6 +1040,7 @@ export function ABMPackGenerator() {
       useMockResponse: false,
       generateInfographic: false,
     });
+    setAttachments([]);
   };
 
   // Download infographic as PNG
@@ -1286,6 +1344,45 @@ export function ABMPackGenerator() {
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
                   These notes go straight into the value-case prompt to guide research, assumptions, and tone.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="attachments">Attachments (TXT, PDF, DOC/DOCX, up to 12MB total)</Label>
+                <Input
+                  id="attachments"
+                  type="file"
+                  accept=".txt,.pdf,.doc,.docx"
+                  multiple
+                  onChange={handleFileChange}
+                />
+                {attachments.length > 0 && (
+                  <div className="space-y-1">
+                    {attachments.map((file, idx) => (
+                      <div
+                        key={`${file.name}-${idx}`}
+                        className="flex items-center justify-between rounded border bg-muted/40 px-3 py-2 text-sm"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium">{file.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveAttachment(idx)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Files are parsed in-memory (not stored) and added to the prompt with length clipping to respect token limits.
                 </p>
               </div>
 
