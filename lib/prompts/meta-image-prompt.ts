@@ -24,8 +24,8 @@ You must write a prompt that will generate a high-fidelity "Strategic Value Info
         *   **Penetration:** \`brandIntake.research.loyaltyProgramme.penetrationAndMembers.penetrationRateRetailSales.value\`%
         *   **Total Opportunity:** \`modelling.finalUpliftUsingStretchUp.totalGMUplift.value\` (Format as Billions, e.g., "$1.2bn").
         *   **Split Uplifts:** Personalisation Uplift vs. Pricing Uplift vs Supply Funded Loyalty (found in \`modelling.finalUpliftUsingStretchUp\`).
-        *   **Sentiment:** Extract a short, punchy negative quote from \`brandIntake.research.loyaltySentiment.narrativeSummary\` or evidence list.
-        *   **Pain Points:** Identify 3 keywords from \`brandIntake.research.loyaltySentiment.sentimentTable\` (e.g., "Expired Rewards").
+        *   **Sentiment:** If overall sentiment is positive, extract a short, punchy positive/love quote. Otherwise extract a short, punchy pain-point quote. Pull from \`brandIntake.research.loyaltySentiment.narrativeSummary\` or evidence list.
+        *   **Sentiment Bullets:** If overall sentiment is positive, pick 2 positive/customer-love keywords and 1 pain point (negative) as the last bullet. If mixed, pick 1 positive/customer-love keyword and 2 pain points. Otherwise pick 3 pain-point keywords. Pull from \`brandIntake.research.loyaltySentiment.sentimentTable\` (e.g., "Expired Rewards").
 
 2.  **Construct the Image Prompt:**
     *   Write a descriptive prompt following the **Structure Template** below.
@@ -70,8 +70,8 @@ Create a high-resolution, professional strategic infographic. The design must be
 *   **Right Column: The Reality (Sentiment)**
     *   **Header:** "CUSTOMER SENTIMENT".
     *   **Visual:** A sentiment gauge pointing to the relevant place on the gauge for [overallSentiment (or similar metric)]. Labeled from negative (left) to positive (right).
-    *   **Quote Box:** A box styled like [Brand UI/App style] containing text: *"[Insert Short Extracted Quote]"*
-    *   **Pain Points:** List 3 bullet points: [Insert 3 Pain Point Keywords].
+    *   **Quote Box:** A box styled like [Brand UI/App style] containing text: *"[Insert Short Extracted Quote]"* (use a positive quote when overall sentiment is positive; otherwise use a representative pain-point quote).
+*   **Sentiment Bullets:** If overall sentiment is positive, list two positive highlights followed by one pain point (negative) as the last bullet. Otherwise list three pain points.
 
 **3. Footer Section (Bottom 10%):**
 *   **Text:** "Source: [Brand Name] 10-K" | "Powered by HyperFinity Actionable Intelligence".
