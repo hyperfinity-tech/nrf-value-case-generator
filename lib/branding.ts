@@ -14,3 +14,4 @@ export const branding = {
     process.env.NEXT_PUBLIC_HOMEPAGE_SUBTEXT ?? DEFAULT_HOMEPAGE_SUBTEXT,
 } as const;
 
+

@@ -13,6 +13,13 @@ export function normalizeAbmPackOutput(data: AbmPackOutput): AbmPackOutput {
     outputs.loyaltySentimentLast12Months;
   outputs.slide1Notes ??= outputs.slide1_notes;
 
+  // Normalize sentiment table shapes (sometimes nested under .rows)
+  if (outputs.loyaltySentimentSnapshot?.sentimentTable?.rows &&
+    !Array.isArray(outputs.loyaltySentimentSnapshot.sentimentTable)) {
+    outputs.loyaltySentimentSnapshot.sentimentTable =
+      outputs.loyaltySentimentSnapshot.sentimentTable.rows;
+  }
+
   if (Array.isArray(outputs.slide1InputTable)) {
     outputs.slide1InputTable = { rows: outputs.slide1InputTable };
   }
@@ -39,4 +46,5 @@ export function normalizeAbmPackOutput(data: AbmPackOutput): AbmPackOutput {
   normalized.outputs = outputs as AbmPackOutput["outputs"];
   return normalized;
 }
+
 
