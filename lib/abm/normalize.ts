@@ -14,6 +14,7 @@ export function normalizeAbmPackOutput(data: AbmPackOutput): AbmPackOutput {
   outputs.slide1Notes ??= outputs.slide1_notes;
 
   // Normalize sentiment table shapes (sometimes nested under .rows)
+  console.log("outputs.loyaltySentimentSnapshot", outputs.loyaltySentimentSnapshot);
   if (outputs.loyaltySentimentSnapshot?.sentimentTable?.rows &&
     !Array.isArray(outputs.loyaltySentimentSnapshot.sentimentTable)) {
     outputs.loyaltySentimentSnapshot.sentimentTable =
