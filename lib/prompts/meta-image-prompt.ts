@@ -58,7 +58,7 @@ Create a high-resolution, professional strategic infographic. The design must be
     *   **Subtext:** "Active Loyalty Members".
     *   **Chart:** A donut chart showing [Insert Penetration %]% filled in [Brand Primary Color].
 
-*   **Center Column: The Opportunity (Hero Section - though do not label as such)**
+*   **Center Column: The Opportunity**
     *   **Visual:** A large upward-trending arrow or bar chart. Color: [Brand Primary Color] or [Brand Secondary Color].
     *   **Main Number:** "[Insert Total Uplift Value]" in massive, heavy font.
     *   **Label:** "TOTAL GROSS MARGIN UPLIFT".
