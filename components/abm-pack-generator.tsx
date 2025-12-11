@@ -1295,6 +1295,16 @@ export function ABMPackGenerator({
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Generated Value Case: {getBrandName()}</CardTitle>
               <div className="flex gap-2">
+                {infographicImage && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowReport(false)}
+                  >
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    View Infographic
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
