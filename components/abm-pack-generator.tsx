@@ -737,6 +737,32 @@ export function ABMPackGenerator({
       </>
     );
 
+    // Extract mode applied from various possible locations
+    const getModeApplied = () => {
+      if (modelling?.finalModeApplied) return modelling.finalModeApplied;
+      if (modelling?.finalAppliedUplifts) {
+        return {
+          valueCaseMode: modelling.finalAppliedUplifts.modeApplied,
+          reason: modelling.finalAppliedUplifts.rationale,
+        };
+      }
+      if (modelling?.calculations?.finalMode) {
+        return {
+          valueCaseMode: modelling.calculations.finalMode.valueCaseMode,
+          reason: modelling.calculations.finalMode.reason,
+        };
+      }
+      if (modelling?.modeApplied) {
+        return {
+          valueCaseMode: modelling.modeApplied,
+          reason: modelling.modeRationale,
+        };
+      }
+      return null;
+    };
+
+    const modeApplied = getModeApplied();
+
     const modellingContent = (
       <>
         {(modelling || modellingFallback) && (
@@ -744,6 +770,86 @@ export function ABMPackGenerator({
             <h3 className="text-lg font-semibold mb-2">Modelling Details</h3>
             <ExpandableSection title="View Full Modelling Breakdown" defaultOpen>
               <div className="space-y-4">
+                {/* Mode Applied - show prominently at top */}
+                {modeApplied && (
+                  <div>
+                    <h4 className="font-medium mb-2">Mode Applied</h4>
+                    <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded">
+                      <p className="font-semibold">
+                        {modeApplied.valueCaseMode ||
+                          modeApplied.mode ||
+                          modeApplied.value_case_mode}
+                      </p>
+                      {modeApplied.reason && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {modeApplied.reason}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Key Inputs / Setup - from real API or mock */}
+                {(modelling?.keyInputs || modelling?.setup) && (
+                  <div>
+                    <h4 className="font-medium mb-2">Key Inputs</h4>
+                    <div className="bg-muted/30 p-3 rounded text-sm">
+                      <RenderValue value={modelling.keyInputs || modelling.setup} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Uplift Ranges - from real API */}
+                {modelling?.upliftRanges && (
+                  <div>
+                    <h4 className="font-medium mb-2">Uplift Ranges (Evidence-Based)</h4>
+                    <div className="bg-muted/30 p-3 rounded text-sm">
+                      <RenderValue value={modelling.upliftRanges} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Levers - from mock data */}
+                {modelling?.levers && (
+                  <div>
+                    <h4 className="font-medium mb-2">Lever Definitions</h4>
+                    <div className="bg-muted/30 p-3 rounded text-sm">
+                      <RenderValue value={modelling.levers} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Base Case Calculations - from real API or mock */}
+                {(modelling?.baseCaseUsingMidpoints || modelling?.calculations?.baseCaseUsingMidpoints) && (
+                  <div>
+                    <h4 className="font-medium mb-2">Base Case Calculations (Midpoints)</h4>
+                    <div className="bg-muted/30 p-3 rounded text-sm">
+                      <RenderValue value={modelling.baseCaseUsingMidpoints || modelling.calculations?.baseCaseUsingMidpoints} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Final Applied Uplifts - from real API */}
+                {modelling?.finalAppliedUplifts?.levers && (
+                  <div>
+                    <h4 className="font-medium mb-2">Final Applied Uplifts</h4>
+                    <div className="bg-green-50 dark:bg-green-950 p-3 rounded text-sm">
+                      <RenderValue value={modelling.finalAppliedUplifts} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Final Uplifts GM - from mock data */}
+                {modelling?.calculations?.finalUpliftsGM && (
+                  <div>
+                    <h4 className="font-medium mb-2">Final GM Uplifts</h4>
+                    <div className="bg-green-50 dark:bg-green-950 p-3 rounded text-sm">
+                      <RenderValue value={modelling.calculations.finalUpliftsGM} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Legacy fields - keep for backwards compatibility */}
                 {modelling?.baseModellingAssumptions && (
                   <div>
                     <h4 className="font-medium mb-2">Base Modelling Assumptions</h4>
@@ -762,15 +868,6 @@ export function ABMPackGenerator({
                   </div>
                 )}
 
-                {modelling?.upliftRanges && (
-                  <div>
-                    <h4 className="font-medium mb-2">Uplift Ranges (Evidence-Based)</h4>
-                    <div className="bg-muted/30 p-3 rounded text-sm">
-                      <RenderValue value={modelling.upliftRanges} />
-                    </div>
-                  </div>
-                )}
-
                 {modelling?.upliftRangesAndChosenPoints && (
                   <div>
                     <h4 className="font-medium mb-2">Uplift Ranges & Chosen Points</h4>
@@ -785,22 +882,6 @@ export function ABMPackGenerator({
                     <h4 className="font-medium mb-2">Detailed Calculations</h4>
                     <div className="bg-muted/30 p-3 rounded text-sm">
                       <RenderValue value={modelling.detailedCalculations} />
-                    </div>
-                  </div>
-                )}
-
-                {modelling?.finalModeApplied && (
-                  <div>
-                    <h4 className="font-medium mb-2">Mode Applied</h4>
-                    <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded">
-                      <p className="font-semibold">
-                        {modelling.finalModeApplied.valueCaseMode ||
-                          modelling.finalModeApplied.mode ||
-                          modelling.finalModeApplied.value_case_mode}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {modelling.finalModeApplied.reason}
-                      </p>
                     </div>
                   </div>
                 )}
