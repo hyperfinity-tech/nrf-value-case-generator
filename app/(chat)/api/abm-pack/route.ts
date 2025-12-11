@@ -61,7 +61,7 @@ if (researchProps?.properties) {
   console.log("  - researchSources type:", researchSources?.type);
 }
 
-export const maxDuration = 600; // ABM packs may take longer to generate
+export const maxDuration = 300; // ABM packs may take longer to generate
 
 // =============================================================================
 // FULL CUSTOM GPT SYSTEM PROMPT - CFO-Ready ABM Pack Builder
