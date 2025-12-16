@@ -1397,6 +1397,9 @@ export function ABMPackGenerator({
         <Card>
           <CardHeader>
             <CardTitle>{brandingOverride?.toolName ?? branding.toolName}</CardTitle>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  {brandingOverride?.homepageTagline ?? branding.homepageTagline}
+             </p>
             <CardDescription>
               {brandingOverride?.homepageSubtext ?? branding.homepageSubtext}
             </CardDescription>
