@@ -1511,19 +1511,31 @@ function renderAppendices(
 async function renderInfographicCover(
   ctx: RenderContext,
   data: AbmPackData,
-  imageBase64: string
+  imageSource: string
 ): Promise<void> {
   const { pdfDoc, page, fonts } = ctx;
   const { page: pageStyles, fonts: fontStyles, colors } = PDF_STYLES;
 
   try {
-    // Extract base64 data (remove data URL prefix if present)
-    const base64Data = imageBase64.includes(",")
-      ? imageBase64.split(",")[1]
-      : imageBase64;
-    const imageBytes = Uint8Array.from(atob(base64Data), (c) =>
-      c.charCodeAt(0)
-    );
+    let imageBytes: Uint8Array;
+
+    // Check if it's a file path (starts with / or http) or base64 data
+    if (imageSource.startsWith("/") || imageSource.startsWith("http")) {
+      // It's a file path - fetch the image
+      const response = await fetch(imageSource);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status}`);
+      }
+      const arrayBuffer = await response.arrayBuffer();
+      imageBytes = new Uint8Array(arrayBuffer);
+    } else if (imageSource.startsWith("data:")) {
+      // It's a data URL - extract base64
+      const base64Data = imageSource.split(",")[1];
+      imageBytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+    } else {
+      // Assume it's raw base64
+      imageBytes = Uint8Array.from(atob(imageSource), (c) => c.charCodeAt(0));
+    }
 
     // Embed image (try PNG first, then JPEG)
     let image;
@@ -1613,7 +1625,7 @@ async function renderInfographicCover(
 
 async function renderInfographicPage(
   ctx: RenderContext,
-  imageBase64: string
+  imageSource: string
 ): Promise<void> {
   const { pdfDoc, fonts } = ctx;
   const { page: pageStyles, fonts: fontStyles, colors } = PDF_STYLES;
@@ -1631,13 +1643,25 @@ async function renderInfographicPage(
   });
 
   try {
-    // Extract base64 data (remove data URL prefix if present)
-    const base64Data = imageBase64.includes(",")
-      ? imageBase64.split(",")[1]
-      : imageBase64;
-    const imageBytes = Uint8Array.from(atob(base64Data), (c) =>
-      c.charCodeAt(0)
-    );
+    let imageBytes: Uint8Array;
+
+    // Check if it's a file path (starts with / or http) or base64 data
+    if (imageSource.startsWith("/") || imageSource.startsWith("http")) {
+      // It's a file path - fetch the image
+      const response = await fetch(imageSource);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status}`);
+      }
+      const arrayBuffer = await response.arrayBuffer();
+      imageBytes = new Uint8Array(arrayBuffer);
+    } else if (imageSource.startsWith("data:")) {
+      // It's a data URL - extract base64
+      const base64Data = imageSource.split(",")[1];
+      imageBytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+    } else {
+      // Assume it's raw base64
+      imageBytes = Uint8Array.from(atob(imageSource), (c) => c.charCodeAt(0));
+    }
 
     // Embed image (try PNG first, then JPEG)
     let image;
