@@ -20,6 +20,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ADIDAS_MOCK_RESPONSE } from "@/lib/mock-data/adidas-abm-pack";
@@ -1198,6 +1199,36 @@ export function ABMPackGenerator({
     }
   };
 
+  // Download full report as PDF (all sections + infographic)
+  const downloadFullReport = async () => {
+    if (!result) return;
+
+    try {
+      const { generateAbmPackPdfReport } = await import("@/lib/abm/pdf-report");
+
+      const pdfBytes = await generateAbmPackPdfReport({
+        data: result as Record<string, unknown>,
+        infographicBase64: infographicImage,
+      });
+
+      // Create blob and trigger download (cast to satisfy TypeScript's strict ArrayBuffer typing)
+      const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `value-case-report-${getBrandName().replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().split("T")[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({ type: "success", description: "Full report downloaded successfully" });
+    } catch (error) {
+      console.error("Failed to generate PDF report:", error);
+      toast({ type: "error", description: "Failed to generate PDF report" });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Infographic Showcase - Full-screen prominent display with blurred background */}
@@ -1263,14 +1294,19 @@ export function ABMPackGenerator({
                       <ChevronDown className="h-4 w-4 ml-2" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="center" className="min-w-[140px]">
+                  <DropdownMenuContent align="center" className="min-w-[160px]">
                     <DropdownMenuItem onClick={downloadAsPdf} className="cursor-pointer">
                       <FileText className="h-4 w-4 mr-2" />
-                      PDF
+                      Infographic PDF
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={downloadAsPng} className="cursor-pointer">
                       <ImageIcon className="h-4 w-4 mr-2" />
-                      PNG
+                      Infographic PNG
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={downloadFullReport} className="cursor-pointer">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Full Report PDF
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -1311,6 +1347,14 @@ export function ABMPackGenerator({
                   onClick={handleStartOver}
                 >
                   Start Over
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadFullReport}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Download Report
                 </Button>
                 <Button
                   variant="outline"
