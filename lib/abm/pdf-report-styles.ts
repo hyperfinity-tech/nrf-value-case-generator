@@ -14,12 +14,12 @@ const toRgb = (r: number, g: number, b: number): RGBColor => ({
 });
 
 export const PDF_STYLES = {
-  // Page settings (A4 in points - pdf-lib uses points, 1 point = 1/72 inch)
+  // Page settings (A4 landscape in points - pdf-lib uses points, 1 point = 1/72 inch)
   page: {
-    width: 595.28, // A4 width in points
-    height: 841.89, // A4 height in points
+    width: 841.89, // A4 landscape width in points
+    height: 595.28, // A4 landscape height in points
     margin: 42.52, // ~15mm in points
-    contentWidth: 510.24, // width - 2*margin
+    contentWidth: 756.85, // width - 2*margin
   },
 
   // Colors (RGB 0-1 scale for pdf-lib)
