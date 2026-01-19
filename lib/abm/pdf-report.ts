@@ -225,6 +225,226 @@ function sanitizeText(text: string): string {
     .trim();
 }
 
+// ============================================================================
+// Flexible Data Extraction Helpers
+// ============================================================================
+
+/**
+ * Search for a value across multiple possible key patterns (case-insensitive)
+ * Supports dot notation for nested paths: "financials.revenue"
+ */
+function findValue(
+  obj: Record<string, unknown> | undefined,
+  ...patterns: string[]
+): unknown {
+  if (!obj) return undefined;
+
+  for (const pattern of patterns) {
+    // Try exact match first
+    if (pattern in obj) return obj[pattern];
+
+    // Try case-insensitive match
+    const lowerPattern = pattern.toLowerCase();
+    for (const key of Object.keys(obj)) {
+      if (key.toLowerCase() === lowerPattern) return obj[key];
+      // Also try matching with common variations (camelCase, snake_case)
+      const normalizedKey = key.toLowerCase().replace(/_/g, "");
+      const normalizedPattern = lowerPattern.replace(/_/g, "");
+      if (normalizedKey === normalizedPattern) return obj[key];
+    }
+
+    // Try dot notation for nested paths
+    if (pattern.includes(".")) {
+      const parts = pattern.split(".");
+      let current: unknown = obj;
+      for (const part of parts) {
+        if (current && typeof current === "object") {
+          current = findValue(current as Record<string, unknown>, part);
+        } else {
+          current = undefined;
+          break;
+        }
+      }
+      if (current !== undefined) return current;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Extract a numeric value from various possible structures
+ */
+function extractNumber(data: unknown): number | undefined {
+  if (typeof data === "number") return data;
+  if (typeof data === "string") {
+    const parsed = Number.parseFloat(data.replace(/[^0-9.-]/g, ""));
+    return Number.isNaN(parsed) ? undefined : parsed;
+  }
+  if (data && typeof data === "object") {
+    const obj = data as Record<string, unknown>;
+    // Try common value key patterns
+    const val = findValue(obj, "value", "valueUSD", "valueGBP", "amount", "total");
+    if (val !== undefined) return extractNumber(val);
+  }
+  return undefined;
+}
+
+/**
+ * Extract a string value, handling objects with nested value/note/description
+ */
+function extractString(data: unknown): string | undefined {
+  if (typeof data === "string") return data;
+  if (typeof data === "number") return String(data);
+  if (data && typeof data === "object") {
+    const obj = data as Record<string, unknown>;
+    // Try common patterns for getting the string value
+    const val = findValue(
+      obj,
+      "value",
+      "description",
+      "note",
+      "text",
+      "summary",
+      "name",
+      "label"
+    );
+    if (val !== undefined) return extractString(val);
+  }
+  return undefined;
+}
+
+/**
+ * Extract confidence level from various structures
+ */
+function extractConfidence(data: unknown): string | undefined {
+  if (!data || typeof data !== "object") return undefined;
+  const obj = data as Record<string, unknown>;
+  const conf = findValue(obj, "confidence", "confidenceLevel", "dataConfidence");
+  if (typeof conf === "string") return conf;
+  return undefined;
+}
+
+/**
+ * Format a key name for display (camelCase/snake_case to Title Case)
+ */
+function formatKeyName(key: string): string {
+  return key
+    .replace(/([A-Z])/g, " $1")
+    .replace(/_/g, " ")
+    .replace(/^\w/, (c) => c.toUpperCase())
+    .replace(/\b(usd|gbp|gm|aov|roi)\b/gi, (m) => m.toUpperCase())
+    .trim();
+}
+
+/**
+ * Check if a value is "empty" (null, undefined, empty string, empty object/array)
+ */
+function isEmpty(value: unknown): boolean {
+  if (value === null || value === undefined) return true;
+  if (typeof value === "string") return value.trim() === "";
+  if (Array.isArray(value)) return value.length === 0;
+  if (typeof value === "object") return Object.keys(value).length === 0;
+  return false;
+}
+
+/**
+ * Recursively render an object's key-value pairs
+ */
+function renderObjectFields(
+  ctx: RenderContext,
+  obj: Record<string, unknown>,
+  y: number,
+  depth = 0,
+  maxDepth = 3
+): number {
+  const { page, fonts } = ctx;
+  const { page: pageStyles, fonts: fontStyles, colors, spacing } = PDF_STYLES;
+
+  if (depth >= maxDepth) return y;
+
+  const indent = pageStyles.margin + depth * 15;
+  const maxWidth = pageStyles.contentWidth - depth * 15;
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (isEmpty(value)) continue;
+
+    // Skip internal/meta keys
+    if (key.startsWith("_") || key === "confidence" || key === "dataConfidence") continue;
+
+    ctx.checkPageBreak(30);
+
+    const label = formatKeyName(key);
+    const confidence = extractConfidence(value);
+
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      // Simple value - render as key: value
+      y = renderKeyValue(ctx, label, String(value), indent, y, confidence);
+    } else if (Array.isArray(value)) {
+      // Array - render as bulleted list or nested items
+      page.drawText(`${label}:`, {
+        x: indent,
+        y,
+        size: fontStyles.body.size,
+        font: fonts.bold,
+        color: toRgb(colors.secondary),
+      });
+      y -= fontStyles.body.size * spacing.lineHeight + 2;
+
+      for (const item of value.slice(0, 8)) {
+        ctx.checkPageBreak(20);
+        if (typeof item === "string") {
+          const lines = wrapText(`• ${item}`, fonts.regular, fontStyles.small.size, maxWidth - 10);
+          for (const line of lines) {
+            page.drawText(line, {
+              x: indent + 8,
+              y,
+              size: fontStyles.small.size,
+              font: fonts.regular,
+              color: toRgb(colors.secondary),
+            });
+            y -= fontStyles.small.size * spacing.lineHeight;
+          }
+        } else if (item && typeof item === "object") {
+          y = renderObjectFields(ctx, item as Record<string, unknown>, y, depth + 1, maxDepth);
+        }
+      }
+      if (value.length > 8) {
+        page.drawText(`... and ${value.length - 8} more`, {
+          x: indent + 8,
+          y,
+          size: fontStyles.small.size,
+          font: fonts.regular,
+          color: toRgb(colors.muted),
+        });
+        y -= fontStyles.small.size * spacing.lineHeight;
+      }
+      y -= spacing.paragraphGap / 2;
+    } else if (value && typeof value === "object") {
+      // Nested object - check if it's a simple value wrapper or complex object
+      const nested = value as Record<string, unknown>;
+      const simpleValue = extractString(nested) ?? extractNumber(nested);
+
+      if (simpleValue !== undefined && Object.keys(nested).length <= 3) {
+        // Simple wrapper - render as single key: value
+        y = renderKeyValue(ctx, label, String(simpleValue), indent, y, confidence);
+      } else {
+        // Complex nested object - render section header and recurse
+        page.drawText(`${label}:`, {
+          x: indent,
+          y,
+          size: fontStyles.body.size,
+          font: fonts.bold,
+          color: toRgb(colors.secondary),
+        });
+        y -= fontStyles.body.size * spacing.lineHeight + 2;
+        y = renderObjectFields(ctx, nested, y, depth + 1, maxDepth);
+      }
+    }
+  }
+
+  return y - spacing.paragraphGap / 2;
+}
+
 function toRgb(color: RGBColor) {
   return rgb(color.r, color.g, color.b);
 }
@@ -748,25 +968,42 @@ function renderBrandIntake(
   ctx.checkPageBreak(140);
   y = renderSectionHeader(ctx, "Brand Intake", y, 1);
 
-  const fields: [string, string][] = [
-    ["Brand", brandIntake.brand as string],
-    ["Website", brandIntake.website as string],
-    ["Registry Link", brandIntake.registryLink as string],
-    ["Category", brandIntake.category as string],
-    ["Brand Type", formatBrandType(brandIntake.brandType as string)],
-  ];
+  // Common fields to try first (in display order)
+  const priorityFields = ["brand", "website", "registryLink", "category", "brandType"];
+  const rendered = new Set<string>();
 
-  for (const [label, value] of fields) {
-    if (value) {
-      y = renderKeyValue(ctx, label, value, pageStyles.margin, y);
+  for (const fieldKey of priorityFields) {
+    const value = findValue(brandIntake, fieldKey);
+    if (value && !isEmpty(value)) {
+      const displayValue = fieldKey === "brandType"
+        ? formatBrandType(extractString(value) || "")
+        : extractString(value) || String(value);
+      if (displayValue) {
+        y = renderKeyValue(ctx, formatKeyName(fieldKey), displayValue, pageStyles.margin, y);
+        rendered.add(fieldKey.toLowerCase());
+      }
     }
   }
 
-  const notes = brandIntake.contextualNotes as string | undefined;
-  if (notes) {
-    y -= spacing.paragraphGap;
-    y = renderSectionHeader(ctx, "Additional Context", y, 3);
-    y = renderParagraph(ctx, notes, pageStyles.margin, y, pageStyles.contentWidth);
+  // Render any remaining fields flexibly
+  for (const [key, value] of Object.entries(brandIntake)) {
+    if (rendered.has(key.toLowerCase())) continue;
+    if (isEmpty(value)) continue;
+
+    // Handle contextual notes specially
+    if (key.toLowerCase().includes("note") || key.toLowerCase().includes("context")) {
+      const noteText = extractString(value);
+      if (noteText) {
+        y -= spacing.paragraphGap;
+        y = renderSectionHeader(ctx, "Additional Context", y, 3);
+        y = renderParagraph(ctx, noteText, pageStyles.margin, y, pageStyles.contentWidth);
+      }
+    } else if (typeof value === "object" && value !== null) {
+      // Nested object - render its fields
+      y = renderObjectFields(ctx, value as Record<string, unknown>, y, 0, 2);
+    } else {
+      y = renderKeyValue(ctx, formatKeyName(key), String(value), pageStyles.margin, y);
+    }
   }
 
   return y - spacing.sectionGap;
@@ -776,387 +1013,57 @@ function renderResearch(
   ctx: RenderContext,
   research: Record<string, unknown>
 ): number {
-  const { page: pageStyles, spacing } = PDF_STYLES;
+  const { spacing } = PDF_STYLES;
   let y = ctx.currentY;
 
   y = renderSectionHeader(ctx, "Research Findings", y, 1);
 
-  // Handle both flat schema and nested mock data format
-  if (research.financials || research.latestAnnualRevenue) {
-    y = renderResearchFinancials(ctx, research, y);
+  // Define sections to look for with their possible key names and display titles
+  const sections: { keys: string[]; title: string }[] = [
+    { keys: ["financials", "financial", "financialData"], title: "Financial Data" },
+    { keys: ["loyaltyProgramme", "loyaltyProgram", "loyalty"], title: "Loyalty Programme" },
+    { keys: ["benchmarks", "categoryBenchmarks"], title: "Category Benchmarks" },
+    { keys: ["techStack", "paidMediaAndChannels", "paidMediaAndTech", "techAndMedia"], title: "Tech & Media Stack" },
+    { keys: ["brandInitiatives", "initiatives"], title: "Brand Initiatives" },
+    { keys: ["loyaltySentiment", "sentiment"], title: "Loyalty Sentiment" },
+  ];
+
+  for (const section of sections) {
+    const data = findValue(research, ...section.keys) as Record<string, unknown> | undefined;
+    if (data && !isEmpty(data)) {
+      ctx.checkPageBreak(100);
+      y = renderSectionHeader(ctx, section.title, y, 2);
+      y = renderObjectFields(ctx, data, y, 0, 3);
+    }
   }
 
-  if (research.loyaltyProgramme || research.loyaltyProgrammeDetails) {
-    ctx.checkPageBreak(170);
-    y = renderResearchLoyalty(ctx, research, y);
+  // Also render any top-level string/simple fields not in sections
+  for (const [key, value] of Object.entries(research)) {
+    // Skip already-handled section keys and complex objects
+    const isSection = sections.some(s => s.keys.some(k => k.toLowerCase() === key.toLowerCase()));
+    if (isSection) continue;
+    if (typeof value === "object" && value !== null) continue;
+    if (isEmpty(value)) continue;
+
+    y = renderKeyValue(ctx, formatKeyName(key), String(value), PDF_STYLES.page.margin, y);
   }
 
-  if (research.benchmarks || research.aovBenchmark) {
-    ctx.checkPageBreak(115);
-    y = renderResearchBenchmarks(ctx, research, y);
-  }
-
-  if (
-    research.techStack ||
-    research.paidMediaAndChannels ||
-    research.paidMediaChannels
-  ) {
-    ctx.checkPageBreak(115);
-    y = renderResearchTech(ctx, research, y);
-  }
-
-  // Research sources
-  const sources = research.researchSources as
+  // Research sources (handle as special case for nicer formatting)
+  const sources = findValue(research, "researchSources", "sources") as
     | Record<string, unknown>[]
+    | string[]
     | undefined;
-  if (sources && sources.length > 0) {
-    ctx.checkPageBreak(140);
+  if (sources && Array.isArray(sources) && sources.length > 0) {
+    ctx.checkPageBreak(100);
     y = renderResearchSources(ctx, sources, y);
   }
 
   return y - spacing.sectionGap;
 }
 
-function renderResearchFinancials(
-  ctx: RenderContext,
-  research: Record<string, unknown>,
-  y: number
-): number {
-  const { page: pageStyles } = PDF_STYLES;
-
-  ctx.checkPageBreak(115);
-  y = renderSectionHeader(ctx, "Financial Data", y, 2);
-
-  // Nested format (mock data)
-  const financials = research.financials as Record<string, unknown> | undefined;
-  if (financials) {
-    const revenue = financials.totalRevenue as
-      | Record<string, unknown>
-      | undefined;
-    if (revenue) {
-      y = renderKeyValue(
-        ctx,
-        "Total Revenue",
-        `$${revenue.valueUSD}M (${financials.latestFiscalYear || "Latest"})`,
-        pageStyles.margin,
-        y,
-        revenue.confidence as string
-      );
-    }
-    const gm = financials.grossMarginPercent as
-      | Record<string, unknown>
-      | undefined;
-    if (gm) {
-      y = renderKeyValue(
-        ctx,
-        "Gross Margin",
-        `${gm.value}%`,
-        pageStyles.margin,
-        y,
-        gm.confidence as string
-      );
-    }
-  } else {
-    // Flat schema format
-    if (research.latestAnnualRevenue) {
-      y = renderKeyValue(
-        ctx,
-        "Annual Revenue",
-        research.latestAnnualRevenue as string,
-        pageStyles.margin,
-        y
-      );
-    }
-    if (research.latestAnnualRevenueSource) {
-      y = renderKeyValue(
-        ctx,
-        "Revenue Source",
-        research.latestAnnualRevenueSource as string,
-        pageStyles.margin,
-        y
-      );
-    }
-    if (research.blendedGrossMarginPercent !== undefined) {
-      y = renderKeyValue(
-        ctx,
-        "Blended Gross Margin",
-        `${research.blendedGrossMarginPercent}%`,
-        pageStyles.margin,
-        y
-      );
-    }
-    if (research.blendedGrossMarginSource) {
-      y = renderKeyValue(
-        ctx,
-        "GM Source",
-        research.blendedGrossMarginSource as string,
-        pageStyles.margin,
-        y
-      );
-    }
-  }
-
-  return y - PDF_STYLES.spacing.paragraphGap;
-}
-
-function renderResearchLoyalty(
-  ctx: RenderContext,
-  research: Record<string, unknown>,
-  y: number
-): number {
-  const { page, fonts } = ctx;
-  const { page: pageStyles, fonts: fontStyles, spacing, colors } = PDF_STYLES;
-
-  y = renderSectionHeader(ctx, "Loyalty Programme", y, 2);
-
-  // Nested format
-  const loyalty = research.loyaltyProgramme as
-    | Record<string, unknown>
-    | undefined;
-  if (loyalty) {
-    if (loyalty.name) {
-      y = renderKeyValue(
-        ctx,
-        "Programme Name",
-        loyalty.name as string,
-        pageStyles.margin,
-        y
-      );
-    }
-    const launch = loyalty.launchDate as Record<string, unknown> | undefined;
-    if (launch?.approx) {
-      y = renderKeyValue(
-        ctx,
-        "Launch Date",
-        launch.approx as string,
-        pageStyles.margin,
-        y,
-        launch.confidence as string
-      );
-    }
-    const scale = loyalty.penetrationAndScale as
-      | Record<string, unknown>
-      | undefined;
-    if (scale?.activeMembers) {
-      const members = scale.activeMembers as Record<string, unknown>;
-      y = renderKeyValue(
-        ctx,
-        "Active Members",
-        `${members.value}M`,
-        pageStyles.margin,
-        y,
-        members.confidence as string
-      );
-    }
-    const benefits = loyalty.coreBenefits as string[] | undefined;
-    if (benefits && benefits.length > 0) {
-      y -= spacing.paragraphGap;
-
-      page.drawText("Core Benefits:", {
-        x: pageStyles.margin,
-        y,
-        size: fontStyles.body.size,
-        font: fonts.bold,
-        color: toRgb(colors.secondary),
-      });
-      y -= 14;
-
-      for (const benefit of benefits.slice(0, 5)) {
-        ctx.checkPageBreak(20);
-        const lines = wrapText(
-          `• ${benefit}`,
-          fonts.regular,
-          fontStyles.body.size,
-          pageStyles.contentWidth - 10
-        );
-        for (const line of lines) {
-          page.drawText(line, {
-            x: pageStyles.margin + 8,
-            y,
-            size: fontStyles.body.size,
-            font: fonts.regular,
-            color: toRgb(colors.secondary),
-          });
-          y -= 12;
-        }
-      }
-    }
-  } else {
-    // Flat schema format
-    if (research.loyaltyProgrammeDetails) {
-      y = renderKeyValue(
-        ctx,
-        "Details",
-        research.loyaltyProgrammeDetails as string,
-        pageStyles.margin,
-        y
-      );
-    }
-    if (research.loyaltyProgrammePenetration) {
-      y = renderKeyValue(
-        ctx,
-        "Penetration",
-        research.loyaltyProgrammePenetration as string,
-        pageStyles.margin,
-        y
-      );
-    }
-    if (research.loyaltyProgrammeLaunchDate) {
-      y = renderKeyValue(
-        ctx,
-        "Launch Date",
-        research.loyaltyProgrammeLaunchDate as string,
-        pageStyles.margin,
-        y
-      );
-    }
-    if (research.activeLoyaltyMembers) {
-      y = renderKeyValue(
-        ctx,
-        "Active Members",
-        research.activeLoyaltyMembers as string,
-        pageStyles.margin,
-        y
-      );
-    }
-    if (research.loyaltyProgrammeBenefits) {
-      y = renderKeyValue(
-        ctx,
-        "Benefits",
-        research.loyaltyProgrammeBenefits as string,
-        pageStyles.margin,
-        y
-      );
-    }
-  }
-
-  return y - spacing.paragraphGap;
-}
-
-function renderResearchBenchmarks(
-  ctx: RenderContext,
-  research: Record<string, unknown>,
-  y: number
-): number {
-  const { page: pageStyles } = PDF_STYLES;
-
-  y = renderSectionHeader(ctx, "Category Benchmarks", y, 2);
-
-  // Nested format
-  const benchmarks = research.benchmarks as Record<string, unknown> | undefined;
-  if (benchmarks) {
-    const aov = benchmarks.aov as Record<string, unknown> | undefined;
-    if (aov) {
-      y = renderKeyValue(
-        ctx,
-        "AOV",
-        `$${aov.valueUSD}`,
-        pageStyles.margin,
-        y,
-        aov.confidence as string
-      );
-    }
-    const freq = benchmarks.purchaseFrequency as
-      | Record<string, unknown>
-      | undefined;
-    if (freq) {
-      y = renderKeyValue(
-        ctx,
-        "Purchase Frequency",
-        `${freq.value} orders/year`,
-        pageStyles.margin,
-        y,
-        freq.confidence as string
-      );
-    }
-  } else {
-    // Flat format
-    if (research.aovBenchmark) {
-      y = renderKeyValue(
-        ctx,
-        "AOV Benchmark",
-        research.aovBenchmark as string,
-        pageStyles.margin,
-        y
-      );
-    }
-    if (research.purchaseFrequencyBenchmark) {
-      y = renderKeyValue(
-        ctx,
-        "Purchase Frequency",
-        research.purchaseFrequencyBenchmark as string,
-        pageStyles.margin,
-        y
-      );
-    }
-  }
-
-  return y - PDF_STYLES.spacing.paragraphGap;
-}
-
-function renderResearchTech(
-  ctx: RenderContext,
-  research: Record<string, unknown>,
-  y: number
-): number {
-  const { page: pageStyles } = PDF_STYLES;
-
-  y = renderSectionHeader(ctx, "Tech & Media Stack", y, 2);
-
-  // Paid media channels
-  const paidMedia = research.paidMediaAndChannels as
-    | Record<string, unknown>
-    | undefined;
-  if (paidMedia?.paidMediaChannels) {
-    const channels = paidMedia.paidMediaChannels as Record<string, unknown>;
-    const list = channels.list as string[] | undefined;
-    if (list) {
-      y = renderKeyValue(
-        ctx,
-        "Paid Media",
-        list.slice(0, 3).join("; "),
-        pageStyles.margin,
-        y,
-        channels.confidence as string
-      );
-    }
-  } else if (research.paidMediaChannels) {
-    y = renderKeyValue(
-      ctx,
-      "Paid Media",
-      research.paidMediaChannels as string,
-      pageStyles.margin,
-      y
-    );
-  }
-
-  // Tech stack
-  const techStack = research.techStack as
-    | Record<string, unknown>
-    | string
-    | undefined;
-  if (typeof techStack === "string") {
-    y = renderKeyValue(ctx, "Tech Stack", techStack, pageStyles.margin, y);
-  } else if (techStack) {
-    const commerce = techStack.commerce as Record<string, unknown> | undefined;
-    if (commerce?.platform) {
-      y = renderKeyValue(
-        ctx,
-        "Commerce",
-        commerce.platform as string,
-        pageStyles.margin,
-        y,
-        commerce.confidence as string
-      );
-    }
-  }
-
-  return y - PDF_STYLES.spacing.paragraphGap;
-}
-
 function renderResearchSources(
   ctx: RenderContext,
-  sources: Record<string, unknown>[],
+  sources: (Record<string, unknown> | string)[],
   y: number
 ): number {
   const { page, fonts } = ctx;
@@ -1166,7 +1073,27 @@ function renderResearchSources(
 
   for (const source of sources.slice(0, 10)) {
     ctx.checkPageBreak(28);
-    const text = `• ${source.dataPoint}: ${source.sourceName} [${source.confidenceLevel}]`;
+
+    // Handle both string sources and object sources flexibly
+    let text: string;
+    if (typeof source === "string") {
+      text = `• ${source}`;
+    } else {
+      // Try to build a sensible string from object fields
+      const dataPoint = extractString(findValue(source, "dataPoint", "point", "metric", "field"));
+      const sourceName = extractString(findValue(source, "sourceName", "source", "name", "url", "reference"));
+      const confidence = extractString(findValue(source, "confidenceLevel", "confidence"));
+
+      if (dataPoint && sourceName) {
+        text = confidence ? `• ${dataPoint}: ${sourceName} [${confidence}]` : `• ${dataPoint}: ${sourceName}`;
+      } else if (sourceName) {
+        text = `• ${sourceName}`;
+      } else {
+        // Fallback: stringify the object
+        text = `• ${JSON.stringify(source)}`;
+      }
+    }
+
     const lines = wrapText(
       text,
       fonts.regular,
@@ -1338,59 +1265,13 @@ function renderModelling(
   ctx: RenderContext,
   modelling: Record<string, unknown>
 ): number {
-  const { page: pageStyles, spacing } = PDF_STYLES;
+  const { spacing } = PDF_STYLES;
   let y = ctx.currentY;
 
   y = renderSectionHeader(ctx, "Modelling Details", y, 1);
 
-  if (modelling.modeApplied) {
-    y = renderKeyValue(
-      ctx,
-      "Mode Applied",
-      modelling.modeApplied as string,
-      pageStyles.margin,
-      y
-    );
-  }
-  if (modelling.modeRationale) {
-    y = renderKeyValue(
-      ctx,
-      "Rationale",
-      modelling.modeRationale as string,
-      pageStyles.margin,
-      y
-    );
-  }
-  if (modelling.baseCaseGMUpliftMillions !== undefined) {
-    y = renderKeyValue(
-      ctx,
-      "Base Case GM Uplift",
-      `$${modelling.baseCaseGMUpliftMillions}M`,
-      pageStyles.margin,
-      y
-    );
-  }
-
-  // Final mode if different structure
-  const finalMode = modelling.finalModeApplied as
-    | Record<string, unknown>
-    | undefined;
-  if (finalMode) {
-    const mode =
-      finalMode.valueCaseMode || finalMode.mode || finalMode.value_case_mode;
-    if (mode) {
-      y = renderKeyValue(ctx, "Final Mode", mode as string, pageStyles.margin, y);
-    }
-    if (finalMode.reason) {
-      y = renderKeyValue(
-        ctx,
-        "Reason",
-        finalMode.reason as string,
-        pageStyles.margin,
-        y
-      );
-    }
-  }
+  // Use flexible rendering for the entire modelling section
+  y = renderObjectFields(ctx, modelling, y, 0, 4);
 
   return y - spacing.sectionGap;
 }
@@ -1405,77 +1286,40 @@ function renderAppendices(
 
   y = renderSectionHeader(ctx, "Appendices", y, 1);
 
-  // Assumptions block
-  const assumptions = appendices.assumptionsBlock;
-  if (assumptions) {
+  // Render assumptions block if present (look for various key names)
+  const assumptions = findValue(appendices, "assumptionsBlock", "assumptions", "detailedAssumptions");
+  if (assumptions && !isEmpty(assumptions)) {
     y = renderSectionHeader(ctx, "Detailed Assumptions", y, 2);
 
     if (Array.isArray(assumptions)) {
+      // Array of assumptions
       for (const item of assumptions as Record<string, unknown>[]) {
-        ctx.checkPageBreak(100);
-
-        const leverName = `${item.leverId || ""}: ${item.leverName || "Lever"}`;
-        page.drawText(leverName, {
-          x: pageStyles.margin,
-          y,
-          size: fontStyles.h3.size,
-          font: fonts.bold,
-          color: toRgb(colors.secondary),
-        });
-        y -= 16;
-
-        if (item.upliftPercentageApplied !== undefined) {
-          page.drawText(`Uplift Applied: ${item.upliftPercentageApplied}%`, {
-            x: pageStyles.margin + 8,
-            y,
-            size: fontStyles.small.size,
-            font: fonts.regular,
-            color: toRgb(colors.secondary),
-          });
-          y -= 12;
-        }
-
-        const range = item.credibleRange as Record<string, unknown> | undefined;
-        if (range) {
-          page.drawText(
-            `Range: ${range.minPercent}% - ${range.maxPercent}% (${range.source})`,
-            {
-              x: pageStyles.margin + 8,
-              y,
-              size: fontStyles.small.size,
-              font: fonts.regular,
-              color: toRgb(colors.secondary),
-            }
-          );
-          y -= 12;
-        }
-
-        if (item.resultGM !== undefined) {
-          page.drawText(`Result: $${item.resultGM}M GM uplift`, {
-            x: pageStyles.margin + 8,
-            y,
-            size: fontStyles.small.size,
-            font: fonts.regular,
-            color: toRgb(colors.secondary),
-          });
-          y -= 12;
-        }
-
+        ctx.checkPageBreak(80);
+        y = renderObjectFields(ctx, item, y, 0, 3);
         y -= spacing.paragraphGap;
       }
+    } else if (typeof assumptions === "object") {
+      // Object with named assumptions (e.g., leverA_personalisedLoyalty, leverC_priceOptimisation)
+      y = renderObjectFields(ctx, assumptions as Record<string, unknown>, y, 0, 3);
     }
   }
 
-  // Sources list
-  const sources = appendices.sources as string[] | undefined;
-  if (sources && sources.length > 0) {
+  // Sources list - handle both string arrays and object arrays
+  const sources = findValue(appendices, "sources", "sourcesAppendix", "references") as
+    | (string | Record<string, unknown>)[]
+    | undefined;
+  if (sources && Array.isArray(sources) && sources.length > 0) {
     ctx.checkPageBreak(85);
     y = renderSectionHeader(ctx, "Sources", y, 2);
 
     for (const source of sources.slice(0, 15)) {
       ctx.checkPageBreak(17);
+
+      // Handle both string and object sources
+      const sourceText = typeof source === "string" ? source : extractString(source) || JSON.stringify(source);
+
       const lines = wrapText(
-        `• ${source}`,
+        `• ${sourceText}`,
         fonts.regular,
         fontStyles.small.size,
         pageStyles.contentWidth - 10
@@ -1502,6 +1346,24 @@ function renderAppendices(
         color: toRgb(colors.muted),
       });
       y -= 14;
+    }
+  }
+
+  // Render any other appendix sections not already covered
+  for (const [key, value] of Object.entries(appendices)) {
+    const lowerKey = key.toLowerCase();
+    if (lowerKey.includes("assumption") || lowerKey.includes("source") || lowerKey.includes("reference")) {
+      continue; // Already handled
+    }
+    if (isEmpty(value)) continue;
+
+    ctx.checkPageBreak(60);
+    y = renderSectionHeader(ctx, formatKeyName(key), y, 2);
+
+    if (typeof value === "object" && value !== null) {
+      y = renderObjectFields(ctx, value as Record<string, unknown>, y, 0, 3);
+    } else {
+      y = renderKeyValue(ctx, formatKeyName(key), String(value), pageStyles.margin, y);
     }
   }
 
