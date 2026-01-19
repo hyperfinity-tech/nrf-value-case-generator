@@ -1190,51 +1190,82 @@ function renderValueCase(
 
     y -= 30;
 
+    const areaX = pageStyles.margin + 5;
+    const opportunityX = pageStyles.margin + 160;
+    const upliftX = pageStyles.margin + 350;
+    const areaWidth = 150;
+    const opportunityWidth = upliftX - opportunityX - 10;
+    const lineHeight = fontStyles.small.size * 1.3;
+    const rowGap = 6;
+
     // Table rows
     for (const row of rows) {
-      ctx.checkPageBreak(42);
-
-      const area = String(row.areaOfImpact || "").substring(0, 50);
-      const opp = String(row.opportunityType || "").substring(0, 40);
+      const area = String(row.areaOfImpact || "");
+      const opp = String(row.opportunityType || "");
       const uplift = row.estimatedUpliftGM;
       const upliftStr =
         typeof uplift === "number"
           ? `$${uplift.toFixed(1)}M`
           : String(uplift || "");
 
-      page.drawText(area, {
-        x: pageStyles.margin + 5,
-        y,
-        size: fontStyles.small.size,
-        font: fonts.regular,
-        color: toRgb(colors.secondary),
-      });
-      page.drawText(opp, {
-        x: pageStyles.margin + 160,
-        y,
-        size: fontStyles.small.size,
-        font: fonts.regular,
-        color: toRgb(colors.secondary),
-      });
+      const areaLines = wrapText(area, fonts.regular, fontStyles.small.size, areaWidth);
+      const opportunityLines = wrapText(
+        opp,
+        fonts.regular,
+        fontStyles.small.size,
+        opportunityWidth
+      );
+      const maxLines = Math.max(areaLines.length, opportunityLines.length, 1);
+      const rowHeight = maxLines * lineHeight + 4;
+
+      const methodology = row.assumptionsMethodology as string | undefined;
+      const methodLineHeight = 9;
+      const methodLines = methodology
+        ? wrapText(methodology, fonts.regular, 7, pageStyles.contentWidth - 20).slice(0, 3)
+        : [];
+      const methodBlockHeight = methodLines.length > 0
+        ? methodLines.length * methodLineHeight + 6
+        : 0;
+
+      ctx.checkPageBreak(rowHeight + methodBlockHeight + rowGap);
+
+      let lineY = y;
+      for (const line of areaLines) {
+        page.drawText(line, {
+          x: areaX,
+          y: lineY,
+          size: fontStyles.small.size,
+          font: fonts.regular,
+          color: toRgb(colors.secondary),
+        });
+        lineY -= lineHeight;
+      }
+
+      lineY = y;
+      for (const line of opportunityLines) {
+        page.drawText(line, {
+          x: opportunityX,
+          y: lineY,
+          size: fontStyles.small.size,
+          font: fonts.regular,
+          color: toRgb(colors.secondary),
+        });
+        lineY -= lineHeight;
+      }
+
       page.drawText(upliftStr, {
-        x: pageStyles.margin + 350,
+        x: upliftX,
         y,
         size: fontStyles.small.size,
         font: fonts.regular,
         color: toRgb(colors.secondary),
       });
 
-      // Methodology (if present)
-      const methodology = row.assumptionsMethodology as string | undefined;
-      if (methodology) {
-        y -= 14;
-        const methodLines = wrapText(
-          methodology,
-          fonts.regular,
-          7,
-          pageStyles.contentWidth - 20
-        );
-        for (const line of methodLines.slice(0, 3)) {
+      y -= rowHeight;
+
+      if (methodLines.length > 0) {
+        y -= 4;
+        for (const line of methodLines) {
           page.drawText(line, {
             x: pageStyles.margin + 10,
             y,
@@ -1242,11 +1273,11 @@ function renderValueCase(
             font: fonts.regular,
             color: toRgb(colors.muted),
           });
-          y -= 9;
+          y -= methodLineHeight;
         }
       }
 
-      y -= spacing.tableRowHeight;
+      y -= rowGap;
     }
   }
 
