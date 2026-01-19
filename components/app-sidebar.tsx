@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { User } from "next-auth";
 import { SidebarUserNav } from "@/components/sidebar-user-nav";
 import { branding } from "@/lib/branding";
 import {
@@ -14,7 +13,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-export function AppSidebar({ user }: { user: User | undefined }) {
+export function AppSidebar() {
   const { setOpenMobile } = useSidebar();
 
   return (
@@ -68,7 +67,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent />
-      <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+      <SidebarFooter><SidebarUserNav /></SidebarFooter>
     </Sidebar>
   );
 }

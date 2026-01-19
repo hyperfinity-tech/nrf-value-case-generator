@@ -2,7 +2,7 @@ import Script from "next/script";
 import Image from "next/image";
 import Link from "next/link";
 import { DataStreamProvider } from "@/components/data-stream-provider";
-import { auth } from "../(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 
 export const experimental_ppr = true;
 

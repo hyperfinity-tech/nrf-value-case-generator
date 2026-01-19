@@ -1,4 +1,4 @@
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import { buildImagePrompt } from "@/lib/ai/image-prompt-builder";
 import { generateInfographicImage } from "@/lib/ai/image-generator";
 import { ChatSDKError } from "@/lib/errors";
@@ -15,8 +15,8 @@ export async function POST(request: Request) {
 
   try {
     // Authenticate user
-    const session = await auth();
-    if (!session?.user) {
+    const { userId } = await auth();
+    if (!userId) {
       console.error(`[${requestId}] ❌ Authentication failed`);
       return new ChatSDKError("unauthorized:abm-pack").toResponse();
     }

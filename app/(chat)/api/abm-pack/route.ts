@@ -1,6 +1,6 @@
 import { generateText } from "ai";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { auth, type UserType } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import { myProvider, webSearchTool, codeInterpreterTool } from "@/lib/ai/providers";
 import { getMessageCountByUserId } from "@/lib/db/queries";
@@ -762,32 +762,29 @@ export async function POST(request: Request) {
 
   try {
     console.log(`[${requestId}] 🔐 Authenticating user...`);
-    const session = await auth();
+    const { userId } = await auth();
 
-    if (!session?.user) {
-      console.error(`[${requestId}] ❌ Authentication failed: No session found`);
+    if (!userId) {
+      console.error(`[${requestId}] ❌ Authentication failed: No user found`);
       return new ChatSDKError("unauthorized:abm-pack").toResponse();
     }
 
     console.log(`[${requestId}] ✅ User authenticated`);
-    console.log(`[${requestId}] User ID: ${session.user.id}`);
-    console.log(`[${requestId}] User Type: ${session.user.type}`);
-
-    const userType: UserType = session.user.type;
+    console.log(`[${requestId}] User ID: ${userId}`);
 
     // Rate limiting (shares limits with chat)
     console.log(`[${requestId}] ⏱️  Checking rate limits (last 24 hours)...`);
     const messageCount = await getMessageCountByUserId({
-      id: session.user.id,
+      id: userId,
       differenceInHours: 24,
     });
     console.log(
-      `[${requestId}] 📊 Message count in last 24h: ${messageCount}/${entitlementsByUserType[userType].maxMessagesPerDay}`
+      `[${requestId}] 📊 Message count in last 24h: ${messageCount}/${entitlementsByUserType.regular.maxMessagesPerDay}`
     );
 
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+    if (messageCount > entitlementsByUserType.regular.maxMessagesPerDay) {
       console.error(
-        `[${requestId}] ❌ Rate limit exceeded for user type "${userType}"`
+        `[${requestId}] ❌ Rate limit exceeded`
       );
       return new ChatSDKError("rate_limit:abm-pack").toResponse();
     }

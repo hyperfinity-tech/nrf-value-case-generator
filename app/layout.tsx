@@ -3,9 +3,10 @@ import { Geist_Mono, DM_Sans } from "next/font/google";
 import { branding } from "@/lib/branding";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
 
 import "./globals.css";
-import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
@@ -83,7 +84,16 @@ export default function RootLayout({
           enableSystem
         >
           <Toaster position="top-center" />
-          <SessionProvider>{children}</SessionProvider>
+          <ClerkProvider
+            appearance={{
+              baseTheme: dark,
+              variables: {
+                colorPrimary: "#F85AA4",
+              },
+            }}
+          >
+            {children}
+          </ClerkProvider>
         </ThemeProvider>
       </body>
     </html>
