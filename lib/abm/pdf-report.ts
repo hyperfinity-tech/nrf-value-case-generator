@@ -218,6 +218,14 @@ function sanitizeText(text: string): string {
     .replace(/\u00A0/g, " ")
     // Replace bullet point with asterisk
     .replace(/\u2022/g, "*")
+    // Replace mathematical symbols not in WinAnsi
+    .replace(/\u2248/g, "~")      // ≈ (approximately equal)
+    .replace(/\u2264/g, "<=")     // ≤ (less than or equal)
+    .replace(/\u2265/g, ">=")     // ≥ (greater than or equal)
+    .replace(/\u00D7/g, "x")      // × (multiplication sign)
+    .replace(/\u00F7/g, "/")      // ÷ (division sign)
+    .replace(/\u2212/g, "-")      // − (minus sign)
+    .replace(/\u2019/g, "'")      // ' (right single quotation mark)
     // Remove zero-width characters
     .replace(/[\u200B-\u200D\uFEFF]/g, "")
     // Collapse multiple spaces into one

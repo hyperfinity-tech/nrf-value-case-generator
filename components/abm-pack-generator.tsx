@@ -23,7 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ADIDAS_MOCK_RESPONSE } from "@/lib/mock-data/adidas-abm-pack";
+import { LULULEMON_MOCK_RESPONSE } from "@/lib/mock-data/lululemon-abm-pack";
 
 interface FormState {
   brand: string;
@@ -37,7 +37,7 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB per file
 const MAX_TOTAL_SIZE_BYTES = 12 * 1024 * 1024; // combined cap
 
 // Mock response imported from separate file for cleaner code
-const MOCK_RESPONSE: FlexibleResponse = ADIDAS_MOCK_RESPONSE as FlexibleResponse;
+const MOCK_RESPONSE: FlexibleResponse = LULULEMON_MOCK_RESPONSE as FlexibleResponse;
 
 // Use flexible type since the model returns varying structures
 // biome-ignore lint/suspicious/noExplicitAny: Model returns dynamic structures
@@ -364,7 +364,7 @@ export function ABMPackGenerator({
           setInfographicImage("/images/debug/gemini_image_0006_final.png");
         }
         
-        toast({ type: "success", description: "Mock value case loaded (Adidas example)" });
+        toast({ type: "success", description: "Mock value case loaded (Lululemon example)" });
         return;
       }
 
