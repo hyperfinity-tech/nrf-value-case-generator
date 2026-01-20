@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HyperFinity Slide Template</title>
+
+    <style>
+      :root {
+        /* Canvas + slide geometry */
+        --canvas-bg: #f6f7fb;          /* page surround (set to #fff if you want fully white) */
+        --slide-bg: #ffffff;
+        --slide-aspect: 16 / 9;
+        --slide-max-w: 1440px;
+        --slide-padding-x: clamp(40px, 4vw, 72px);
+        --slide-padding-y: clamp(36px, 3.5vw, 64px);
+
+        /* Brand */
+        --stripe-height: 30px;
+        --magenta: #fb368e;
+        --teal: #03e1ba;
+        --blue: #058dfd;
+        --stop-1: 33.105%;
+        --stop-2: 66.699%;
+
+        /* Logo */
+        --logo-width: 150px;
+        --logo-margin: 12px;
+
+        /* Type */
+        --text: #0f172a;
+        --muted: #475569;
+        --line: rgba(15, 23, 42, 0.10);
+      }
+
+      /* Reset / baseline */
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        background: var(--canvas-bg);
+        color: var(--text);
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+          "Apple Color Emoji", "Segoe UI Emoji";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* Center a slide-like canvas for professional preview */
+      .stage {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 32px;
+      }
+
+      .slide {
+        width: min(var(--slide-max-w), 100vw - 64px);
+        aspect-ratio: var(--slide-aspect);
+        background: var(--slide-bg);
+        position: relative;
+        overflow: hidden;
+        border-radius: 18px;
+        box-shadow:
+          0 18px 40px rgba(2, 6, 23, 0.10),
+          0 2px 10px rgba(2, 6, 23, 0.06);
+      }
+
+      /* Safe-area padding for content */
+      .content {
+        position: absolute;
+        inset: 0;
+        padding: var(--slide-padding-y) var(--slide-padding-x);
+        padding-bottom: calc(var(--slide-padding-y) + var(--stripe-height) + 32px);
+      }
+
+      /* Optional content styles you can use in slides */
+      h1 {
+        margin: 0 0 0.35em;
+        font-size: clamp(40px, 3.6vw, 56px);
+        letter-spacing: -0.02em;
+        line-height: 1.06;
+      }
+      h2 {
+        margin: 0 0 0.5em;
+        font-size: clamp(26px, 2.2vw, 34px);
+        letter-spacing: -0.01em;
+        line-height: 1.15;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      p {
+        margin: 0 0 1em;
+        font-size: clamp(18px, 1.4vw, 22px);
+        line-height: 1.45;
+        color: var(--muted);
+        max-width: 70ch;
+      }
+
+      /* Bottom tricolour stripe */
+      .brand-stripe {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: var(--stripe-height);
+        z-index: 10;
+        background: linear-gradient(
+          90deg,
+          var(--magenta) 0%,
+          var(--magenta) var(--stop-1),
+          var(--teal) var(--stop-1),
+          var(--teal) var(--stop-2),
+          var(--blue) var(--stop-2),
+          var(--blue) 100%
+        );
+      }
+
+      /* Subtle sheen to match the original stripe feel */
+      .brand-stripe::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.00) 0%,
+          rgba(255, 255, 255, 0.00) 40%,
+          rgba(0, 0, 0, 0.12) 52%,
+          rgba(0, 0, 0, 0.55) 72%,
+          rgba(0, 0, 0, 0.78) 100%
+        );
+        mix-blend-mode: multiply;
+      }
+
+      /* Bottom-right logo */
+      .corner-logo {
+        position: absolute;
+        right: var(--logo-margin);
+        bottom: calc(var(--stripe-height) + var(--logo-margin));
+        width: var(--logo-width);
+        height: auto;
+        z-index: 20;
+        display: block;
+        filter: drop-shadow(0 6px 10px rgba(2, 6, 23, 0.12));
+      }
+
+      /* Optional guides (toggle by adding class="show-guides" to <body>) */
+      body.show-guides .slide::after {
+        content: "";
+        position: absolute;
+        inset: var(--slide-padding-y) var(--slide-padding-x);
+        border: 1px dashed var(--line);
+        border-radius: 12px;
+        pointer-events: none;
+        z-index: 5;
+      }
+      body.show-guides .slide::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          repeating-linear-gradient(
+            to right,
+            rgba(15, 23, 42, 0.00) 0,
+            rgba(15, 23, 42, 0.00) 79px,
+            rgba(15, 23, 42, 0.05) 80px
+          ),
+          repeating-linear-gradient(
+            to bottom,
+            rgba(15, 23, 42, 0.00) 0,
+            rgba(15, 23, 42, 0.00) 79px,
+            rgba(15, 23, 42, 0.05) 80px
+          );
+        opacity: 0.28;
+        pointer-events: none;
+        z-index: 4;
+      }
+
+      /* Print/PDF: remove preview chrome */
+      @media print {
+        body { background: #fff; }
+        .stage { padding: 0; }
+        .slide {
+          width: 100vw;
+          height: 100vh;
+          border-radius: 0;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="stage">
+      <section class="slide" role="document" aria-label="HyperFinity slide">
+        <div class="content">
+          <!--
+            Keep this area blank if you want a clean master slide.
+            Example usage (optional):
+
+            <h1>Slide title</h1>
+            <h2>Optional subtitle</h2>
+            <p>Body copy goes here. Use this as a base for corporate slides.</p>
+          -->
+        </div>
+
+        <img
+          class="corner-logo"
+          src=".images/hyperfinity_logo_dark.png"
+          alt="HyperFinity"
+        />
+
+        <div class="brand-stripe" aria-hidden="true"></div>
+      </section>
+    </div>
+  </body>
+</html>

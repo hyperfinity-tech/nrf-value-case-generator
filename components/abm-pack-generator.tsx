@@ -460,6 +460,7 @@ export function ABMPackGenerator({
       outputs.slide1Notes;
 
     const loyaltySentiment =
+      outputs.slide2LoyaltySentiment ||
       outputs.loyaltySentimentSnapshot ||
       outputs.slide2LoyaltySentimentSnapshot ||
       outputs.slide2_loyaltySentimentSnapshot ||
@@ -1004,7 +1005,9 @@ export function ABMPackGenerator({
                 <div className="space-y-4">
                   {typeof appendices.assumptionsBlock === "object" &&
                     !Array.isArray(appendices.assumptionsBlock) &&
-                    Object.entries(appendices.assumptionsBlock).map(([key, lever]) => (
+                    Object.entries(appendices.assumptionsBlock)
+                      .filter(([, lever]) => lever !== null && lever !== undefined)
+                      .map(([key, lever]) => (
                       <div key={key} className="border rounded p-3">
                         <h5 className="font-medium mb-2">
                           {(lever as FlexibleResponse).leverName || formatKey(key)}
@@ -1203,20 +1206,32 @@ export function ABMPackGenerator({
   const downloadFullReport = async () => {
     if (!result) return;
 
-    try {
-      const { generateAbmPackPdfReport } = await import("@/lib/abm/pdf-report");
+    const reportDate = new Date(Date.now()).toISOString().split("T").at(0);
+    const fileName = `value-case-report-${getBrandName().replace(/[^a-zA-Z0-9]/g, "-")}-${reportDate}.pdf`;
 
-      const pdfBytes = await generateAbmPackPdfReport({
-        data: result as Record<string, unknown>,
-        infographicBase64: infographicImage,
+    try {
+      const response = await fetch("/api/abm-pack-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: result,
+          infographicBase64: infographicImage,
+        }),
       });
 
-      // Create blob and trigger download (cast to satisfy TypeScript's strict ArrayBuffer typing)
-      const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
+      if (!response.ok) {
+        const errorPayload = (await response.json().catch(() => null)) as
+          | { error?: string }
+          | null;
+        const message = errorPayload?.error ?? "HTML to PDF generation failed.";
+        throw new Error(message);
+      }
+
+      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `value-case-report-${getBrandName().replace(/[^a-zA-Z0-9]/g, "-")}-${new Date().toISOString().split("T")[0]}.pdf`;
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1224,8 +1239,33 @@ export function ABMPackGenerator({
 
       toast({ type: "success", description: "Full report downloaded successfully" });
     } catch (error) {
-      console.error("Failed to generate PDF report:", error);
-      toast({ type: "error", description: "Failed to generate PDF report" });
+      const fallbackReason =
+        error instanceof Error ? error.message : "HTML to PDF generation failed.";
+      try {
+        const { generateAbmPackPdfReport } = await import("@/lib/abm/pdf-report");
+
+        const pdfBytes = await generateAbmPackPdfReport({
+          data: result as Record<string, unknown>,
+          infographicBase64: infographicImage,
+        });
+
+        const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast({
+          type: "error",
+          description: `HTML report failed (${fallbackReason}). Downloaded fallback PDF.`,
+        });
+      } catch {
+        toast({ type: "error", description: "Failed to generate PDF report" });
+      }
     }
   };
 

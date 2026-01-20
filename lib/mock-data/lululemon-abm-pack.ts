@@ -321,6 +321,7 @@ export const LULULEMON_MOCK_RESPONSE = {
           "6. REASSURANCE - The chosen uplift is conservative relative to best-in-class digital programmes and is grounded in both category evidence and Lululemon's strong digital penetration, avoiding any reliance on extreme outlier performance."
         ]
       },
+      "leverB_supplierFundedLoyalty": null,
       "leverC_priceOptimisation": {
         "upliftPercentApplied": 1.65,
         "mode": "Median",

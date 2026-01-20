@@ -879,50 +879,18 @@ export async function POST(request: Request) {
     console.log(`[${requestId}]   Brand: ${object.brandIntake?.brand ?? "N/A"}`);
     console.log(`[${requestId}]   Research fields: ${Object.keys(object.research ?? {}).length}`);
     console.log(`[${requestId}]   Research field names: ${Object.keys(object.research ?? {}).join(", ")}`);
-    console.log(`[${requestId}]   Research sources: ${object.research?.researchSources?.length ?? 0}`);
     console.log(`[${requestId}]   Outputs fields: ${Object.keys(object.outputs ?? {}).length}`);
     console.log(`[${requestId}]   Outputs field names: ${Object.keys(object.outputs ?? {}).join(", ")}`);
-    const slide1TableAsArray =
-      object.outputs?.slide1InputTable &&
-      !Array.isArray(object.outputs.slide1InputTable) &&
-      (object.outputs.slide1InputTable as Record<string, unknown>)?.table &&
-      Array.isArray((object.outputs.slide1InputTable as Record<string, unknown>).table as unknown[])
-        ? ((object.outputs.slide1InputTable as Record<string, unknown>).table as unknown[]).length
-        : undefined;
-
-    const slide1Rows =
-      (object.outputs?.slide1InputTable &&
-        (Array.isArray(object.outputs.slide1InputTable)
-          ? object.outputs.slide1InputTable.length
-          : object.outputs.slide1InputTable.rows?.length ?? slide1TableAsArray)) ||
-      0;
-    console.log(`[${requestId}]   Slide 1 rows: ${slide1Rows}`);
-    console.log(`[${requestId}]   Value case table exists: ${!!object.outputs?.slide4ValueCaseTable}`);
+    console.log(`[${requestId}]   Slide 1 table exists: ${!!object.outputs?.slide1InputTable?.tableMarkdown}`);
+    console.log(`[${requestId}]   Value case table exists: ${!!object.outputs?.slide4ValueCaseTable?.tableMarkdown}`);
+    console.log(`[${requestId}]   Sentiment snapshot exists: ${!!object.outputs?.slide2LoyaltySentiment}`);
     console.log(
-      `[${requestId}]   Value case rows: ${
-        object.outputs?.slide4ValueCaseTable?.rows?.length ??
-        object.outputs?.slide4ValueCaseTable?.table?.length ??
-        0
-      }`
-    );
-    console.log(`[${requestId}]   Sentiment snapshot exists: ${!!object.outputs?.loyaltySentimentSnapshot}`);
-    console.log(
-      `[${requestId}]   Sentiment rows: ${
-        object.outputs?.loyaltySentimentSnapshot?.sentimentTable?.length ?? 0
-      }`
+      `[${requestId}]   Mode applied: ${object.modelling?.finalValuesSelected?.mode ?? "N/A"}`
     );
     console.log(
-      `[${requestId}]   Mode applied: ${
-        object.modelling?.modeApplied ??
-        object.modelling?.finalModeApplied?.valueCaseMode ??
-        object.modelling?.finalModeApplied?.mode ??
-        "N/A"
-      }`
+      `[${requestId}]   Base case GM: $${object.modelling?.baseCaseUsingMidpoints?.totalBaseCaseGMUpliftUSD_m ?? "N/A"}m`
     );
-    console.log(
-      `[${requestId}]   Base case GM: $${object.modelling?.baseCaseGMUpliftMillions ?? "N/A"}m`
-    );
-    console.log(`[${requestId}]   Assumptions: ${object.appendices?.assumptionsBlock?.length ?? 0}`);
+    console.log(`[${requestId}]   Assumptions block keys: ${Object.keys(object.appendices?.assumptionsBlock ?? {}).join(", ")}`);
     console.log(`[${requestId}]   Sources: ${object.appendices?.sources?.length ?? 0}`);
     
     // Debug: Log first 2000 chars of raw response for inspection
