@@ -408,10 +408,10 @@ const renderResearchFindings = (research: LooseData) => {
 
   // Benchmarks - handle different structures  
   const aovData = $anyObj(benchmarks, "aov", "AOV");
-  const aovVal = $anyNum(aovData, "valueUSD", "value", "estimatedAovUsd") || 
+  const aovVal = $anyNum(aovData, "estimateUsd", "valueUSD", "value", "estimatedAovUsd") || 
                  $num(aovData, "brandOrCategoryAOV", "value");
   const freqData = $obj(benchmarks, "purchaseFrequency");
-  const freqVal = $anyNum(freqData, "valuePerYear", "estimatedFrequencyPerYear") || 
+  const freqVal = $anyNum(freqData, "transactionsPerActiveCustomerPerYear", "valuePerYear", "estimatedFrequencyPerYear", "frequency") || 
                   $num(freqData, "estimatedAnnualPurchaseFrequencyPerActiveCustomer", "value");
 
   // Sentiment table - handle different field names
