@@ -15,91 +15,108 @@ type GenerateHtmlReportOptions = {
 };
 
 // ============================================================================
-// Generic Data Access Helpers
+// Generic Data Access Helpers (all use fuzzy key matching)
 // ============================================================================
 
 const isObject = (val: unknown): val is LooseData =>
   val !== null && typeof val === "object" && !Array.isArray(val);
 
-// Normalize key for fuzzy matching: lowercase, remove underscores/hyphens
+// Normalize key for fuzzy matching: lowercase, remove underscores/hyphens/spaces
 const normalizeKey = (key: string): string =>
-  key.toLowerCase().replace(/[_-]/g, "");
+  key.toLowerCase().replace(/[_\-\s]/g, "");
 
-// Find a key in an object using fuzzy matching (ignores case, underscores, hyphens)
+// Find a key in an object using fuzzy matching
 const findKey = (obj: LooseData, pattern: string): string | undefined => {
-  const normalizedPattern = normalizeKey(pattern);
-  return Object.keys(obj).find((k) => normalizeKey(k) === normalizedPattern);
+  const normalized = normalizeKey(pattern);
+  // Try exact match first
+  if (pattern in obj) return pattern;
+  // Then fuzzy match
+  return Object.keys(obj).find((k) => normalizeKey(k) === normalized);
 };
 
-// Get value from object using fuzzy key matching
-const getFuzzy = (source: unknown, key: string): unknown => {
-  if (!isObject(source)) return undefined;
-  const actualKey = findKey(source, key);
-  return actualKey ? source[actualKey] : undefined;
-};
-
-// Get object using fuzzy key matching
-const getObjFuzzy = (source: unknown, key: string): LooseData => {
-  const val = getFuzzy(source, key);
-  return isObject(val) ? val : {};
-};
-
-// Get array using fuzzy key matching
-const getArrFuzzy = (source: unknown, key: string): unknown[] => {
-  const val = getFuzzy(source, key);
-  return Array.isArray(val) ? val : [];
-};
-
-// Get string using fuzzy key matching
-const getStrFuzzy = (source: unknown, key: string): string => {
-  const val = getFuzzy(source, key);
-  if (typeof val === "string") return val;
-  if (typeof val === "number") return String(val);
-  return "";
-};
-
-const get = (source: unknown, ...keys: string[]): unknown => {
+// Core fuzzy getter - traverses nested paths with fuzzy matching at each level
+const $ = (source: unknown, ...keys: string[]): unknown => {
   let current: unknown = source;
   for (const key of keys) {
     if (!isObject(current)) return undefined;
-    // Try exact match first, then fuzzy
-    current = current[key] ?? getFuzzy(current, key);
+    const actualKey = findKey(current, key);
+    current = actualKey ? current[actualKey] : undefined;
   }
   return current;
 };
 
-const getStr = (source: unknown, ...keys: string[]): string => {
-  const val = get(source, ...keys);
+// Typed fuzzy getters
+const $str = (source: unknown, ...keys: string[]): string => {
+  const val = $(source, ...keys);
   if (typeof val === "string") return val;
   if (typeof val === "number") return String(val);
   return "";
 };
 
-const getNum = (source: unknown, ...keys: string[]): number => {
-  const val = get(source, ...keys);
+const $num = (source: unknown, ...keys: string[]): number => {
+  const val = $(source, ...keys);
   return typeof val === "number" ? val : 0;
 };
 
-const getObj = (source: unknown, ...keys: string[]): LooseData => {
-  const val = get(source, ...keys);
+const $obj = (source: unknown, ...keys: string[]): LooseData => {
+  const val = $(source, ...keys);
   return isObject(val) ? val : {};
 };
 
-const getArr = (source: unknown, ...keys: string[]): unknown[] => {
-  const val = get(source, ...keys);
+const $arr = (source: unknown, ...keys: string[]): unknown[] => {
+  const val = $(source, ...keys);
   return Array.isArray(val) ? val : [];
 };
 
-// Try multiple paths, return first truthy result
-const tryPaths = <T>(source: unknown, paths: string[][], transform: (val: unknown) => T, fallback: T): T => {
+// Try multiple key names at same level, return first match as object
+const $anyObj = (source: unknown, ...keys: string[]): LooseData => {
+  for (const key of keys) {
+    const val = $obj(source, key);
+    if (Object.keys(val).length > 0) return val;
+  }
+  return {};
+};
+
+// Try multiple key names at same level, return first match as string
+const $anyStr = (source: unknown, ...keys: string[]): string => {
+  for (const key of keys) {
+    const val = $str(source, key);
+    if (val) return val;
+  }
+  return "";
+};
+
+// Try multiple key names at same level, return first match as number
+const $anyNum = (source: unknown, ...keys: string[]): number => {
+  for (const key of keys) {
+    const val = $num(source, key);
+    if (val !== 0) return val;
+  }
+  return 0;
+};
+
+// Try multiple paths (each path is array of keys), return first truthy result
+const $tryPaths = <T>(source: unknown, paths: string[][], transform: (val: unknown) => T, fallback: T): T => {
   for (const path of paths) {
-    const val = get(source, ...path);
-    if (val !== undefined && val !== null && val !== "") {
+    const val = $(source, ...path);
+    if (val !== undefined && val !== null && val !== "" && val !== 0) {
       return transform(val);
     }
   }
   return fallback;
 };
+
+// Legacy aliases for compatibility
+const get = $;
+const getStr = $str;
+const getNum = $num;
+const getObj = $obj;
+const getArr = $arr;
+const getFuzzy = (source: unknown, key: string) => $(source, key);
+const getObjFuzzy = (source: unknown, key: string) => $obj(source, key);
+const getArrFuzzy = (source: unknown, key: string) => $arr(source, key);
+const getStrFuzzy = (source: unknown, key: string) => $str(source, key);
+const tryPaths = $tryPaths;
 
 // ============================================================================
 // HTML Helpers
@@ -194,56 +211,54 @@ const renderCover = (brandIntake: LooseData) => `
 `;
 
 const renderExecutiveSummary = (outputs: LooseData) => {
-  const panel = getObj(outputs, "cfoReadinessPanel");
-  const dataConfidence = getObj(panel, "dataConfidence");
+  const panel = $obj(outputs, "cfoReadinessPanel");
+  const dataConfidence = $obj(panel, "dataConfidence");
   
-  // Try multiple paths for blended GM
-  const blendedGM = tryPaths(panel, 
-    [["blendedGMPercentUsed"], ["blendedGmPercentUsed"], ["blendedGM"]],
-    (v) => typeof v === "number" ? formatPercentage(v) : String(v),
-    getStr(panel, "blendedGmPercentUsed") || "N/A"
-  );
+  // Try multiple key names for blended GM
+  const blendedGMRaw = $anyStr(panel, "blendedGMPercentUsed", "blendedGmPercentUsed", "blendedGM");
+  const blendedGMNum = $anyNum(panel, "blendedGMPercentUsed", "blendedGmPercentUsed", "blendedGM");
+  const blendedGM = blendedGMNum > 0 ? formatPercentage(blendedGMNum) : blendedGMRaw || "N/A";
 
   return `
     <section class="section">
       <h2>Executive Summary</h2>
       <div class="highlight-box">
-        <p>${fmt(getStr(outputs, "executiveOneLiner"))}</p>
+        <p>${fmt($str(outputs, "executiveOneLiner"))}</p>
       </div>
       <div class="grid two">
         <div class="panel">
           <h3>CFO Readiness Panel</h3>
           <dl class="kv">
             <div><dt>Blended GM% Used</dt><dd>${fmt(blendedGM)}</dd></div>
-            <div><dt>Brand Type</dt><dd>${fmt(getStr(panel, "brandType"))}</dd></div>
-            <div><dt>Value Case Mode</dt><dd>${fmt(getStr(panel, "valueCaseMode"))}</dd></div>
+            <div><dt>Brand Type</dt><dd>${fmt($str(panel, "brandType"))}</dd></div>
+            <div><dt>Value Case Mode</dt><dd>${fmt($str(panel, "valueCaseMode"))}</dd></div>
           </dl>
         </div>
         <div class="panel">
           <h3>Data Confidence</h3>
           <dl class="kv">
-            <div><dt>Revenue</dt><dd><span class="badge">${fmt(getStr(dataConfidence, "revenue"))}</span></dd></div>
-            <div><dt>Loyalty</dt><dd><span class="badge">${fmt(getStr(dataConfidence, "loyalty"))}</span></dd></div>
-            <div><dt>AOV</dt><dd><span class="badge">${fmt(getStr(dataConfidence, "aov") || getStr(dataConfidence, "AOV"))}</span></dd></div>
-            <div><dt>Frequency</dt><dd><span class="badge">${fmt(getStr(dataConfidence, "frequency"))}</span></dd></div>
+            <div><dt>Revenue</dt><dd><span class="badge">${fmt($str(dataConfidence, "revenue"))}</span></dd></div>
+            <div><dt>Loyalty</dt><dd><span class="badge">${fmt($str(dataConfidence, "loyalty"))}</span></dd></div>
+            <div><dt>AOV</dt><dd><span class="badge">${fmt($anyStr(dataConfidence, "aov", "AOV"))}</span></dd></div>
+            <div><dt>Frequency</dt><dd><span class="badge">${fmt($str(dataConfidence, "frequency"))}</span></dd></div>
           </dl>
         </div>
       </div>
       <div class="panel">
         <h3>Summary</h3>
-        <p>${fmt(getStr(outputs, "executiveSummary"))}</p>
+        <p>${fmt($str(outputs, "executiveSummary"))}</p>
       </div>
     </section>
   `;
 };
 
 const renderBrandIntake = (brandIntake: LooseData) => {
-  // businessRegistry can be string or object
-  const registry = brandIntake.businessRegistry;
+  // businessRegistry can be string or object - handle both
+  const registry = $(brandIntake, "businessRegistry");
   const registryText = typeof registry === "string" 
     ? registry 
     : isObject(registry) 
-      ? getStr(registry, "description") || getStr(registry, "secEdgarLink")
+      ? $anyStr(registry, "description", "secEdgarLink", "link")
       : "";
 
   return `
@@ -251,12 +266,12 @@ const renderBrandIntake = (brandIntake: LooseData) => {
       <h2>Brand Intake</h2>
       <div class="panel">
         <dl class="kv">
-          <div><dt>Brand</dt><dd>${fmt(getStr(brandIntake, "brand"))}</dd></div>
-          <div><dt>Website</dt><dd>${fmt(getStr(brandIntake, "website"))}</dd></div>
-          <div><dt>Category</dt><dd>${fmt(getStr(brandIntake, "category"))}</dd></div>
-          <div><dt>Brand Type</dt><dd>${fmt(getStr(brandIntake, "brandType"))}</dd></div>
+          <div><dt>Brand</dt><dd>${fmt($str(brandIntake, "brand"))}</dd></div>
+          <div><dt>Website</dt><dd>${fmt($str(brandIntake, "website"))}</dd></div>
+          <div><dt>Category</dt><dd>${fmt($str(brandIntake, "category"))}</dd></div>
+          <div><dt>Brand Type</dt><dd>${fmt($str(brandIntake, "brandType"))}</dd></div>
           <div><dt>Business Registry</dt><dd>${fmt(registryText)}</dd></div>
-          <div><dt>Contextual Notes</dt><dd>${fmt(getStr(brandIntake, "contextualNotes"))}</dd></div>
+          <div><dt>Contextual Notes</dt><dd>${fmt($str(brandIntake, "contextualNotes"))}</dd></div>
         </dl>
       </div>
     </section>
@@ -264,56 +279,87 @@ const renderBrandIntake = (brandIntake: LooseData) => {
 };
 
 const renderResearchFindings = (research: LooseData) => {
-  const financials = getObj(research, "financials");
-  const loyaltyProgramme = getObj(research, "loyaltyProgramme");
-  const benchmarks = getObj(research, "benchmarks");
-  const sentiment = getObj(research, "loyaltySentiment");
+  // Fuzzy match handles all naming variations automatically
+  const financials = $anyObj(research, "financials", "financialsAndMargins");
+  const loyaltyProgramme = $obj(research, "loyaltyProgramme");
+  const benchmarks = $obj(research, "benchmarks");
+  const sentiment = $obj(research, "loyaltySentiment");
   
   // Financials can be nested under latestRevenueGM or direct
-  const finData = Object.keys(getObj(financials, "latestRevenueGM")).length > 0
-    ? getObj(financials, "latestRevenueGM")
-    : financials;
+  const finDataNested = $obj(financials, "latestRevenueGM");
+  const finData = Object.keys(finDataNested).length > 0 ? finDataNested : financials;
 
-  // Get revenue - try multiple paths
-  const revenueVal = tryPaths(finData,
-    [["totalRevenueUSD", "value"], ["totalRevenueUSD"], ["totalRevenue", "value"]],
-    (v) => typeof v === "number" ? formatNumber(v) : String(v),
-    "N/A"
-  );
+  // Get fiscal year - try multiple key names
+  const fiscalYear = $anyStr(finData, "fiscalYear", "latestFiscalYear", "latestFinancialYear") ||
+                     $str(financials, "latestFinancialYear");
+
+  // Get revenue - try multiple paths (handles various naming conventions)
+  const getRevenueValue = (): string => {
+    const paths = [
+      () => $num(finData, "totalRevenueUSD", "value"),
+      () => $num(finData, "totalRevenueUSD"),
+      () => $num(finData, "netSales", "valueUsdBnApprox") * 1_000_000_000,
+      () => $num(finData, "netSales", "valueEurBn") * 1_000_000_000,
+      () => $num(finData, "netSalesUsdBn") * 1_000_000_000,
+      () => $num(financials, "netSalesAndGMBase", "netSalesUsdBn") * 1_000_000_000,
+    ];
+    for (const fn of paths) {
+      const val = fn();
+      if (val > 0) return `$${formatNumber(val / 1_000_000_000)}bn`;
+    }
+    return "N/A";
+  };
+  const revenueVal = getRevenueValue();
   
-  const gmPercent = tryPaths(finData,
-    [["consolidatedGrossMarginPct", "value"], ["consolidatedGrossMarginPct"], ["blendedGrossMarginPercent", "value"], ["segmentRetailPCWGrossMarginPct", "value"]],
-    (v) => typeof v === "number" ? formatPercentage(v) : String(v),
-    "N/A"
-  );
+  // Get GM% - try multiple paths
+  const getGMPercent = (): string => {
+    const gmVal = $anyNum(finData, 
+      "consolidatedGrossMarginPct", 
+      "blendedGrossMarginPercent", 
+      "grossMarginPercent",
+      "segmentRetailPCWGrossMarginPct"
+    ) || $num(financials, "netSalesAndGMBase", "grossMarginPercent");
+    
+    if (gmVal > 0) return formatPercentage(gmVal);
+    
+    // Try nested value paths
+    const nestedVal = $num(finData, "consolidatedGrossMarginPct", "value") ||
+                      $num(finData, "blendedGrossMarginPercent", "value");
+    if (nestedVal > 0) return formatPercentage(nestedVal);
+    
+    return "N/A";
+  };
+  const gmPercent = getGMPercent();
 
   // Loyalty programme - handle nested structure
-  const progName = getStr(loyaltyProgramme, "name") || getStr(loyaltyProgramme, "programmeName");
-  const launchEvolution = loyaltyProgramme.launchAndEvolution;
+  const progName = $anyStr(loyaltyProgramme, "name", "programmeName");
+  const launchEvolution = $(loyaltyProgramme, "launchAndEvolution");
   const launchText = typeof launchEvolution === "string" 
     ? launchEvolution 
     : isObject(launchEvolution) 
-      ? getStr(launchEvolution, "initialLaunch", "description") || extractText(launchEvolution)
+      ? $str(launchEvolution, "initialLaunch", "description") || extractText(launchEvolution)
       : "";
 
-  // Benchmarks - handle different structures
-  const aovData = getObj(benchmarks, "aov") || getObj(benchmarks, "AOV");
-  const aovVal = getNum(aovData, "valueUSD") || getNum(aovData, "brandOrCategoryAOV", "value") || getNum(aovData, "value");
-  const freqData = getObj(benchmarks, "purchaseFrequency");
-  const freqVal = getNum(freqData, "valuePerYear") || getNum(freqData, "estimatedAnnualPurchaseFrequencyPerActiveCustomer", "value");
+  // Benchmarks - handle different structures  
+  const aovData = $anyObj(benchmarks, "aov", "AOV");
+  const aovVal = $anyNum(aovData, "valueUSD", "value", "estimatedAovUsd") || 
+                 $num(aovData, "brandOrCategoryAOV", "value");
+  const freqData = $obj(benchmarks, "purchaseFrequency");
+  const freqVal = $anyNum(freqData, "valuePerYear", "estimatedFrequencyPerYear") || 
+                  $num(freqData, "estimatedAnnualPurchaseFrequencyPerActiveCustomer", "value");
 
   // Sentiment table - handle different field names
-  const sentimentTable = getArr(sentiment, "sentimentTable");
+  const sentimentTable = $arr(sentiment, "sentimentTable");
   const sentimentRows = sentimentTable.map((row) => {
     if (!isObject(row)) return "";
-    const aspect = getStr(row, "aspectLabel") || getStr(row, "displayName") || getStr(row, "aspectKey");
-    const summary = getStr(row, "sentimentSummary");
+    const aspect = $anyStr(row, "aspectLabel", "displayName", "aspectKey");
+    const summary = $str(row, "sentimentSummary");
     
     // Evidence can be array of strings or array of objects with quote property
-    const evidenceRaw = getArr(row, "evidenceQuotes");
+    const evidenceRaw = $arr(row, "evidenceQuotes");
     const evidenceItems = evidenceRaw.map((e) => {
       if (typeof e === "string") return e;
-      if (isObject(e)) return getStr(e, "quote") || extractText(e);
+      if (isObject(e)) return $anyStr(e, "quote", "text", "content") || extractText(e);
       return String(e);
     }).filter(Boolean);
 
@@ -334,7 +380,7 @@ const renderResearchFindings = (research: LooseData) => {
         <h3>Financials</h3>
         <div class="panel">
           <dl class="kv">
-            <div><dt>Fiscal Year</dt><dd>${fmt(getStr(finData, "fiscalYear") || getStr(finData, "latestFiscalYear"))}</dd></div>
+            <div><dt>Fiscal Year</dt><dd>${fmt(fiscalYear)}</dd></div>
             <div><dt>Total Revenue (USD)</dt><dd>${fmt(revenueVal)}</dd></div>
             <div><dt>Gross Margin %</dt><dd>${fmt(gmPercent)}</dd></div>
           </dl>
@@ -396,8 +442,8 @@ const renderValueCase = (outputs: LooseData) => {
   // Fuzzy match handles: slide4ValueCaseTable, slide4_valueCaseTable, slide4_value_case_table, etc.
   const slide4 = getObjFuzzy(outputs, "slide4ValueCaseTable");
   
-  // Try tableMarkdown first (string format) - fuzzy matches tableMarkdown, table_markdown, etc.
-  const tableMarkdown = getStrFuzzy(slide4, "tableMarkdown");
+  // Try tableMarkdown first (string format)
+  const tableMarkdown = $str(slide4, "tableMarkdown");
   if (tableMarkdown) {
     const table = parseMarkdownTable(tableMarkdown);
     if (table) {
@@ -418,7 +464,7 @@ const renderValueCase = (outputs: LooseData) => {
   }
   
   // Try table array format (array of row objects)
-  const tableArray = getArrFuzzy(slide4, "table");
+  const tableArray = $arr(slide4, "table");
   if (tableArray.length > 0) {
     const firstRow = tableArray[0];
     if (isObject(firstRow)) {
@@ -454,20 +500,20 @@ const renderValueCase = (outputs: LooseData) => {
 
 const renderModelling = (modelling: LooseData) => {
   // Try multiple paths for assumptions
-  const assumptions = getObj(modelling, "assumptions") || getObj(modelling, "baseAssumptions");
-  const baseCaseMidpoints = getObj(modelling, "baseCaseUsingMidpoints");
-  const stretchCase = getObj(modelling, "stretchCaseApplied");
-  const finalValues = getObj(modelling, "finalValuesSelected");
+  const assumptions = $anyObj(modelling, "assumptions", "baseAssumptions", "baseModellingAssumptions");
+  const baseCaseMidpoints = $obj(modelling, "baseCaseUsingMidpoints");
+  const stretchCase = $obj(modelling, "stretchCaseApplied");
+  const finalValues = $obj(modelling, "finalValuesSelected");
 
   // Extract key values from assumptions
-  const baseRevenue = getNum(assumptions, "baseRetailRevenueScopeUSD", "value") || 
-                      getNum(assumptions, "totalRevenueUSD_m") * 1_000_000;
-  const loyaltyMix = getNum(assumptions, "loyaltyRevenueMixPct", "value") || getNum(assumptions, "loyaltyRevenueMixPct");
-  const gmPercent = getNum(assumptions, "gmPercentRetail", "value") || getNum(assumptions, "gmPercentRetail") || 
-                    getNum(assumptions, "blendedGrossMarginPercent");
+  const baseRevenue = $num(assumptions, "baseRetailRevenueScopeUSD", "value") || 
+                      $num(assumptions, "totalRevenueUSD_m") * 1_000_000;
+  const loyaltyMix = $anyNum(assumptions, "loyaltyRevenueMixPct", "loyaltyMix") || 
+                     $num(assumptions, "loyaltyRevenueMixPct", "value");
+  const gmPercent = $anyNum(assumptions, "gmPercentRetail", "blendedGrossMarginPercent", "grossMarginPercent");
 
   // Get category uplift ranges if present
-  const categoryRanges = getObj(assumptions, "categoryUpliftRanges");
+  const categoryRanges = $obj(assumptions, "categoryUpliftRanges");
 
   return `
     <section class="section">
@@ -476,7 +522,7 @@ const renderModelling = (modelling: LooseData) => {
         <div class="panel">
           <h3>Base Assumptions</h3>
           <dl class="kv">
-            <div><dt>Time Horizon</dt><dd>${fmt(getNum(assumptions, "timeHorizonYears") || 1)} year(s)</dd></div>
+            <div><dt>Time Horizon</dt><dd>${fmt($num(assumptions, "timeHorizonYears") || 1)} year(s)</dd></div>
             <div><dt>Base Revenue Scope</dt><dd>${baseRevenue ? fmt(`$${formatNumber(baseRevenue / 1_000_000_000)}bn`) : "N/A"}</dd></div>
             <div><dt>Loyalty Revenue Mix</dt><dd>${loyaltyMix ? fmt(`${formatNumber(loyaltyMix)}%`) : "N/A"}</dd></div>
             <div><dt>Retail GM%</dt><dd>${gmPercent ? fmt(`${formatNumber(gmPercent)}%`) : "N/A"}</dd></div>
@@ -487,8 +533,8 @@ const renderModelling = (modelling: LooseData) => {
           ${Object.keys(finalValues).length > 0 ? renderKV(finalValues) : ""}
           ${Object.keys(stretchCase).length > 0 ? `
             <dl class="kv">
-              <div><dt>Mode</dt><dd>${fmt(getStr(stretchCase, "mode"))}</dd></div>
-              <div><dt>Total GM</dt><dd>${fmt(`$${formatNumber(getNum(stretchCase, "totalGMUSD") / 1_000_000)}m`)}</dd></div>
+              <div><dt>Mode</dt><dd>${fmt($str(stretchCase, "mode"))}</dd></div>
+              <div><dt>Total GM</dt><dd>${fmt(`$${formatNumber($num(stretchCase, "totalGMUSD") / 1_000_000)}m`)}</dd></div>
             </dl>
           ` : ""}
         </div>
@@ -498,18 +544,18 @@ const renderModelling = (modelling: LooseData) => {
         <h3>Category Uplift Ranges</h3>
         ${Object.entries(categoryRanges).map(([key, val]) => {
           if (!isObject(val)) return "";
-          const range = getObj(val as LooseData, "rangePct");
-          const mid = getNum(val as LooseData, "midpointPct");
-          const stretch = getNum(val as LooseData, "stretchPct");
+          const range = $obj(val as LooseData, "rangePct");
+          const mid = $num(val as LooseData, "midpointPct");
+          const stretch = $num(val as LooseData, "stretchPct");
           return `
             <div class="subsection">
               <h4>${escapeHtml(formatLabel(key))}</h4>
               <dl class="kv">
-                <div><dt>Range</dt><dd>${fmt(`${getNum(range, "min")}% - ${getNum(range, "max")}%`)}</dd></div>
+                <div><dt>Range</dt><dd>${fmt(`${$num(range, "min")}% - ${$num(range, "max")}%`)}</dd></div>
                 <div><dt>Midpoint</dt><dd>${fmt(`${mid}%`)}</dd></div>
                 <div><dt>Stretch</dt><dd>${fmt(`${stretch}%`)}</dd></div>
               </dl>
-              <p>${fmt(getStr(val as LooseData, "description"))}</p>
+              <p>${fmt($str(val as LooseData, "description"))}</p>
             </div>
           `;
         }).join("")}
@@ -567,13 +613,13 @@ const renderContactPage = (logoDataUrl?: string | null) => `
 `;
 
 const renderAppendices = (appendices: LooseData) => {
-  const assumptionsBlock = getObj(appendices, "assumptionsBlock");
-  const sourcesRaw = getArr(appendices, "sources");
+  const assumptionsBlock = $obj(appendices, "assumptionsBlock");
+  const sourcesRaw = $arr(appendices, "sources");
 
   // Sources can be strings or objects with citation property
   const sources = sourcesRaw.map((s) => {
     if (typeof s === "string") return s;
-    if (isObject(s)) return getStr(s, "citation") || extractText(s);
+    if (isObject(s)) return $anyStr(s, "citation", "source", "reference") || extractText(s);
     return String(s);
   }).filter(Boolean);
 
@@ -583,15 +629,15 @@ const renderAppendices = (appendices: LooseData) => {
         .map(([key, value]) => {
           if (!isObject(value)) return "";
           const typedValue = value as LooseData;
-          const breakdown = getArr(typedValue, "sixStepBreakdown") as string[];
-          const uplift = typedValue.upliftPointAppliedPct ?? typedValue.upliftPercentApplied;
-          const totalGM = typedValue.totalGMUpliftUSD ?? typedValue.totalGMUpliftUSD_m;
+          const breakdown = $arr(typedValue, "sixStepBreakdown") as string[];
+          const uplift = $anyNum(typedValue, "upliftPointAppliedPct", "upliftPercentApplied", "uplift");
+          const totalGM = $anyNum(typedValue, "totalGMUpliftUSD", "totalGMUpliftUSD_m", "totalGM");
 
           return `
             <div class="subsection">
               <h4>${escapeHtml(formatLabel(key))}</h4>
-              ${typeof uplift === "number" ? `<p><strong>Uplift Applied:</strong> ${formatNumber(uplift)}%</p>` : ""}
-              ${typeof totalGM === "number" ? `<p><strong>Total GM Uplift:</strong> $${formatNumber(totalGM / 1_000_000)}m</p>` : ""}
+              ${uplift > 0 ? `<p><strong>Uplift Applied:</strong> ${formatNumber(uplift)}%</p>` : ""}
+              ${totalGM > 0 ? `<p><strong>Total GM Uplift:</strong> $${formatNumber(totalGM / 1_000_000)}m</p>` : ""}
               ${breakdown.length > 0 ? `<ul class="list">${breakdown.map((b) => `<li>${escapeHtml(String(b))}</li>`).join("")}</ul>` : ""}
             </div>
           `;
@@ -627,13 +673,14 @@ export const generateHtmlReport = ({
 }: GenerateHtmlReportOptions): string => {
   const infographicDataUrl = infographicBase64 ?? null;
   
-  const brandIntake = getObj(data, "brandIntake");
-  const outputs = getObj(data, "outputs");
-  const research = getObj(data, "research");
-  const modelling = getObj(data, "modelling");
-  const appendices = getObj(data, "appendices");
+  // All section accessors use fuzzy matching
+  const brandIntake = $obj(data, "brandIntake");
+  const outputs = $obj(data, "outputs");
+  const research = $obj(data, "research");
+  const modelling = $obj(data, "modelling");
+  const appendices = $obj(data, "appendices");
 
-  const brandName = getStr(brandIntake, "brand") || "Unknown Brand";
+  const brandName = $str(brandIntake, "brand") || "Unknown Brand";
   const reportTitle = `${brandName} ABM Pack Report`;
 
   const content = [
