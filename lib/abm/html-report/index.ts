@@ -21,11 +21,49 @@ type GenerateHtmlReportOptions = {
 const isObject = (val: unknown): val is LooseData =>
   val !== null && typeof val === "object" && !Array.isArray(val);
 
+// Normalize key for fuzzy matching: lowercase, remove underscores/hyphens
+const normalizeKey = (key: string): string =>
+  key.toLowerCase().replace(/[_-]/g, "");
+
+// Find a key in an object using fuzzy matching (ignores case, underscores, hyphens)
+const findKey = (obj: LooseData, pattern: string): string | undefined => {
+  const normalizedPattern = normalizeKey(pattern);
+  return Object.keys(obj).find((k) => normalizeKey(k) === normalizedPattern);
+};
+
+// Get value from object using fuzzy key matching
+const getFuzzy = (source: unknown, key: string): unknown => {
+  if (!isObject(source)) return undefined;
+  const actualKey = findKey(source, key);
+  return actualKey ? source[actualKey] : undefined;
+};
+
+// Get object using fuzzy key matching
+const getObjFuzzy = (source: unknown, key: string): LooseData => {
+  const val = getFuzzy(source, key);
+  return isObject(val) ? val : {};
+};
+
+// Get array using fuzzy key matching
+const getArrFuzzy = (source: unknown, key: string): unknown[] => {
+  const val = getFuzzy(source, key);
+  return Array.isArray(val) ? val : [];
+};
+
+// Get string using fuzzy key matching
+const getStrFuzzy = (source: unknown, key: string): string => {
+  const val = getFuzzy(source, key);
+  if (typeof val === "string") return val;
+  if (typeof val === "number") return String(val);
+  return "";
+};
+
 const get = (source: unknown, ...keys: string[]): unknown => {
   let current: unknown = source;
   for (const key of keys) {
     if (!isObject(current)) return undefined;
-    current = current[key];
+    // Try exact match first, then fuzzy
+    current = current[key] ?? getFuzzy(current, key);
   }
   return current;
 };
@@ -355,28 +393,61 @@ const renderResearchFindings = (research: LooseData) => {
 };
 
 const renderValueCase = (outputs: LooseData) => {
-  const slide4 = getObj(outputs, "slide4ValueCaseTable");
-  const tableMarkdown = getStr(slide4, "tableMarkdown");
-  const table = tableMarkdown ? parseMarkdownTable(tableMarkdown) : null;
-  const tableMarkup = table
-    ? `
-      <table class="table">
-        <thead>
-          <tr>${table.headers.map((header) => `<th>${fmt(header)}</th>`).join("")}</tr>
-        </thead>
-        <tbody>
-          ${table.rows.map((row) => `<tr>${row.map((cell) => `<td>${fmt(cell)}</td>`).join("")}</tr>`).join("")}
-        </tbody>
-      </table>
-    `
-    : tableMarkdown
-      ? `<p>${fmt(tableMarkdown)}</p>`
-      : "<p>No value case data available.</p>";
+  // Fuzzy match handles: slide4ValueCaseTable, slide4_valueCaseTable, slide4_value_case_table, etc.
+  const slide4 = getObjFuzzy(outputs, "slide4ValueCaseTable");
+  
+  // Try tableMarkdown first (string format) - fuzzy matches tableMarkdown, table_markdown, etc.
+  const tableMarkdown = getStrFuzzy(slide4, "tableMarkdown");
+  if (tableMarkdown) {
+    const table = parseMarkdownTable(tableMarkdown);
+    if (table) {
+      return `
+        <section class="section page-break">
+          <h2>Value Case</h2>
+          <table class="table">
+            <thead>
+              <tr>${table.headers.map((header) => `<th>${fmt(header)}</th>`).join("")}</tr>
+            </thead>
+            <tbody>
+              ${table.rows.map((row) => `<tr>${row.map((cell) => `<td>${fmt(cell)}</td>`).join("")}</tr>`).join("")}
+            </tbody>
+          </table>
+        </section>
+      `;
+    }
+  }
+  
+  // Try table array format (array of row objects)
+  const tableArray = getArrFuzzy(slide4, "table");
+  if (tableArray.length > 0) {
+    const firstRow = tableArray[0];
+    if (isObject(firstRow)) {
+      const keys = Object.keys(firstRow);
+      const headers = keys.map((k) => formatLabel(k));
+      
+      const rows = tableArray.map((row) => {
+        if (!isObject(row)) return "";
+        return `<tr>${keys.map((k) => `<td>${fmt((row as LooseData)[k])}</td>`).join("")}</tr>`;
+      }).join("");
+      
+      return `
+        <section class="section page-break">
+          <h2>Value Case</h2>
+          <table class="table">
+            <thead>
+              <tr>${headers.map((h) => `<th>${fmt(h)}</th>`).join("")}</tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </section>
+      `;
+    }
+  }
 
   return `
     <section class="section page-break">
       <h2>Value Case</h2>
-      ${tableMarkup}
+      <p>No value case data available.</p>
     </section>
   `;
 };
