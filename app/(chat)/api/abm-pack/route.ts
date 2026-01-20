@@ -883,12 +883,12 @@ export async function POST(request: Request) {
     console.log(`[${requestId}]   Outputs field names: ${Object.keys(object.outputs ?? {}).join(", ")}`);
     console.log(`[${requestId}]   Slide 1 table exists: ${!!object.outputs?.slide1InputTable?.tableMarkdown}`);
     console.log(`[${requestId}]   Value case table exists: ${!!object.outputs?.slide4ValueCaseTable?.tableMarkdown}`);
-    console.log(`[${requestId}]   Sentiment snapshot exists: ${!!object.outputs?.slide2LoyaltySentiment}`);
+    console.log(`[${requestId}]   Sentiment snapshot exists: ${!!object.outputs?.loyaltySentimentSnapshot}`);
     console.log(
-      `[${requestId}]   Mode applied: ${object.modelling?.finalValuesSelected?.mode ?? "N/A"}`
+      `[${requestId}]   Mode applied: ${object.modelling?.modeApplied ?? "N/A"}`
     );
     console.log(
-      `[${requestId}]   Base case GM: $${object.modelling?.baseCaseUsingMidpoints?.totalBaseCaseGMUpliftUSD_m ?? "N/A"}m`
+      `[${requestId}]   Base case GM: $${object.modelling?.baseCaseGMUpliftMillions ?? "N/A"}m`
     );
     console.log(`[${requestId}]   Assumptions block keys: ${Object.keys(object.appendices?.assumptionsBlock ?? {}).join(", ")}`);
     console.log(`[${requestId}]   Sources: ${object.appendices?.sources?.length ?? 0}`);
