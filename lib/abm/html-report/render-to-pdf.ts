@@ -65,11 +65,15 @@ const renderWithBrowserless = async (html: string): Promise<Buffer> => {
     throw new Error("Browserless configuration is missing.");
   }
 
-  const response = await fetch(`${browserlessUrl}/pdf`, {
+  // Browserless API v2 format - token goes in query string
+  const endpoint = `${browserlessUrl}/pdf?token=${browserlessToken}`;
+  
+  console.log("[PDF] Calling Browserless:", browserlessUrl);
+
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${browserlessToken}`,
     },
     body: JSON.stringify({
       html,
@@ -83,16 +87,26 @@ const renderWithBrowserless = async (html: string): Promise<Buffer> => {
   });
 
   if (!response.ok) {
-    throw new Error("Browserless PDF generation failed.");
+    const errorText = await response.text();
+    console.error("[PDF] Browserless error:", response.status, errorText);
+    throw new Error(`Browserless PDF generation failed: ${response.status} - ${errorText}`);
   }
 
   const arrayBuffer = await response.arrayBuffer();
+  console.log("[PDF] Browserless success, received", arrayBuffer.byteLength, "bytes");
   return Buffer.from(arrayBuffer);
 };
 
 export const renderHtmlToPdf = async (html: string): Promise<Buffer> => {
   const hasBrowserlessConfig =
     Boolean(process.env.BROWSERLESS_URL) && Boolean(process.env.BROWSERLESS_TOKEN);
+  const forceBrowserless = process.env.USE_BROWSERLESS === "true";
+
+  // Force Browserless if explicitly requested (for local testing of prod behavior)
+  if (forceBrowserless && hasBrowserlessConfig) {
+    console.log("[PDF] Using Browserless (forced via USE_BROWSERLESS=true)");
+    return renderWithBrowserless(html);
+  }
 
   // In production, always use Browserless
   if (!isDevelopment) {
