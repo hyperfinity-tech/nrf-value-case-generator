@@ -99,7 +99,10 @@ export async function POST(request: Request) {
     const pdfBuffer = await renderHtmlToPdf(html);
     const fileName = buildFileName(data.brandIntake.brand);
 
-    return new Response(pdfBuffer, {
+    // Convert Buffer to Uint8Array for Response compatibility
+    const pdfBytes = new Uint8Array(pdfBuffer);
+
+    return new Response(pdfBytes, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
