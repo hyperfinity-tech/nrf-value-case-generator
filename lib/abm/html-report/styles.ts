@@ -80,6 +80,8 @@ h2 {
   color: var(--text);
   border-bottom: 2px solid var(--blue);
   padding-bottom: 6px;
+  page-break-after: avoid;
+  break-after: avoid;
 }
 
 h3 {
@@ -87,6 +89,8 @@ h3 {
   font-weight: 600;
   margin: 0 0 8px;
   color: var(--text);
+  page-break-after: avoid;
+  break-after: avoid;
 }
 
 h4 {
@@ -94,6 +98,8 @@ h4 {
   font-weight: 600;
   margin: 12px 0 6px;
   color: var(--muted);
+  page-break-after: avoid;
+  break-after: avoid;
 }
 
 p {
@@ -371,5 +377,151 @@ p {
 
 .subsection:last-child {
   margin-bottom: 0;
+}
+
+/* Prevent orphaned headings - keep headings with at least some content */
+.section > h2 + *,
+.section > h3 + *,
+.subsection > h3 + *,
+.subsection > h4 + *,
+.panel > h3 + *,
+.panel > h4 + * {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+
+/* Widow/orphan control for paragraphs */
+p {
+  orphans: 3;
+  widows: 3;
+}
+
+/* Ensure grids stay together when possible */
+.grid {
+  page-break-inside: avoid;
+}
+
+/* ============================================================================
+   Contact Page
+   ============================================================================ */
+
+.contact-page {
+  position: relative;
+  min-height: calc(var(--page-height) - var(--page-margin-top) - var(--page-margin-bottom));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(180deg, var(--white) 0%, #f8fafc 100%);
+  padding: 40px;
+}
+
+.contact-content {
+  max-width: 600px;
+}
+
+.contact-logo {
+  width: 180px;
+  height: 48px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin: 0 auto 32px;
+}
+
+.contact-page h2 {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.contact-tagline {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 32px;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.contact-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: left;
+}
+
+.contact-card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.contact-card p {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.contact-link {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.contact-info {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 32px;
+}
+
+.contact-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contact-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.contact-value {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.contact-footer {
+  font-size: 10px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.contact-copyright {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+.contact-page .cover-stripe {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 `;

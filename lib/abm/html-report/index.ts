@@ -454,6 +454,47 @@ const renderModelling = (modelling: LooseData) => {
   `;
 };
 
+const renderContactPage = (logoDataUrl?: string | null) => `
+  <section class="contact-page page-break">
+    <div class="contact-content">
+      ${logoDataUrl ? `<div class="contact-logo" style="background-image: url('${logoDataUrl}')"></div>` : ""}
+      <h2>Let's Talk</h2>
+      <p class="contact-tagline">Ready to unlock your gross margin opportunity?</p>
+      
+      <div class="contact-grid">
+        <div class="contact-card">
+          <h3>Schedule a Call</h3>
+          <p>Book a 30-minute discovery call with our team to discuss your specific needs and how we can help.</p>
+          <a href="https://hyperfinity.ai/contact-us" class="contact-link">hyperfinity.ai/contact-us</a>
+        </div>
+        
+        <div class="contact-card">
+          <h3>Email Us</h3>
+          <p>Have questions about this report or want to learn more about our platform?</p>
+          <a href="mailto:contact@hyperfinity.ai" class="contact-link">contact@hyperfinity.ai</a>
+        </div>
+      </div>
+      
+      <div class="contact-info">
+        <div class="contact-item">
+          <span class="contact-label">Website</span>
+          <span class="contact-value">hyperfinity.ai</span>
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">LinkedIn</span>
+          <span class="contact-value">linkedin.com/company/hyperfinity</span>
+        </div>
+      </div>
+      
+      <p class="contact-footer">
+        Powered by HyperFinity Decision Intelligence<br />
+        <span class="contact-copyright">© ${new Date().getFullYear()} HyperFinity. All rights reserved.</span>
+      </p>
+    </div>
+    <div class="cover-stripe"></div>
+  </section>
+`;
+
 const renderAppendices = (appendices: LooseData) => {
   const assumptionsBlock = getObj(appendices, "assumptionsBlock");
   const sourcesRaw = getArr(appendices, "sources");
@@ -536,6 +577,7 @@ export const generateHtmlReport = ({
     renderValueCase(outputs),
     renderModelling(modelling),
     renderAppendices(appendices),
+    renderContactPage(logoDataUrl),
   ].join("");
 
   return `<!doctype html>
