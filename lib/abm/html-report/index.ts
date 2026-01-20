@@ -1077,7 +1077,7 @@ const renderContactPage = (logoDataUrl?: string | null) => `
         <div class="contact-card">
           <h3>Schedule a Call</h3>
           <p>Book a 30-minute discovery call with our team to discuss your specific needs and how we can help.</p>
-          <a href="https://hyperfinity.ai/contact-us" class="contact-link">hyperfinity.ai/contact-us</a>
+          <a href="https://meetings.hubspot.com/tom-rigden" class="contact-link">Book a Call</a>
         </div>
         
         <div class="contact-card">
