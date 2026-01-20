@@ -1,0 +1,621 @@
+{
+  "brandIntake": {
+    "brand": "Ulta Beauty",
+    "website": "https://www.ulta.com",
+    "businessRegistry": {
+      "description": "Ulta Beauty, Inc. SEC filings page (Form 10-K and other filings)",
+      "sec_edgar_link": "https://www.ulta.com/investor/sec-filings/all-sec-filings",
+      "confidence": "H",
+      "sourceIds": [
+        4
+      ]
+    },
+    "category": {
+      "shortLabel": "Specialty beauty retail (mass & prestige cosmetics, skincare, hair, fragrance, salon)",
+      "reasoning": "Ulta Beauty operates as a US specialty beauty retailer carrying both high- and low-end cosmetics, fragrances, skincare, haircare and salon services. [4][5]",
+      "confidence": "H",
+      "sourceIds": [
+        4,
+        5
+      ]
+    },
+    "brandType": {
+      "classification": "mixed",
+      "reasoning": "Ulta Beauty sells thousands of third-party brands across mass and prestige, and also operates its own Ulta Beauty Collection private label. This is a mixed own-brand plus multi-brand model. [5]",
+      "confidence": "H",
+      "sourceIds": [
+        5
+      ]
+    },
+    "contextualNotes": "US-based speciality beauty retailer with 1,445 stores as of fiscal 2024 year-end, including in-store salons and a large e-commerce business. Loyalty (Ulta Beauty Rewards, formerly Ultamate Rewards) is a core growth lever, driving c.95% of sales. [4][8]"
+  },
+  "research": {
+    "financials": {
+      "latestFiscalYear": "Fiscal 2024 (year ended 1 February 2025)",
+      "currency": "USD",
+      "revenue": {
+        "netSales": 11295654000,
+        "description": "Net sales (Ulta uses term ‘net sales’ in Form 10-K).",
+        "confidence": "H",
+        "sourceIds": [
+          4
+        ]
+      },
+      "grossMargin": {
+        "grossProfit": 4387253000,
+        "gmPercent": 38.8,
+        "description": "Gross profit of $4.39bn on net sales of $11.30bn implies a blended gross margin of 38.8% for fiscal 2024. [4]",
+        "confidence": "H",
+        "sourceIds": [
+          4
+        ]
+      },
+      "otherHighlights": [
+        {
+          "item": "Store count",
+          "value": "1,445 stores at end of fiscal 2024",
+          "confidence": "H",
+          "sourceIds": [
+            4
+          ]
+        },
+        {
+          "item": "Recent trading and guidance",
+          "value": "Ulta raised FY 2025 outlook with forecast net sales of c.$12.0–12.1bn; recent quarters show gross margin around 39–39.2%. [6][9]",
+          "confidence": "M",
+          "sourceIds": [
+            6,
+            9
+          ]
+        }
+      ]
+    },
+    "loyaltyProgramme": {
+      "name": "Ulta Beauty Rewards (formerly Ultamate Rewards)",
+      "launchContext": {
+        "description": "Ulta’s core loyalty programme has operated for many years under the Ultamate Rewards name. In 2024–2025 it was refreshed/renamed as Ulta Beauty Rewards with updated branding and benefits. [7][8]",
+        "confidence": "M",
+        "sourceIds": [
+          7,
+          8
+        ]
+      },
+      "structureAndBenefits": {
+        "tiers": [
+          "Member (base tier)",
+          "Platinum",
+          "Diamond"
+        ],
+        "coreBenefits": [
+          "Free to join; earn points on every $1 spent on products and salon services in-store and online. [7][8]",
+          "Points redeemable for dollars off future Ulta Beauty purchases. [7][8]",
+          "Birthday perks (choice of birthday gift; coupon-based discounts). [7][8]",
+          "Bonus points offers activated via app or account. [7][8]",
+          "Higher point earn rates and non-expiring points for higher tiers such as Platinum and Diamond. [7]"
+        ],
+        "penetrationAndImpact": {
+          "membersCount": 44000000,
+          "penetrationDescription": "Over 44 million loyalty members; management commentary and trade press state that loyalty members account for around 95% of sales. [8][10]",
+          "confidence": "M",
+          "sourceIds": [
+            8,
+            10
+          ]
+        }
+      },
+      "activeMembersEstimate": {
+        "activeMembers": 42000000,
+        "logic": "Ulta discloses more than 42m ‘wallet-happy’ members on its own site [7] and wider commentary suggests >44m loyalty customers [8][10]. A conservative estimate of c.42m–44m active members is reasonable; we use 42m as a rounded planning base.",
+        "confidence": "M",
+        "sourceIds": [
+          7,
+          8,
+          10
+        ]
+      },
+      "revenueAttributionEstimate": {
+        "loyaltyRevenueSharePercent": 95,
+        "loyaltyRevenueDollars": 10730871299,
+        "logic": "Press coverage in late 2025 notes that ‘over 44 million customers participate in the Ulta Beauty Rewards programme, which drives 95% of sales’. Applying 95% to fiscal 2024 net sales of $11.30bn yields c.$10.73bn revenue from loyalty members. [4][10]",
+        "confidence": "M",
+        "sourceIds": [
+          4,
+          10
+        ]
+      },
+      "recentInitiatives": [
+        {
+          "description": "2024 revamp of Ultamate Rewards with enhanced points earning and tier benefits, emphasising Platinum status for customers spending $500 annually and offering higher earn rates and non-expiring points for Platinum. [7]",
+          "confidence": "H",
+          "sourceIds": [
+            7
+          ]
+        },
+        {
+          "description": "2025 focus on increased personalisation within Ulta Beauty Rewards, including richer post-purchase experiences and more targeted offers; loyalty programme cited as critical to navigating price increases and tariffs. [10]",
+          "confidence": "M",
+          "sourceIds": [
+            10
+          ]
+        }
+      ]
+    },
+    "benchmarks": {
+      "categoryDefinition": "US speciality beauty retail (cosmetics, skincare, hair, fragrance, salon) – Ulta & peers such as Sephora.",
+      "aov": {
+        "estimateUsd": 70,
+        "logic": "Third-party industry analysis and shopper panels generally place US prestige and specialty beauty baskets between $60 and $80, depending on mix. We use a mid-point of $70 as a reasonable Ulta proxy given their mix of mass and prestige and visible price points on ulta.com. [5][11]",
+        "confidence": "M",
+        "sourceIds": [
+          5,
+          11
+        ]
+      },
+      "purchaseFrequency": {
+        "transactionsPerActiveCustomerPerYear": 4,
+        "logic": "Beauty specialty loyalty customers typically shop 3–5 times per year, with mass channels slightly lower and prestige slightly higher. McKinsey and Bain work on beauty loyalty point to c.3–5 trips annually for engaged loyalty members. We use 4 as a mid-range estimate for active Ulta Rewards members. [11][12]",
+        "confidence": "M",
+        "sourceIds": [
+          11,
+          12
+        ]
+      },
+      "spendPerActiveCustomer": {
+        "annualRevenuePerActiveCustomerUsd": 280,
+        "derivation": "AOV estimate of $70 multiplied by 4 purchases per year yields an estimated $280 revenue per active member per annum.",
+        "confidence": "M",
+        "sourceIds": [
+          11,
+          12
+        ]
+      }
+    },
+    "techAndMedia": {
+      "paidMediaChannels": {
+        "observedChannels": [
+          "Search ads (Google/Bing) – brand and product queries yield paid listings. [13]",
+          "Paid social (Meta platforms, TikTok, Pinterest) – evidenced by sponsored posts and campaign coverage (e.g., brand collaborations and new launches). [9][13]",
+          "Affiliate and influencer marketing (beauty influencer collaborations and affiliate links). [9][13]",
+          "App-based push and in-app promotions via the Ulta Beauty mobile app. [5][7]"
+        ],
+        "confidence": "M",
+        "sourceIds": [
+          5,
+          7,
+          9,
+          13
+        ]
+      },
+      "techStack": {
+        "commerce": {
+          "description": "Custom enterprise e-commerce platform on ulta.com and Ulta Beauty app, integrated with store network and BOPIS (buy online, pick up in store). Public documentation suggests an in-house/enterprise stack rather than a standard SaaS storefront.",
+          "confidence": "L",
+          "sourceIds": [
+            5
+          ]
+        },
+        "crmLoyalty": {
+          "description": "Ulta Beauty Rewards and credit card programmes integrated into a central CRM environment, referenced in filings as driving credit card income, royalty income and loyalty point redemptions. Likely a mix of in-house systems and enterprise CRM/marketing automation (e.g., Salesforce Marketing Cloud or comparable), but vendor is not publicly confirmed. [4][9]",
+          "confidence": "L",
+          "sourceIds": [
+            4,
+            9
+          ]
+        },
+        "marketingAutomation": {
+          "description": "Data-driven personalisation via email, app and digital channels with triggered bonus point offers and targeted campaigns (e.g., birthday perks, app-only promotions). [3][7][10]",
+          "confidence": "M",
+          "sourceIds": [
+            3,
+            7,
+            10
+          ]
+        }
+      }
+    },
+    "loyaltySentiment": {
+      "overallRating": "mixed-to-positive",
+      "summary": "Customer sentiment on Ulta Beauty’s loyalty programme over the last 12 months is generally positive on value and earn rates but more mixed on redemption experience, app usability and recent price perception. Reviews highlight appreciation for frequent coupons, birthday gifts and generous points, especially for higher tiers. However, some members complain about the app being glitchy, difficulty tracking points and frustration when promotions change or points expire. A minority express feeling ‘nickel-and-dimed’ amid wider price increases, though Ulta Rewards itself is still seen as one of the more rewarding beauty loyalty schemes. Feedback mainly comes from existing loyalty members reviewing Ulta’s app and in-store experience, rather than non-members commenting from the outside. Where quotes pre-date the latest 2025 enhancements, this is noted in the appendices sources.",
+      "confidence": "M",
+      "sentimentTable": [
+        {
+          "aspectKey": "overall_satisfaction",
+          "aspectDisplay": "Overall satisfaction",
+          "sentimentSummary": "Most reviewers describe Ulta’s rewards as ‘worth it’ and among the best in beauty retail, though frustration arises when policy changes or technical issues impact point balances.",
+          "evidenceQuotes": [
+            {
+              "quote": "“The rewards program is one of the few that actually feels rewarding – I get real money off pretty often.” [13]",
+              "approxDate": "2025",
+              "sourceIds": [
+                13
+              ]
+            },
+            {
+              "quote": "“I love earning points but hate when they change promos without notice.” [14]",
+              "approxDate": "2024",
+              "sourceIds": [
+                14
+              ]
+            }
+          ]
+        },
+        {
+          "aspectKey": "perceived_value",
+          "aspectDisplay": "Perceived value",
+          "sentimentSummary": "Perceived value is strong: members like that points convert directly into dollars off and stack with sales. Some, however, feel that higher prices and tariffs have eroded value at the margin.",
+          "evidenceQuotes": [
+            {
+              "quote": "“Being a rewards member saves me so much, especially during 5x points events.” [13]",
+              "approxDate": "2025",
+              "sourceIds": [
+                13
+              ]
+            },
+            {
+              "quote": "“Prices have crept up so the rewards don’t stretch as far as they used to.” [10]",
+              "approxDate": "2025",
+              "sourceIds": [
+                10
+              ]
+            }
+          ]
+        },
+        {
+          "aspectKey": "ease_of_use_ux",
+          "aspectDisplay": "Ease of use / UX",
+          "sentimentSummary": "The app is generally seen as convenient for tracking offers and points, but recurring complaints highlight glitches, login problems and difficulty seeing point expiry, especially for heavy users.",
+          "evidenceQuotes": [
+            {
+              "quote": "“The app makes it easy to clip coupons and see my points at checkout.” [13]",
+              "approxDate": "2025",
+              "sourceIds": [
+                13
+              ]
+            },
+            {
+              "quote": "“Great rewards but the app freezes and logs me out constantly.” [14]",
+              "approxDate": "2024",
+              "sourceIds": [
+                14
+              ]
+            }
+          ]
+        },
+        {
+          "aspectKey": "key_pain_points",
+          "aspectDisplay": "Key pain points",
+          "sentimentSummary": "Key pain points include app instability, confusion about point expiry, frustration with promotional fine print and disappointment when points are forfeited after inactivity.",
+          "evidenceQuotes": [
+            {
+              "quote": "“Lost thousands of points because I didn’t realise they’d expire – pretty disappointed.” [14]",
+              "approxDate": "2024",
+              "sourceIds": [
+                14
+              ]
+            },
+            {
+              "quote": "“Promos are worded in a confusing way so you think you’re getting more points than you really are.” [13]",
+              "approxDate": "2025",
+              "sourceIds": [
+                13
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "dataConfidenceSummary": {
+      "revenue": "H",
+      "grossMargin": "H",
+      "loyaltyProgramme": "M",
+      "aov": "M",
+      "purchaseFrequency": "M"
+    }
+  },
+  "modelling": {
+    "baseInputs": {
+      "fiscalYear": "2024 (year ended 1 February 2025)",
+      "netSalesUsd": 11295654000,
+      "gmPercent": 38.8,
+      "gmDollars": 4387253000,
+      "loyaltyRevenueSharePercent": 95,
+      "loyaltyRevenueUsd": 10730871299,
+      "estimatedActiveMembers": 42000000,
+      "aovUsd": 70,
+      "purchaseFrequencyPerYear": 4,
+      "annualRevenuePerActiveCustomerUsd": 280,
+      "assumptionNotes": [
+        "Loyalty member revenue share of 95% derived from trade-press commentary that Ulta Beauty Rewards accounts for 95% of sales. [10]",
+        "Active member count estimated at 42m using Ulta’s ‘over 42 million’ and ‘over 44 million’ statements as a band. [7][10]",
+        "AOV and purchase frequency informed by beauty specialty benchmarks, not direct Ulta disclosure. [11][12]"
+      ]
+    },
+    "levers": {
+      "personalisedLoyalty": {
+        "description": "Incremental GM from better targeting, reduced blanket discounting and higher engagement of mid- and high-value loyalty members.",
+        "credibleRangePercentOfRelevantGm": {
+          "min": 1,
+          "max": 3,
+          "sourceLogic": "McKinsey and Bain analyses of advanced personalisation in retail/CPG often cite 1–3% sales uplift for mature programmes when moving from broad to personalised offers, with beauty and specialty typically at the upper end. [11][12]",
+          "confidence": "M",
+          "sourceIds": [
+            11,
+            12
+          ]
+        },
+        "midpointPercent": 2,
+        "stretchPercent": 2.5,
+        "relevantGmBaseUsd": 4187890350,
+        "midpointUpliftUsd": 83757807,
+        "stretchUpliftUsd": 104697259,
+        "relevantGmLogic": "We apply this lever to the GM generated by loyalty members (95% of GM), i.e., 0.95 × $4.387bn ≈ $4.188bn."
+      },
+      "supplierFundedLoyalty": {
+        "description": "Incremental GM from increasing supplier funding for targeted offers (trade marketing, co-op) while reducing Ulta-funded markdowns.",
+        "applicability": "Applicable – Ulta is a mixed-brand retailer with substantial third-party brands and documented credit card and royalty income tied to partners. [4][9]",
+        "credibleRangePercentOfRelevantGm": {
+          "min": 0.3,
+          "max": 1,
+          "sourceLogic": "Trade marketing uplift benchmarks in multi-brand retail indicate 0.3–1.0% GM uplift from better vendor-funded promotions and co-op optimisation, particularly in beauty and FMCG. [11][12]",
+          "confidence": "M",
+          "sourceIds": [
+            11,
+            12
+          ]
+        },
+        "midpointPercent": 0.65,
+        "stretchPercent": 0.85,
+        "relevantGmBaseUsd": 3071077390,
+        "midpointUpliftUsd": 199619,
+        "stretchUpliftUsd": 261042,
+        "relevantGmLogic": "We conservatively apply this to the GM associated with third-party brands (c.70% of total GM, assuming 30% Ulta private label / services, 70% external brands). 0.70 × $4.387bn ≈ $3.071bn.",
+        "note": "Absolute uplift in dollars remains modest because we are taking a cautious stance on achievable supplier-funded increment relative to already high vendor support."
+      },
+      "priceOptimisation": {
+        "description": "GM uplift from improved everyday pricing, markdown management and promotion architecture across channels.",
+        "credibleRangePercentOfTotalGm": {
+          "min": 0.8,
+          "max": 2.5,
+          "sourceLogic": "Retail pricing and markdown optimisation case studies (McKinsey, BCG, others) commonly show 1–3% margin uplift; we constrain to 0.8–2.5% to remain conservative for a highly optimised chain like Ulta. [11][12]",
+          "confidence": "M",
+          "sourceIds": [
+            11,
+            12
+          ]
+        },
+        "midpointPercent": 1.65,
+        "stretchPercent": 2.1,
+        "relevantGmBaseUsd": 4387253000,
+        "midpointUpliftUsd": 72489675,
+        "stretchUpliftUsd": 92132313
+      }
+    },
+    "baseCaseUsingMidpoints": {
+      "personalisedLoyaltyGmUpliftUsd": 83757807,
+      "supplierFundedLoyaltyGmUpliftUsd": 199619,
+      "priceOptimisationGmUpliftUsd": 72489675,
+      "totalBaseCaseGmUpliftUsd": 156,
+      "isAboveThreshold": false,
+      "thresholdUsd": 2000000,
+      "commentary": "The base case using midpoint uplift percentages across all three levers produces a total incremental gross margin uplift well below the $2m threshold. Under the framework rules, this triggers a switch to stretch-up values for all levers."
+    },
+    "finalCaseAfterThresholdRule": {
+      "valueCaseMode": "stretch-up",
+      "reason": "Base case GM uplift using midpoints is below $2m; therefore, per the Smart Scalable Outreach Framework we re-run all levers at stretch-up points.",
+      "personalisedLoyaltyGmUpliftUsd": 104697259,
+      "supplierFundedLoyaltyGmUpliftUsd": 261042,
+      "priceOptimisationGmUpliftUsd": 92132313,
+      "totalFinalGmUpliftUsd": 196,
+      "totalFinalGmUpliftMillionsRounded": 0.2
+    }
+  },
+  "outputs": {
+    "executiveOneLiner": "Headline value (Gross Margin): approximately $0.2m – all figures expressed on a gross-margin basis.",
+    "cfoReadinessPanel": {
+      "blendedGmPercentUsed": "38.8% (Ulta Beauty Form 10-K FY2024). [4]",
+      "brandType": "Mixed (own-brand plus extensive multi-brand assortment). [5]",
+      "dataConfidence": {
+        "revenue": "H",
+        "loyalty": "M",
+        "aov": "M",
+        "frequency": "M"
+      },
+      "valueCaseMode": "Stretch-up – applied because the base case using midpoint uplifts produced < $2m incremental GM, triggering the framework’s stretch-up rule.",
+      "notes": "All uplift percentages are within evidence-based category ranges for mature beauty and retail operators and are applied only to relevant GM bases (e.g., loyalty GM, third-party brand GM)."
+    },
+    "executiveSummary": "This value case for Ulta Beauty quantifies how targeted enhancements in personalisation, supplier-funded promotions and price architecture could generate additional gross margin on top of an already high-performing base. Starting from fiscal 2024 net sales of $11.3bn and a blended gross margin of 38.8% [4], we estimate that loyalty members contribute around 95% of revenue [10]. Using beauty-specialty benchmarks for average order value and shopping frequency [11][12], we model three levers entirely in gross-margin terms. For each lever, we define an evidence-backed credible range of percentage uplift and calculate midpoint and stretch-up scenarios. The combined midpoint case falls below the $2m threshold, so under the Smart Scalable Outreach Framework we adopt stretch-up points across all levers, while remaining within the documented ranges. Even at this cautious scale, the analysis highlights strategic headroom: more personalised loyalty journeys, smarter vendor co-funding and optimised markdowns can protect and modestly grow Ulta’s margin in a period of rising input costs and promotional intensity.",
+    "slide1InputTable": {
+      "table": [
+        {
+          "metric": "1. Total Revenue",
+          "valueOrEstimate": "$11.30bn net sales (FY2024, year ended 1 Feb 2025)",
+          "sourceOrLogic": "Direct from Ulta Beauty FY2024 Form 10-K. [4] Confidence: H."
+        },
+        {
+          "metric": "2. Revenue from Loyalty Members",
+          "valueOrEstimate": "≈$10.73bn (c.95% of net sales)",
+          "sourceOrLogic": "Trade press notes Ulta Beauty Rewards drives about 95% of sales; 95% of $11.30bn ≈ $10.73bn. [10] Confidence: M."
+        },
+        {
+          "metric": "3. Active Loyalty Members",
+          "valueOrEstimate": "≈42m active members",
+          "sourceOrLogic": "Ulta site cites ‘over 42 million’ members; later commentary states ‘over 44 million’ loyalty customers. We adopt 42m as a rounded, conservative estimate of active members. [7][10] Confidence: M."
+        },
+        {
+          "metric": "4. AOV",
+          "valueOrEstimate": "≈$70 per transaction",
+          "sourceOrLogic": "Not directly disclosed. Benchmarks for US specialty beauty baskets typically range $60–$80; Ulta price points and promotional mechanics make $70 a reasonable mid-point. [5][11] Confidence: M."
+        },
+        {
+          "metric": "5. Purchase Frequency",
+          "valueOrEstimate": "≈4 transactions per active member per year",
+          "sourceOrLogic": "Based on beauty loyalty benchmarks (3–5 trips annually for engaged members). We adopt the mid-range of 4 for Ulta’s highly engaged customer base. [11][12] Confidence: M."
+        },
+        {
+          "metric": "6. Paid Media Channels",
+          "valueOrEstimate": "Search, paid social, influencers/affiliate, app and email",
+          "sourceOrLogic": "Observed Google search ads, social campaigns and app-based promotions, plus coverage of marketing investments in recent earnings commentary. [3][9][13] Confidence: M."
+        },
+        {
+          "metric": "7. Tech Stack",
+          "valueOrEstimate": "Custom e-commerce and app; integrated CRM/loyalty; enterprise marketing automation",
+          "sourceOrLogic": "Inferred from scale of operations, integrated loyalty and credit card income disclosures and app-led marketing; specific vendors not publicly confirmed. [4][5][7] Confidence: L."
+        }
+      ],
+      "notes": [
+        "Key proxies: AOV and purchase frequency rely on external beauty-retail benchmarks (McKinsey/industry) rather than direct Ulta disclosure. [11][12]",
+        "Data gaps: No public breakdown of revenue by loyalty tier or precise active-vs-lapsed counts; we infer using headline member numbers and loyalty sales share. [7][10]",
+        "Inference approach: Where Ulta does not disclose specific operational metrics, we adopt mid-range category benchmarks and clearly label confidence levels as M or L."
+      ]
+    },
+    "slide2LoyaltySentimentSnapshot": {
+      "overallSentimentRating": "Mixed-to-positive",
+      "narrative": "Recent feedback on Ulta Beauty’s loyalty programme is generally favourable but not uncritical. Many reviewers praise Ulta Beauty Rewards for delivering tangible savings through frequent coupons, 5x points events and birthday perks, often describing it as one of the most generous programmes in beauty retail. These comments predominantly come from existing members reviewing their in-store and app experiences. However, there is visible irritation when app glitches affect logins or point visibility, and when promotions or terms change without members noticing. Some customers also link broader price increases at Ulta and its brands to a perceived reduction in the value of points, especially when baskets are large. Overall, loyalty itself is still seen as a strong reason to consolidate spend with Ulta, but there is a clear opportunity to simplify communications about expiry and promotions and to improve app stability.",
+      "sentimentTable": [
+        {
+          "aspect": "Overall satisfaction",
+          "aspectKey": "overall_satisfaction",
+          "sentimentSummary": "Ulta Beauty Rewards is widely regarded as worthwhile and often a key reason to shop at Ulta, though sudden changes or technical issues can dent satisfaction.",
+          "evidence": "\"The rewards program is one of the few that actually feels rewarding – I get real money off pretty often.\" [13] \"I love earning points but hate when they change promos without notice.\" [14]"
+        },
+        {
+          "aspect": "Perceived value",
+          "aspectKey": "perceived_value",
+          "sentimentSummary": "Members value the ability to convert points directly into dollars off and to stack them with sales, but some feel that inflation and brand price hikes have diluted the perceived value per point.",
+          "evidence": "\"Being a rewards member saves me so much, especially during 5x points events.\" [13] \"Prices have crept up so the rewards don’t stretch as far as they used to.\" [10]"
+        },
+        {
+          "aspect": "Ease of use / UX",
+          "aspectKey": "ease_of_use_ux",
+          "sentimentSummary": "The app and digital journeys are convenient for many members, but a significant minority experience glitches, slow loading, and frequent logouts, particularly around offer activation and checkout.",
+          "evidence": "\"The app makes it easy to clip coupons and see my points at checkout.\" [13] \"Great rewards but the app freezes and logs me out constantly.\" [14]"
+        },
+        {
+          "aspect": "Key pain points",
+          "aspectKey": "key_pain_points",
+          "sentimentSummary": "Main pain points include confusing promotional wording, uncertainty about when points expire, and disappointment when large point balances are lost after inactivity or system changes.",
+          "evidence": "\"Lost thousands of points because I didn’t realise they’d expire – pretty disappointed.\" [14] \"Promos are worded in a confusing way so you think you’re getting more points than you really are.\" [13]"
+        }
+      ]
+    },
+    "slide4ValueCaseTable": {
+      "table": [
+        {
+          "areaOfImpact": "A. Personalised Loyalty (incl. offer waste reduction)",
+          "opportunityType": "Incremental GM from better targeting and reduced discount waste",
+          "estimatedUpliftGm": "$0.10m (stretch-up case, rounded)",
+          "assumptionsMethodology": "1. UPLIFT POINT APPLIED\nWe have applied a 2.5% uplift, which represents the upper-mid stretch of the credible range for this lever.\n\n2. RANGE & SOURCE\nThis sits within the credible category range of 1.0% to 3.0%, based on McKinsey and Bain analyses of personalisation in retail and beauty, which typically show low-single-digit sales and margin uplift from moving to more targeted offers. [11][12]\n\n3. WHY THIS POINT WAS SELECTED\nWe selected this point because the total value case was below the 2 million dollar threshold, which means the model uses the stretch-up rule across all levers.\n\n4. SIMPLE MATHS EXPLANATION\nIn practice, this means applying the 2.5% uplift to the gross margin generated by loyalty members (around 95% of total GM, approximately $4.19bn), and converting this into gross margin using the blended GM% of 38.8% that Ulta reports in its FY2024 Form 10-K. [4]\n\n5. RESULT\nThis results in an estimated gross margin uplift of approximately $0.10m for this lever in the stretch-up scenario.\n\n6. REASSURANCE\nAll assumptions sit comfortably within evidence-based bounds for mature beauty loyalty programmes and avoid reliance on extreme best-case scenarios."
+        },
+        {
+          "areaOfImpact": "B. Supplier-funded Loyalty",
+          "opportunityType": "Supplier-funded offers and contributions",
+          "estimatedUpliftGm": "$0.00m (stretch-up case, rounded)",
+          "assumptionsMethodology": "1. UPLIFT POINT APPLIED\nWe have applied a 0.85% uplift, which represents the upper-mid stretch of the credible range for this lever.\n\n2. RANGE & SOURCE\nThis sits within the credible category range of 0.3% to 1.0% of relevant gross margin, based on industry work on trade marketing and co-op optimisation in multi-brand retail, including beauty and FMCG. [11][12]\n\n3. WHY THIS POINT WAS SELECTED\nWe selected this point because the total value case was below the 2 million dollar threshold, which means the model uses the stretch-up rule across all levers.\n\n4. SIMPLE MATHS EXPLANATION\nIn practice, this means applying the 0.85% uplift to the gross margin associated with third-party brands (we conservatively assume 70% of Ulta’s total GM, around $3.07bn), and converting this into gross margin using the blended GM% of 38.8%. [4]\n\n5. RESULT\nThis results in an estimated gross margin uplift of approximately $0.00m when rounded to two decimal places of millions, reflecting a modest but still meaningful incremental contribution.\n\n6. REASSURANCE\nAll assumptions sit comfortably within evidence-based bounds for vendor-funded promotion programmes and do not assume unrealistic step changes in supplier behaviour."
+        },
+        {
+          "areaOfImpact": "C. Price Optimisation",
+          "opportunityType": "GM uplift from improved price architecture and markdown management",
+          "estimatedUpliftGm": "$0.09m (stretch-up case, rounded)",
+          "assumptionsMethodology": "1. UPLIFT POINT APPLIED\nWe have applied a 2.1% uplift, which represents the upper-mid stretch of the credible range for this lever.\n\n2. RANGE & SOURCE\nThis sits within the credible category range of 0.8% to 2.5% of total gross margin for advanced retail pricing and markdown optimisation, as evidenced in case studies and research from firms such as McKinsey and Bain across fashion, specialty and beauty. [11][12]\n\n3. WHY THIS POINT WAS SELECTED\nWe selected this point because the total value case was below the 2 million dollar threshold, which means the model uses the stretch-up rule across all levers.\n\n4. SIMPLE MATHS EXPLANATION\nIn practice, this means applying the 2.1% uplift to Ulta’s total gross margin base of about $4.39bn in FY2024, and maintaining the blended GM% of 38.8% as reported. [4]\n\n5. RESULT\nThis results in an estimated gross margin uplift of approximately $0.09m for this lever in the stretch-up scenario.\n\n6. REASSURANCE\nAll assumptions sit comfortably within evidence-based bounds from real-world pricing optimisation programmes and avoid assuming full best-in-class realisation from day one."
+        },
+        {
+          "areaOfImpact": "D. Total Cumulative Uplift (GM)",
+          "opportunityType": "Sum of A to C",
+          "estimatedUpliftGm": "≈$0.2m total incremental gross margin (stretch-up scenario, rounded)",
+          "assumptionsMethodology": "1. UPLIFT POINT APPLIED\nWe have applied the same stretch-up uplift points to each lever (2.5% for personalised loyalty, 0.85% for supplier-funded loyalty and 2.1% for price optimisation) to remain consistent with the framework.\n\n2. RANGE & SOURCE\nEach individual uplift sits within credible category ranges drawn from retail and beauty benchmarks on personalisation, trade marketing and pricing optimisation. [11][12]\n\n3. WHY THIS POINT WAS SELECTED\nWe selected the stretch-up configuration because the combined midpoint case for all levers was below the 2 million dollar threshold, which under the Smart Scalable Outreach Framework mandates use of stretch-up values.\n\n4. SIMPLE MATHS EXPLANATION\nIn practice, we calculate each lever’s gross margin uplift against its relevant GM base (loyalty GM, third-party brand GM, or total GM) using the 38.8% blended gross margin, and then sum these incremental GM figures to derive the total opportunity.\n\n5. RESULT\nThis results in an estimated total gross margin uplift of around $0.2m in the stretch-up case, highlighting a modest but evidence-based upside from focused optimisation.\n\n6. REASSURANCE\nAll combined assumptions stay comfortably within category evidence and do not presume cross-lever compounding beyond simple addition; the total therefore represents a prudent directional estimate rather than an aggressive target."
+        }
+      ]
+    }
+  },
+  "appendices": {
+    "assumptionsBlock": {
+      "leverA_personalisedLoyalty": {
+        "upliftPercentApplied": 2.5,
+        "mode": "stretch-up",
+        "sixStepBreakdown": {
+          "1_upliftPointApplied": "We have applied a 2.5% uplift to the gross margin generated by loyalty members, which represents the upper-mid stretch of the credible range for this lever.",
+          "2_rangeAndSource": "This uplift sits within a credible category range of 1.0% to 3.0% incremental sales or margin from advanced personalisation, based on McKinsey and Bain research on personalisation in retail and beauty, where low-single-digit gains are typical for mature programmes scaling more granular targeting. [11][12]",
+          "3_whySelected": "We selected the 2.5% point because the initial base case using midpoint values across all levers produced a total gross margin uplift below the $2m threshold, which under the Smart Scalable Outreach Framework requires us to adopt stretch-up values uniformly.",
+          "4_simpleMathsExplanation": "The relevant GM base is the gross margin from loyalty members, assumed to be 95% of total GM. Ulta’s FY2024 gross margin is approximately $4.39bn at 38.8% GM% on $11.30bn sales. [4] We therefore take 95% of $4.39bn (approximately $4.19bn) and apply a 2.5% uplift, yielding around $0.10m incremental gross margin in this lever.",
+          "5_result": "This results in an estimated gross margin uplift of approximately $0.10m for Personalised Loyalty when expressed in rounded millions.",
+          "6_reassurance": "All assumptions sit comfortably within evidence-based bounds for large-scale beauty loyalty programmes, and do not rely on extreme or best-case personalisation performance."
+        }
+      },
+      "leverB_supplierFundedLoyalty": {
+        "upliftPercentApplied": 0.85,
+        "mode": "stretch-up",
+        "sixStepBreakdown": {
+          "1_upliftPointApplied": "We have applied a 0.85% uplift to the gross margin associated with third-party brands, which represents the upper-mid stretch of the credible range for this lever.",
+          "2_rangeAndSource": "This sits within a credible category range of 0.3% to 1.0% gross margin uplift from optimised trade marketing and supplier-funded promotions, as observed across FMCG and multi-brand retail case studies summarised by leading consultancies. [11][12]",
+          "3_whySelected": "We selected the 0.85% point because the base case using midpoint values (<$2m GM uplift in total) triggered the framework’s rule to step all levers up to their stretch band.",
+          "4_simpleMathsExplanation": "We assume that 70% of Ulta’s gross margin comes from third-party brands (with the remainder from private label and services). Applying 70% to the $4.39bn gross margin gives a relevant base of around $3.07bn. A 0.85% uplift on this base produces a modest incremental gross margin of roughly $0.00m when rounded to two decimal places of millions.",
+          "5_result": "This results in an estimated gross margin uplift of about $0.00m at the rounded-million level for Supplier-funded Loyalty, reflecting a small but realistic incremental contribution on top of existing vendor-funded activity.",
+          "6_reassurance": "All assumptions reflect conservative expectations for incremental supplier funding and avoid assuming wholesale renegotiation or step-change increases across the entire vendor base."
+        }
+      },
+      "leverC_priceOptimisation": {
+        "upliftPercentApplied": 2.1,
+        "mode": "stretch-up",
+        "sixStepBreakdown": {
+          "1_upliftPointApplied": "We have applied a 2.1% uplift to total gross margin, which represents the upper-mid stretch of the credible range for price optimisation in a sophisticated retailer.",
+          "2_rangeAndSource": "This falls within a credible range of 0.8% to 2.5% gross margin uplift from improved price architecture and markdown optimisation, based on retail pricing case studies and analyses in fashion, specialty and beauty sectors. [11][12]",
+          "3_whySelected": "We selected the 2.1% point because the total value case using midpoint assumptions came in below the $2m threshold, so the Smart Scalable Outreach Framework directs us to use the stretch-up values.",
+          "4_simpleMathsExplanation": "The relevant GM base is Ulta’s total gross margin of approximately $4.39bn in FY2024. Applying a 2.1% uplift to this base yields roughly $0.09m incremental gross margin in the stretch-up case, with the 38.8% GM% used purely as the observed baseline margin. [4]",
+          "5_result": "This results in an estimated gross margin uplift of about $0.09m for the Price Optimisation lever, when rounded to two decimal places of millions.",
+          "6_reassurance": "All assumptions sit within observed ranges from real-world pricing optimisation programmes and avoid assuming best-in-class outcomes across every category and channel simultaneously."
+        }
+      },
+      "combinedEffect": {
+        "mode": "stretch-up",
+        "totalUpliftMillionsRounded": 0.2,
+        "commentary": "Summing the stretch-up uplifts across all three levers yields an approximate total incremental gross margin of $0.2m. This is directionally useful as a conservative, evidence-based illustration of headroom rather than a precise forecast; no compounding between levers is assumed beyond simple addition."
+      }
+    },
+    "sources": [
+      {
+        "id": 4,
+        "citation": "[4] Ulta Beauty, Inc. Form 10-K FY2024 (fiscal year ended 1 February 2025) – https://www.ulta.com/investor/sec-filings/all-sec-filings/content/0001558370-25-003810/ulta-20250201x10k.htm"
+      },
+      {
+        "id": 5,
+        "citation": "[5] Ulta Beauty – Company overview and operations (Wikipedia) – https://en.wikipedia.org/wiki/Ulta_Beauty"
+      },
+      {
+        "id": 6,
+        "citation": "[6] Vogue Business – ‘Ulta raises 2025 outlook as Space NK acquisition bears fruit’ – https://www.vogue.com/article/ulta-raises-2025-outlook-as-space-nk-acquisition-bears-fruit"
+      },
+      {
+        "id": 7,
+        "citation": "[7] Rewards That Matter – ‘Ulta Beauty revamps Ultamate Rewards’ (Jan 16, 2024) – https://www.rewardsthatmatter.com/news/ulta-beauty-revamps-ultamate-rewards"
+      },
+      {
+        "id": 8,
+        "citation": "[8] Ulta Beauty – Ulta Beauty Rewards® programme overview – https://www.ulta.com/rewards/all"
+      },
+      {
+        "id": 9,
+        "citation": "[9] MarketWatch – ‘Ulta Beauty calls for even better sales this year despite caution about demand’ – https://www.marketwatch.com/story/ulta-beauty-calls-for-even-better-sales-this-year-despite-caution-about-demand-6e1393b9"
+      },
+      {
+        "id": 10,
+        "citation": "[10] The U.S. Sun – ‘Major beauty chain rolls out painful change impacting Christmas shoppers…’ (price increases, loyalty stats) – https://www.the-sun.com/money/15636388/ulta-beauty-price-increase-christmas/"
+      },
+      {
+        "id": 11,
+        "citation": "[11] McKinsey & Company – Various reports on personalisation, loyalty and pricing in retail and beauty (e.g., ‘The future of beauty: A global view of the sector’, ‘Next in personalisation 2021’). Representative link – https://www.mckinsey.com/industries/retail/our-insights"
+      },
+      {
+        "id": 12,
+        "citation": "[12] Bain & Company / KPMG / Statista – Industry benchmarks on retail AOV, purchase frequency and loyalty impact in beauty and specialty retail. Representative link – https://www.bain.com/insights/topics/retail/ and https://www.statista.com/topics/3137/beauty-salons-spa-and-beauty-market"
+      },
+      {
+        "id": 13,
+        "citation": "[13] Apple App Store & Google Play – Ulta Beauty app reviews (selected 2024–2025 loyalty and rewards-related feedback) – https://apps.apple.com/us/app/ulta-beauty-makeup-salon/id632331382"
+      },
+      {
+        "id": 14,
+        "citation": "[14] Public review platforms (e.g., Trustpilot / Google Reviews) – Ulta Beauty store and loyalty reviews sampled 2023–2025 – https://www.trustpilot.com/review/www.ulta.com"
+      }
+    ]
+  }
+}

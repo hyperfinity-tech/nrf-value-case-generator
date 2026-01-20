@@ -293,30 +293,89 @@ const renderResearchFindings = (research: LooseData) => {
   const fiscalYear = $anyStr(finData, "fiscalYear", "latestFiscalYear", "latestFinancialYear") ||
                      $str(financials, "latestFinancialYear");
 
+  // Recursively find a numeric value in an object matching key patterns
+  const findNumericValue = (obj: unknown, patterns: string[]): number => {
+    if (!isObject(obj)) return 0;
+    for (const [key, val] of Object.entries(obj)) {
+      const normKey = normalizeKey(key);
+      if (patterns.some((p) => normKey.includes(normalizeKey(p)))) {
+        if (typeof val === "number" && val > 0) return val;
+        if (isObject(val)) {
+          const nested = $anyNum(val, "value", "amount", "total");
+          if (nested > 0) return nested;
+        }
+      }
+    }
+    // Search one level deeper
+    for (const val of Object.values(obj)) {
+      if (isObject(val)) {
+        const found = findNumericValue(val, patterns);
+        if (found > 0) return found;
+      }
+    }
+    return 0;
+  };
+
   // Get revenue - try multiple paths (handles various naming conventions)
   const getRevenueValue = (): string => {
-    const paths = [
+    // Try specific paths first
+    const specificPaths = [
+      // Nested under revenue object (e.g., Ulta: financials.revenue.netSales)
+      () => $num(finData, "revenue", "netSales"),
+      () => $num(finData, "revenue", "value"),
+      () => $num(financials, "revenue", "netSales"),
+      // Direct paths
       () => $num(finData, "totalRevenueUSD", "value"),
       () => $num(finData, "totalRevenueUSD"),
       () => $num(finData, "netSales", "valueUsdBnApprox") * 1_000_000_000,
       () => $num(finData, "netSales", "valueEurBn") * 1_000_000_000,
       () => $num(finData, "netSalesUsdBn") * 1_000_000_000,
       () => $num(financials, "netSalesAndGMBase", "netSalesUsdBn") * 1_000_000_000,
+      () => $anyNum(finData, "revenue", "totalRevenue", "netSales", "sales"),
+      () => $anyNum(financials, "revenue", "totalRevenue", "netSales", "sales"),
     ];
-    for (const fn of paths) {
+    for (const fn of specificPaths) {
       const val = fn();
-      if (val > 0) return `$${formatNumber(val / 1_000_000_000)}bn`;
+      if (val > 0) {
+        // Determine scale (billions, millions, or raw)
+        if (val >= 1_000_000_000) return `$${formatNumber(val / 1_000_000_000)}bn`;
+        if (val >= 1_000_000) return `$${formatNumber(val / 1_000_000)}m`;
+        return `$${formatNumber(val)}`;
+      }
     }
+    
+    // Fallback: search for any revenue-like value in financials
+    let found = findNumericValue(financials, ["revenue", "sales", "netsales"]);
+    if (found === 0) {
+      // Try searching the entire research object
+      found = findNumericValue(research, ["revenue", "sales", "netsales"]);
+    }
+    if (found > 0) {
+      if (found >= 1_000_000_000) return `$${formatNumber(found / 1_000_000_000)}bn`;
+      if (found >= 1_000_000) return `$${formatNumber(found / 1_000_000)}m`;
+      return `$${formatNumber(found)}`;
+    }
+    
     return "N/A";
   };
   const revenueVal = getRevenueValue();
   
   // Get GM% - try multiple paths
   const getGMPercent = (): string => {
+    // Try nested under grossMargin object first (e.g., Ulta: financials.grossMargin.gmPercent)
+    const nestedGM = $num(finData, "grossMargin", "gmPercent") ||
+                     $num(financials, "grossMargin", "gmPercent") ||
+                     $num(finData, "grossMargin", "percent") ||
+                     $num(finData, "grossMargin", "value");
+    if (nestedGM > 0) return formatPercentage(nestedGM);
+    
+    // Try direct paths
     const gmVal = $anyNum(finData, 
       "consolidatedGrossMarginPct", 
       "blendedGrossMarginPercent", 
       "grossMarginPercent",
+      "grossMargin",
+      "gmPercent",
       "segmentRetailPCWGrossMarginPct"
     ) || $num(financials, "netSalesAndGMBase", "grossMarginPercent");
     
@@ -326,6 +385,13 @@ const renderResearchFindings = (research: LooseData) => {
     const nestedVal = $num(finData, "consolidatedGrossMarginPct", "value") ||
                       $num(finData, "blendedGrossMarginPercent", "value");
     if (nestedVal > 0) return formatPercentage(nestedVal);
+    
+    // Fallback: search for any GM-like value (0-100 range)
+    let foundGM = findNumericValue(financials, ["grossmargin", "gm", "margin"]);
+    if (foundGM === 0) {
+      foundGM = findNumericValue(research, ["grossmargin", "gm", "margin"]);
+    }
+    if (foundGM > 0 && foundGM <= 100) return formatPercentage(foundGM);
     
     return "N/A";
   };
