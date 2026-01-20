@@ -1099,7 +1099,7 @@ const renderContactPage = (logoDataUrl?: string | null) => `
       </div>
       
       <p class="contact-footer">
-        Powered by HyperFinity Decision Intelligence<br />
+        Powered by HyperFinity Actionable Intelligence for Retail<br />
         <span class="contact-copyright">© ${new Date().getFullYear()} HyperFinity. All rights reserved.</span>
       </p>
     </div>
