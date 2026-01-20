@@ -524,4 +524,198 @@ p {
   left: 0;
   right: 0;
 }
+
+/* ============================================================================
+   Input Metrics Section
+   ============================================================================ */
+
+.notes {
+  font-size: 10px;
+  color: var(--muted);
+  background: #f1f5f9;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-top: 12px;
+}
+
+.source-cell {
+  font-size: 9px;
+  color: var(--muted);
+}
+
+/* ============================================================================
+   Data Confidence Badges
+   ============================================================================ */
+
+.badge-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.badge-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.badge.h, .badge.high {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge.m, .badge.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge.l, .badge.low {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ============================================================================
+   Value Case Cards
+   ============================================================================ */
+
+.value-case-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  page-break-inside: avoid;
+}
+
+.value-case-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  background: var(--panel-bg);
+}
+
+.value-case-info {
+  flex: 1;
+}
+
+.value-case-area {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+.value-case-type {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.value-case-uplift {
+  text-align: right;
+}
+
+.uplift-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #16a34a;
+  margin: 0;
+}
+
+.uplift-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+.value-case-methodology {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--white);
+}
+
+.methodology-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+.methodology-content {
+  font-size: 10px;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ============================================================================
+   Modelling Section Styles
+   ============================================================================ */
+
+.mode-panel {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border: 1px solid #ddd6fe;
+}
+
+.mode-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #7c3aed;
+  margin: 0 0 4px;
+}
+
+.mode-reason {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.highlight-panel {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid #a7f3d0;
+}
+
+/* ============================================================================
+   Appendices Styles
+   ============================================================================ */
+
+.assumption-item {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: var(--white);
+  page-break-inside: avoid;
+}
+
+.assumption-item h4 {
+  margin: 0 0 8px;
+  color: var(--text);
+}
+
+.source-category {
+  margin-bottom: 16px;
+}
+
+.source-category:last-child {
+  margin-bottom: 0;
+}
+
+.source-category h4 {
+  margin: 0 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
 `;

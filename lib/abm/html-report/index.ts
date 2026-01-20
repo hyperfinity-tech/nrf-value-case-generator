@@ -255,9 +255,9 @@ const renderExecutiveSummary = (outputs: LooseData) => {
 const renderBrandIntake = (brandIntake: LooseData) => {
   // businessRegistry can be string or object - handle both
   const registry = $(brandIntake, "businessRegistry");
-  const registryText = typeof registry === "string" 
-    ? registry 
-    : isObject(registry) 
+  const registryText = typeof registry === "string"
+    ? registry
+    : isObject(registry)
       ? $anyStr(registry, "description", "secEdgarLink", "link")
       : "";
 
@@ -273,6 +273,111 @@ const renderBrandIntake = (brandIntake: LooseData) => {
           <div><dt>Business Registry</dt><dd>${fmt(registryText)}</dd></div>
           <div><dt>Contextual Notes</dt><dd>${fmt($str(brandIntake, "contextualNotes"))}</dd></div>
         </dl>
+      </div>
+    </section>
+  `;
+};
+
+const renderInputMetrics = (outputs: LooseData, data: LooseData) => {
+  // Try multiple paths for slide1InputTable (matches UI: outputs.slide1InputTable, outputs.slide1_inputTable, res.slide1InputTable)
+  const slide1Table = $anyObj(outputs, "slide1InputTable", "slide1_inputTable") ||
+                      $obj(data, "slide1InputTable");
+
+  // Handle tableMarkdown format
+  const tableMarkdown = $str(slide1Table, "tableMarkdown");
+
+  // Handle array format - could be directly under outputs or nested
+  const tableArray = Array.isArray(slide1Table)
+    ? slide1Table
+    : $arr(slide1Table, "rows") || $arr(outputs, "slide1InputTable");
+
+  // Get notes - try multiple paths (matches UI)
+  const slide1Notes = $str(slide1Table, "notes") ||
+                      $str(outputs, "slide1Notes") ||
+                      $str(data, "slide1InputTable", "notes");
+  const notesObj = $obj(outputs, "slide1Notes");
+
+  // If no data, skip section
+  if (!tableMarkdown && (!Array.isArray(tableArray) || tableArray.length === 0) &&
+      Object.keys(slide1Table).length === 0) {
+    return "";
+  }
+
+  let tableHtml = "";
+
+  // Render markdown table if present
+  if (tableMarkdown) {
+    const parsed = parseMarkdownTable(tableMarkdown);
+    if (parsed) {
+      tableHtml = `
+        <table class="table">
+          <thead>
+            <tr>${parsed.headers.map((h) => `<th>${fmt(h)}</th>`).join("")}</tr>
+          </thead>
+          <tbody>
+            ${parsed.rows.map((row) => `<tr>${row.map((cell) => `<td>${fmt(cell)}</td>`).join("")}</tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+  }
+
+  // Render array format (matches UI: metric, valueOrEstimate/value, sourceOrLogic/source)
+  if (Array.isArray(tableArray) && tableArray.length > 0) {
+    const rows = tableArray.map((row) => {
+      if (!isObject(row)) return "";
+      const metric = $str(row, "metric");
+      const value = $anyStr(row, "valueOrEstimate", "value");
+      const source = $anyStr(row, "sourceOrLogic", "source");
+      return `
+        <tr>
+          <td>${fmt(metric)}</td>
+          <td>${fmt(value)}</td>
+          <td class="source-cell">${fmt(source)}</td>
+        </tr>
+      `;
+    }).join("");
+
+    tableHtml += `
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  // Render notes section (matches UI handling of string, array, and object formats)
+  let notesHtml = "";
+  if (slide1Notes && typeof slide1Notes === "string") {
+    notesHtml = `<p class="notes">${fmt(slide1Notes)}</p>`;
+  }
+  if (Array.isArray($arr(outputs, "slide1Notes"))) {
+    const notesArr = $arr(outputs, "slide1Notes") as string[];
+    notesHtml = notesArr.map((note) => `<p class="notes">${fmt(note)}</p>`).join("");
+  }
+  if (Object.keys(notesObj).length > 0 && !Array.isArray(notesObj)) {
+    const keyProxies = $str(notesObj, "keyProxies");
+    const dataGaps = $str(notesObj, "dataGapsAndInference");
+    if (keyProxies) {
+      notesHtml += `<p class="notes"><strong>Key Proxies:</strong> ${fmt(keyProxies)}</p>`;
+    }
+    if (dataGaps) {
+      notesHtml += `<p class="notes"><strong>Data Gaps:</strong> ${fmt(dataGaps)}</p>`;
+    }
+  }
+
+  return `
+    <section class="section">
+      <h2>Input Metrics</h2>
+      <div class="panel">
+        ${tableHtml || "<p>No input metrics data available.</p>"}
+        ${notesHtml}
       </div>
     </section>
   `;
@@ -414,17 +519,23 @@ const renderResearchFindings = (research: LooseData) => {
   const freqVal = $anyNum(freqData, "transactionsPerActiveCustomerPerYear", "valuePerYear", "estimatedFrequencyPerYear", "frequency") || 
                   $num(freqData, "estimatedAnnualPurchaseFrequencyPerActiveCustomer", "value");
 
-  // Sentiment table - handle different field names
+  // Sentiment table - handle different field names (matches UI: aspectDisplay, aspectDisplayName, aspect)
   const sentimentTable = $arr(sentiment, "sentimentTable");
   const sentimentRows = sentimentTable.map((row) => {
     if (!isObject(row)) return "";
-    const aspect = $anyStr(row, "aspectLabel", "displayName", "aspectKey");
+    // Match UI field names: aspectDisplay, aspectDisplayName, aspect (plus legacy: aspectLabel, displayName, aspectKey)
+    const aspect = $anyStr(row, "aspectDisplay", "aspectDisplayName", "aspect", "aspectLabel", "displayName", "aspectKey");
     const summary = $str(row, "sentimentSummary");
-    
+
     // Evidence can be array of strings or array of objects with quote property
-    const evidenceRaw = $arr(row, "evidenceQuotes");
+    // Match UI: tries "evidence" first, then "evidenceQuotes" for legacy compatibility
+    let evidenceRaw = $arr(row, "evidence");
+    if (evidenceRaw.length === 0) {
+      evidenceRaw = $arr(row, "evidenceQuotes");
+    }
     const evidenceItems = evidenceRaw.map((e) => {
       if (typeof e === "string") return e;
+      // Match UI: checks for .quote property on objects
       if (isObject(e)) return $anyStr(e, "quote", "text", "content") || extractText(e);
       return String(e);
     }).filter(Boolean);
@@ -437,6 +548,14 @@ const renderResearchFindings = (research: LooseData) => {
       </tr>
     `;
   }).join("");
+
+  // Paid Media & Tech (matches UI: research.paidMediaAndTech)
+  const paidMediaAndTech = $obj(research, "paidMediaAndTech");
+  const paidMediaChannels = $anyStr(paidMediaAndTech, "paidMediaChannels", "channels");
+  const techStack = $anyStr(paidMediaAndTech, "techStack", "stack");
+
+  // Data Confidence Summary (matches UI: research.dataConfidenceSummary)
+  const dataConfidenceSummary = $obj(research, "dataConfidenceSummary");
 
   return `
     <section class="section page-break">
@@ -484,8 +603,8 @@ const renderResearchFindings = (research: LooseData) => {
       <div class="subsection">
         <h3>Loyalty Sentiment</h3>
         <div class="panel">
-          <p><strong>Overall Rating:</strong> ${fmt(getStr(sentiment, "overallRating") || getStr(sentiment, "overallSentimentRating"))}</p>
-          <p>${fmt(getStr(sentiment, "narrativeSummary"))}</p>
+          <p><strong>Overall Rating:</strong> ${fmt($anyStr(sentiment, "overallSentimentRating", "overallSentiment", "overallRating"))}</p>
+          <p>${fmt($anyStr(sentiment, "summaryNarrative", "summary", "narrativeSummary"))}</p>
         </div>
         ${sentimentRows ? `
         <table class="table">
@@ -500,6 +619,35 @@ const renderResearchFindings = (research: LooseData) => {
         </table>
         ` : ""}
       </div>
+
+      ${Object.keys(paidMediaAndTech).length > 0 ? `
+      <div class="subsection">
+        <h3>Paid Media & Tech Stack</h3>
+        <div class="panel">
+          <dl class="kv">
+            ${paidMediaChannels ? `<div><dt>Paid Media Channels</dt><dd>${fmt(paidMediaChannels)}</dd></div>` : ""}
+            ${techStack ? `<div><dt>Tech Stack</dt><dd>${fmt(techStack)}</dd></div>` : ""}
+          </dl>
+          ${!paidMediaChannels && !techStack ? renderKV(paidMediaAndTech) : ""}
+        </div>
+      </div>
+      ` : ""}
+
+      ${Object.keys(dataConfidenceSummary).length > 0 ? `
+      <div class="subsection">
+        <h3>Data Confidence Summary</h3>
+        <div class="panel">
+          <div class="badge-grid">
+            ${Object.entries(dataConfidenceSummary).map(([key, level]) => `
+              <div class="badge-item">
+                <span class="badge-label">${escapeHtml(formatLabel(key))}</span>
+                <span class="badge ${String(level).toLowerCase()}">${fmt(level)}</span>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      </div>
+      ` : ""}
     </section>
   `;
 };
@@ -507,105 +655,359 @@ const renderResearchFindings = (research: LooseData) => {
 const renderValueCase = (outputs: LooseData) => {
   // Fuzzy match handles: slide4ValueCaseTable, slide4_valueCaseTable, slide4_value_case_table, etc.
   const slide4 = getObjFuzzy(outputs, "slide4ValueCaseTable");
-  
-  // Try tableMarkdown first (string format)
+
+  let contentHtml = "";
+
+  // Try tableMarkdown first (string format) - matches UI
   const tableMarkdown = $str(slide4, "tableMarkdown");
   if (tableMarkdown) {
     const table = parseMarkdownTable(tableMarkdown);
     if (table) {
-      return `
-        <section class="section page-break">
-          <h2>Value Case</h2>
-          <table class="table">
-            <thead>
-              <tr>${table.headers.map((header) => `<th>${fmt(header)}</th>`).join("")}</tr>
-            </thead>
-            <tbody>
-              ${table.rows.map((row) => `<tr>${row.map((cell) => `<td>${fmt(cell)}</td>`).join("")}</tr>`).join("")}
-            </tbody>
-          </table>
-        </section>
+      contentHtml += `
+        <table class="table">
+          <thead>
+            <tr>${table.headers.map((header) => `<th>${fmt(header)}</th>`).join("")}</tr>
+          </thead>
+          <tbody>
+            ${table.rows.map((row) => `<tr>${row.map((cell) => `<td>${fmt(cell)}</td>`).join("")}</tr>`).join("")}
+          </tbody>
+        </table>
       `;
     }
   }
-  
-  // Try table array format (array of row objects)
+
+  // Helper to render value case cards (matches UI card-style rendering)
+  const renderValueCaseCards = (rows: unknown[]): string => {
+    return rows.map((row) => {
+      if (!isObject(row)) return "";
+
+      const areaOfImpact = $str(row, "areaOfImpact");
+      const opportunityType = $str(row, "opportunityType");
+
+      // Match UI: multiple uplift field variants
+      const uplift = $anyNum(row,
+        "estimatedUpliftGM",
+        "estimatedUpliftGmUsd",
+        "estimatedUpliftGmGbp",
+        "estimatedUpliftGMGBP",
+        "estimatedUpliftGm"
+      );
+      const upliftStr = $anyStr(row,
+        "estimatedUpliftGM",
+        "estimatedUpliftGmUsd",
+        "estimatedUpliftGmGbp",
+        "estimatedUpliftGMGBP",
+        "estimatedUpliftGm"
+      );
+
+      // Format uplift like UI: $X.XXm
+      const upliftFormatted = uplift > 0
+        ? `$${formatNumber(uplift, 2)}m`
+        : upliftStr || "N/A";
+
+      // Match UI: multiple methodology field variants
+      const methodology = $anyStr(row,
+        "assumptionsMethodology",
+        "assumptionsAndMethodology",
+        "assumptions",
+        "methodology"
+      );
+
+      return `
+        <div class="value-case-card">
+          <div class="value-case-header">
+            <div class="value-case-info">
+              <p class="value-case-area">${fmt(areaOfImpact)}</p>
+              <p class="value-case-type">${fmt(opportunityType)}</p>
+            </div>
+            <div class="value-case-uplift">
+              <p class="uplift-value">${escapeHtml(upliftFormatted)}</p>
+              <p class="uplift-label">GM Uplift</p>
+            </div>
+          </div>
+          ${methodology ? `
+          <div class="value-case-methodology">
+            <p class="methodology-title">Methodology</p>
+            <p class="methodology-content">${fmt(methodology)}</p>
+          </div>
+          ` : ""}
+        </div>
+      `;
+    }).join("");
+  };
+
+  // Try table array format (matches UI: valueCase.table)
   const tableArray = $arr(slide4, "table");
   if (tableArray.length > 0) {
-    const firstRow = tableArray[0];
-    if (isObject(firstRow)) {
-      const keys = Object.keys(firstRow);
-      const headers = keys.map((k) => formatLabel(k));
-      
-      const rows = tableArray.map((row) => {
-        if (!isObject(row)) return "";
-        return `<tr>${keys.map((k) => `<td>${fmt((row as LooseData)[k])}</td>`).join("")}</tr>`;
-      }).join("");
-      
-      return `
-        <section class="section page-break">
-          <h2>Value Case</h2>
-          <table class="table">
-            <thead>
-              <tr>${headers.map((h) => `<th>${fmt(h)}</th>`).join("")}</tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </section>
-      `;
+    contentHtml += renderValueCaseCards(tableArray);
+  }
+
+  // Try rows array format (matches UI: valueCase.rows)
+  const rowsArray = $arr(slide4, "rows");
+  if (rowsArray.length > 0) {
+    contentHtml += renderValueCaseCards(rowsArray);
+  }
+
+  // If no card data but we have the slide4 object, try to render it as a generic table
+  if (!contentHtml && Object.keys(slide4).length > 0) {
+    // Fall back to rendering as key-value if it's a simple object
+    const entries = Object.entries(slide4).filter(([k]) => k !== "tableMarkdown" && k !== "table" && k !== "rows");
+    if (entries.length > 0) {
+      contentHtml = renderKV(Object.fromEntries(entries));
     }
   }
 
   return `
     <section class="section page-break">
       <h2>Value Case</h2>
-      <p>No value case data available.</p>
+      ${contentHtml || "<p>No value case data available.</p>"}
     </section>
   `;
 };
 
-const renderModelling = (modelling: LooseData) => {
-  // Try multiple paths for assumptions
-  const assumptions = $anyObj(modelling, "assumptions", "baseAssumptions", "baseModellingAssumptions");
-  const baseCaseMidpoints = $obj(modelling, "baseCaseUsingMidpoints");
+const renderModelling = (modelling: LooseData, appendices?: LooseData) => {
+  // Match UI: Extract mode applied from various possible locations
+  const getModeApplied = (): { valueCaseMode: string; reason: string } | null => {
+    // Try finalModeApplied first
+    const finalModeApplied = $obj(modelling, "finalModeApplied");
+    if (Object.keys(finalModeApplied).length > 0) {
+      return {
+        valueCaseMode: $anyStr(finalModeApplied, "valueCaseMode", "mode", "value_case_mode"),
+        reason: $anyStr(finalModeApplied, "reason", "rationale"),
+      };
+    }
+    // Try finalAppliedUplifts.modeApplied
+    const finalAppliedUplifts = $obj(modelling, "finalAppliedUplifts");
+    if ($str(finalAppliedUplifts, "modeApplied")) {
+      return {
+        valueCaseMode: $str(finalAppliedUplifts, "modeApplied"),
+        reason: $str(finalAppliedUplifts, "rationale"),
+      };
+    }
+    // Try calculations.finalMode
+    const calcsFinalMode = $obj(modelling, "calculations", "finalMode");
+    if ($str(calcsFinalMode, "valueCaseMode")) {
+      return {
+        valueCaseMode: $str(calcsFinalMode, "valueCaseMode"),
+        reason: $str(calcsFinalMode, "reason"),
+      };
+    }
+    // Try modeApplied directly
+    const modeApplied = $str(modelling, "modeApplied");
+    if (modeApplied) {
+      return {
+        valueCaseMode: modeApplied,
+        reason: $str(modelling, "modeRationale"),
+      };
+    }
+    return null;
+  };
+
+  const modeApplied = getModeApplied();
+
+  // Match UI: multiple sources for key inputs
+  const keyInputs = $anyObj(modelling, "keyInputs", "setup");
+  const upliftRanges = $obj(modelling, "upliftRanges");
+  const levers = $obj(modelling, "levers");
+  const baseCaseMidpoints = $anyObj(modelling, "baseCaseUsingMidpoints") ||
+                            $obj(modelling, "calculations", "baseCaseUsingMidpoints");
+  const finalAppliedUplifts = $obj(modelling, "finalAppliedUplifts");
+  const finalUpliftsGM = $obj(modelling, "calculations", "finalUpliftsGM");
+  const baseModellingAssumptions = $obj(modelling, "baseModellingAssumptions");
+  const scopeAndBaseAssumptions = $obj(modelling, "scopeAndBaseAssumptions");
+  const upliftRangesAndChosenPoints = $obj(modelling, "upliftRangesAndChosenPoints");
+  const detailedCalculations = $obj(modelling, "detailedCalculations");
+  const thresholdRuleApplication = $obj(modelling, "thresholdRuleApplication");
+  const finalUpliftUsingStretchUp = $obj(modelling, "finalUpliftUsingStretchUp");
+
+  // Legacy fields
+  const assumptions = $anyObj(modelling, "assumptions", "baseAssumptions");
   const stretchCase = $obj(modelling, "stretchCaseApplied");
   const finalValues = $obj(modelling, "finalValuesSelected");
+  const categoryRanges = $obj(assumptions, "categoryUpliftRanges");
 
   // Extract key values from assumptions
-  const baseRevenue = $num(assumptions, "baseRetailRevenueScopeUSD", "value") || 
+  const baseRevenue = $num(assumptions, "baseRetailRevenueScopeUSD", "value") ||
                       $num(assumptions, "totalRevenueUSD_m") * 1_000_000;
-  const loyaltyMix = $anyNum(assumptions, "loyaltyRevenueMixPct", "loyaltyMix") || 
+  const loyaltyMix = $anyNum(assumptions, "loyaltyRevenueMixPct", "loyaltyMix") ||
                      $num(assumptions, "loyaltyRevenueMixPct", "value");
   const gmPercent = $anyNum(assumptions, "gmPercentRetail", "blendedGrossMarginPercent", "grossMarginPercent");
 
-  // Get category uplift ranges if present
-  const categoryRanges = $obj(assumptions, "categoryUpliftRanges");
+  // Modelling fallback from appendices (matches UI)
+  const modellingFallback = appendices
+    ? $obj(appendices, "assumptionsBlock", "overallModel")
+    : {};
 
-  return `
-    <section class="section">
-      <h2>Modelling Details</h2>
-      <div class="grid two">
-        <div class="panel">
-          <h3>Base Assumptions</h3>
-          <dl class="kv">
-            <div><dt>Time Horizon</dt><dd>${fmt($num(assumptions, "timeHorizonYears") || 1)} year(s)</dd></div>
-            <div><dt>Base Revenue Scope</dt><dd>${baseRevenue ? fmt(`$${formatNumber(baseRevenue / 1_000_000_000)}bn`) : "N/A"}</dd></div>
-            <div><dt>Loyalty Revenue Mix</dt><dd>${loyaltyMix ? fmt(`${formatNumber(loyaltyMix)}%`) : "N/A"}</dd></div>
-            <div><dt>Retail GM%</dt><dd>${gmPercent ? fmt(`${formatNumber(gmPercent)}%`) : "N/A"}</dd></div>
-          </dl>
-        </div>
-        <div class="panel">
-          <h3>Final Values / Stretch Case</h3>
-          ${Object.keys(finalValues).length > 0 ? renderKV(finalValues) : ""}
-          ${Object.keys(stretchCase).length > 0 ? `
-            <dl class="kv">
-              <div><dt>Mode</dt><dd>${fmt($str(stretchCase, "mode"))}</dd></div>
-              <div><dt>Total GM</dt><dd>${fmt(`$${formatNumber($num(stretchCase, "totalGMUSD") / 1_000_000)}m`)}</dd></div>
-            </dl>
-          ` : ""}
-        </div>
+  // Check if we have any modelling data
+  const hasModellingData = Object.keys(modelling).length > 0;
+
+  let contentHtml = "";
+
+  // Mode Applied - show prominently at top (matches UI)
+  if (modeApplied && modeApplied.valueCaseMode) {
+    contentHtml += `
+      <div class="panel mode-panel">
+        <h3>Mode Applied</h3>
+        <p class="mode-value">${fmt(modeApplied.valueCaseMode)}</p>
+        ${modeApplied.reason ? `<p class="mode-reason">${fmt(modeApplied.reason)}</p>` : ""}
       </div>
-      ${Object.keys(categoryRanges).length > 0 ? `
+    `;
+  }
+
+  // Key Inputs / Setup (matches UI)
+  if (Object.keys(keyInputs).length > 0) {
+    contentHtml += `
+      <div class="panel">
+        <h3>Key Inputs</h3>
+        ${renderKV(keyInputs)}
+      </div>
+    `;
+  }
+
+  // Uplift Ranges (matches UI)
+  if (Object.keys(upliftRanges).length > 0) {
+    contentHtml += `
+      <div class="panel">
+        <h3>Uplift Ranges (Evidence-Based)</h3>
+        ${renderKV(upliftRanges)}
+      </div>
+    `;
+  }
+
+  // Levers (matches UI)
+  if (Object.keys(levers).length > 0) {
+    contentHtml += `
+      <div class="panel">
+        <h3>Lever Definitions</h3>
+        ${renderKV(levers)}
+      </div>
+    `;
+  }
+
+  // Base Case Calculations (matches UI)
+  if (Object.keys(baseCaseMidpoints).length > 0) {
+    contentHtml += `
+      <div class="panel">
+        <h3>Base Case Calculations (Midpoints)</h3>
+        ${renderKV(baseCaseMidpoints)}
+      </div>
+    `;
+  }
+
+  // Final Applied Uplifts (matches UI)
+  if (Object.keys(finalAppliedUplifts).length > 0 && $obj(finalAppliedUplifts, "levers")) {
+    contentHtml += `
+      <div class="panel highlight-panel">
+        <h3>Final Applied Uplifts</h3>
+        ${renderKV(finalAppliedUplifts)}
+      </div>
+    `;
+  }
+
+  // Final GM Uplifts (matches UI)
+  if (Object.keys(finalUpliftsGM).length > 0) {
+    contentHtml += `
+      <div class="panel highlight-panel">
+        <h3>Final GM Uplifts</h3>
+        ${renderKV(finalUpliftsGM)}
+      </div>
+    `;
+  }
+
+  // Base Modelling Assumptions (matches UI legacy)
+  if (Object.keys(baseModellingAssumptions).length > 0) {
+    contentHtml += `
+      <div class="panel">
+        <h3>Base Modelling Assumptions</h3>
+        ${renderKV(baseModellingAssumptions)}
+      </div>
+    `;
+  }
+
+  // Scope & Base Assumptions (matches UI)
+  if (Object.keys(scopeAndBaseAssumptions).length > 0) {
+    contentHtml += `
+      <div class="panel">
+        <h3>Scope & Base Assumptions</h3>
+        ${renderKV(scopeAndBaseAssumptions)}
+      </div>
+    `;
+  }
+
+  // Uplift Ranges & Chosen Points (matches UI)
+  if (Object.keys(upliftRangesAndChosenPoints).length > 0) {
+    contentHtml += `
+      <div class="panel">
+        <h3>Uplift Ranges & Chosen Points</h3>
+        ${renderKV(upliftRangesAndChosenPoints)}
+      </div>
+    `;
+  }
+
+  // Detailed Calculations (matches UI)
+  if (Object.keys(detailedCalculations).length > 0) {
+    contentHtml += `
+      <div class="panel">
+        <h3>Detailed Calculations</h3>
+        ${renderKV(detailedCalculations)}
+      </div>
+    `;
+  }
+
+  // Threshold Rule Application (matches UI)
+  if (Object.keys(thresholdRuleApplication).length > 0) {
+    contentHtml += `
+      <div class="panel">
+        <h3>Threshold Rule Application</h3>
+        ${renderKV(thresholdRuleApplication)}
+      </div>
+    `;
+  }
+
+  // Final Uplift Using Stretch Up (matches UI)
+  if (Object.keys(finalUpliftUsingStretchUp).length > 0) {
+    contentHtml += `
+      <div class="panel highlight-panel">
+        <h3>Final Uplift Calculations</h3>
+        ${renderKV(finalUpliftUsingStretchUp)}
+      </div>
+    `;
+  }
+
+  // Legacy: Base Assumptions panel
+  if (Object.keys(assumptions).length > 0 && !contentHtml.includes("Key Inputs")) {
+    contentHtml += `
+      <div class="panel">
+        <h3>Base Assumptions</h3>
+        <dl class="kv">
+          <div><dt>Time Horizon</dt><dd>${fmt($num(assumptions, "timeHorizonYears") || 1)} year(s)</dd></div>
+          ${baseRevenue ? `<div><dt>Base Revenue Scope</dt><dd>${fmt(`$${formatNumber(baseRevenue / 1_000_000_000)}bn`)}</dd></div>` : ""}
+          ${loyaltyMix ? `<div><dt>Loyalty Revenue Mix</dt><dd>${fmt(`${formatNumber(loyaltyMix)}%`)}</dd></div>` : ""}
+          ${gmPercent ? `<div><dt>Retail GM%</dt><dd>${fmt(`${formatNumber(gmPercent)}%`)}</dd></div>` : ""}
+        </dl>
+      </div>
+    `;
+  }
+
+  // Legacy: Final Values / Stretch Case
+  if (Object.keys(finalValues).length > 0 || Object.keys(stretchCase).length > 0) {
+    contentHtml += `
+      <div class="panel">
+        <h3>Final Values / Stretch Case</h3>
+        ${Object.keys(finalValues).length > 0 ? renderKV(finalValues) : ""}
+        ${Object.keys(stretchCase).length > 0 ? `
+          <dl class="kv">
+            <div><dt>Mode</dt><dd>${fmt($str(stretchCase, "mode"))}</dd></div>
+            <div><dt>Total GM</dt><dd>${fmt(`$${formatNumber($num(stretchCase, "totalGMUSD") / 1_000_000)}m`)}</dd></div>
+          </dl>
+        ` : ""}
+      </div>
+    `;
+  }
+
+  // Legacy: Category Uplift Ranges
+  if (Object.keys(categoryRanges).length > 0) {
+    contentHtml += `
       <div class="panel">
         <h3>Category Uplift Ranges</h3>
         ${Object.entries(categoryRanges).map(([key, val]) => {
@@ -626,13 +1028,40 @@ const renderModelling = (modelling: LooseData) => {
           `;
         }).join("")}
       </div>
-      ` : ""}
-      ${Object.keys(baseCaseMidpoints).length > 0 ? `
+    `;
+  }
+
+  // Fallback: Show overallModel from appendices if no modelling data (matches UI)
+  if (!hasModellingData && Object.keys(modellingFallback).length > 0) {
+    contentHtml += `
       <div class="panel">
-        <h3>Base Case Using Midpoints</h3>
-        ${renderKV(baseCaseMidpoints)}
+        <h3>Overall Model Summary</h3>
+        ${$str(modellingFallback, "thresholdRuleApplication") ? `
+          <div class="subsection">
+            <h4>Threshold Rule</h4>
+            <p>${fmt($str(modellingFallback, "thresholdRuleApplication"))}</p>
+          </div>
+        ` : ""}
+        ${$str(modellingFallback, "sensitivityNotes") ? `
+          <div class="subsection">
+            <h4>Sensitivity</h4>
+            <p>${fmt($str(modellingFallback, "sensitivityNotes"))}</p>
+          </div>
+        ` : ""}
+        ${Object.keys($obj(modellingFallback, "dataConfidenceSummary")).length > 0 ? `
+          <div class="subsection">
+            <h4>Data Confidence</h4>
+            ${renderKV($obj(modellingFallback, "dataConfidenceSummary"))}
+          </div>
+        ` : ""}
       </div>
-      ` : ""}
+    `;
+  }
+
+  return `
+    <section class="section">
+      <h2>Modelling Details</h2>
+      ${contentHtml || "<p>No modelling data available.</p>"}
     </section>
   `;
 };
@@ -679,50 +1108,117 @@ const renderContactPage = (logoDataUrl?: string | null) => `
 `;
 
 const renderAppendices = (appendices: LooseData) => {
-  const assumptionsBlock = $obj(appendices, "assumptionsBlock");
+  const assumptionsBlockRaw = $(appendices, "assumptionsBlock");
   const sourcesRaw = $arr(appendices, "sources");
+  const sourcesAppendix = $obj(appendices, "sourcesAppendix");
 
-  // Sources can be strings or objects with citation property
-  const sources = sourcesRaw.map((s) => {
-    if (typeof s === "string") return s;
-    if (isObject(s)) return $anyStr(s, "citation", "source", "reference") || extractText(s);
-    return String(s);
-  }).filter(Boolean);
+  // Helper to extract source text from various formats
+  const extractSourceText = (source: unknown): string => {
+    if (typeof source === "string") return source;
+    if (isObject(source)) {
+      return $anyStr(source, "citation", "source", "reference", "description", "url") || extractText(source);
+    }
+    return String(source);
+  };
 
-  const assumptionMarkup = Object.keys(assumptionsBlock).length > 0
-    ? Object.entries(assumptionsBlock)
-        .filter(([, value]) => value !== null && value !== undefined)
-        .map(([key, value]) => {
-          if (!isObject(value)) return "";
-          const typedValue = value as LooseData;
-          const breakdown = $arr(typedValue, "sixStepBreakdown") as string[];
-          const uplift = $anyNum(typedValue, "upliftPointAppliedPct", "upliftPercentApplied", "uplift");
-          const totalGM = $anyNum(typedValue, "totalGMUpliftUSD", "totalGMUpliftUSD_m", "totalGM");
+  // Sources can be strings or objects with citation property (matches UI)
+  const sources = sourcesRaw.map(extractSourceText).filter(Boolean);
 
-          return `
-            <div class="subsection">
-              <h4>${escapeHtml(formatLabel(key))}</h4>
-              ${uplift > 0 ? `<p><strong>Uplift Applied:</strong> ${formatNumber(uplift)}%</p>` : ""}
-              ${totalGM > 0 ? `<p><strong>Total GM Uplift:</strong> $${formatNumber(totalGM / 1_000_000)}m</p>` : ""}
-              ${breakdown.length > 0 ? `<ul class="list">${breakdown.map((b) => `<li>${escapeHtml(String(b))}</li>`).join("")}</ul>` : ""}
-            </div>
-          `;
-        })
-        .join("")
-    : "";
+  // Render assumptions - handle both object format and array format (matches UI)
+  let assumptionMarkup = "";
+
+  // Object format: {leverKey: {leverName, sixStepBreakdown, ...}} (matches UI)
+  if (isObject(assumptionsBlockRaw) && !Array.isArray(assumptionsBlockRaw)) {
+    const assumptionsBlock = assumptionsBlockRaw as LooseData;
+    assumptionMarkup = Object.entries(assumptionsBlock)
+      .filter(([, value]) => value !== null && value !== undefined)
+      .map(([key, value]) => {
+        if (!isObject(value)) return "";
+        const typedValue = value as LooseData;
+        // Match UI: leverName or formatted key
+        const leverName = $str(typedValue, "leverName") || formatLabel(key);
+        const breakdown = $arr(typedValue, "sixStepBreakdown") as string[];
+        const uplift = $anyNum(typedValue, "upliftPointAppliedPct", "upliftPercentApplied", "uplift", "upliftPercentageApplied");
+        const totalGM = $anyNum(typedValue, "totalGMUpliftUSD", "totalGMUpliftUSD_m", "totalGM");
+
+        return `
+          <div class="assumption-item">
+            <h4>${escapeHtml(leverName)}</h4>
+            ${uplift > 0 ? `<p><strong>Uplift Applied:</strong> ${formatNumber(uplift)}%</p>` : ""}
+            ${totalGM > 0 ? `<p><strong>Total GM Uplift:</strong> $${formatNumber(totalGM / 1_000_000)}m</p>` : ""}
+            ${breakdown.length > 0
+              ? `<ul class="list">${breakdown.map((b) => `<li>${escapeHtml(String(b))}</li>`).join("")}</ul>`
+              : renderKV(typedValue)}
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  // Array format: [{leverName, ...}] (matches UI)
+  if (Array.isArray(assumptionsBlockRaw) && assumptionsBlockRaw.length > 0) {
+    assumptionMarkup = (assumptionsBlockRaw as LooseData[]).map((item, idx) => {
+      if (!isObject(item)) return "";
+      const leverName = $str(item, "leverName") || `Lever ${idx + 1}`;
+      const breakdown = $arr(item, "sixStepBreakdown") as string[];
+      const uplift = $anyNum(item, "upliftPointAppliedPct", "upliftPercentApplied", "uplift", "upliftPercentageApplied");
+      const totalGM = $anyNum(item, "totalGMUpliftUSD", "totalGMUpliftUSD_m", "totalGM");
+
+      return `
+        <div class="assumption-item">
+          <h4>${escapeHtml(leverName)}</h4>
+          ${uplift > 0 ? `<p><strong>Uplift Applied:</strong> ${formatNumber(uplift)}%</p>` : ""}
+          ${totalGM > 0 ? `<p><strong>Total GM Uplift:</strong> $${formatNumber(totalGM / 1_000_000)}m</p>` : ""}
+          ${breakdown.length > 0
+            ? `<ul class="list">${breakdown.map((b) => `<li>${escapeHtml(String(b))}</li>`).join("")}</ul>`
+            : renderKV(item)}
+        </div>
+      `;
+    }).join("");
+  }
+
+  // Render sources - handle both sourcesAppendix (categorized) and sources (flat array) (matches UI)
+  let sourcesMarkup = "";
+
+  // sourcesAppendix: categorized format (matches UI)
+  if (Object.keys(sourcesAppendix).length > 0) {
+    sourcesMarkup = Object.entries(sourcesAppendix).map(([category, categorySources]) => {
+      const categoryHtml = `<h4>${escapeHtml(formatLabel(category))}</h4>`;
+      if (Array.isArray(categorySources)) {
+        const sourcesList = (categorySources as unknown[]).map(extractSourceText).filter(Boolean);
+        return `
+          <div class="source-category">
+            ${categoryHtml}
+            <ul class="list">${sourcesList.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ul>
+          </div>
+        `;
+      }
+      return `
+        <div class="source-category">
+          ${categoryHtml}
+          <p>${escapeHtml(String(categorySources))}</p>
+        </div>
+      `;
+    }).join("");
+  }
+
+  // Flat sources array (matches UI)
+  if (sources.length > 0 && !sourcesMarkup) {
+    sourcesMarkup = `<ol class="sources-list">${sources.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ol>`;
+  }
 
   return `
     <section class="section page-break">
       <h2>Appendices</h2>
-      
+
       <div class="panel">
-        <h3>Assumptions</h3>
+        <h3>A) Detailed Assumptions</h3>
         ${assumptionMarkup || "<p>No assumptions data available.</p>"}
       </div>
-      
+
       <div class="panel">
-        <h3>Sources</h3>
-        ${sources.length > 0 ? `<ol class="sources-list">${sources.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ol>` : "<p>N/A</p>"}
+        <h3>B) Sources</h3>
+        ${sourcesMarkup || "<p>N/A</p>"}
       </div>
     </section>
   `;
@@ -757,9 +1253,10 @@ export const generateHtmlReport = ({
     renderHeader(logoDataUrl),
     renderExecutiveSummary(outputs),
     renderBrandIntake(brandIntake),
+    renderInputMetrics(outputs, data),  // Added: matches UI Input Metrics tab
     renderResearchFindings(research),
     renderValueCase(outputs),
-    renderModelling(modelling),
+    renderModelling(modelling, appendices),  // Pass appendices for fallback handling
     renderAppendices(appendices),
     renderContactPage(logoDataUrl),
   ].join("");
