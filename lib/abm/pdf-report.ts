@@ -306,9 +306,14 @@ function extractString(data: unknown): string | undefined {
   if (data && typeof data === "object") {
     const obj = data as Record<string, unknown>;
     // Try common patterns for getting the string value
+    // Include currency/percent variants: valueGBP, valueUSD, valuePercent, etc.
     const val = findValue(
       obj,
       "value",
+      "valueGBP",
+      "valueUSD",
+      "valueEUR",
+      "valuePercent",
       "description",
       "note",
       "text",
@@ -431,10 +436,36 @@ function renderObjectFields(
       // Nested object - check if it's a simple value wrapper or complex object
       const nested = value as Record<string, unknown>;
       const simpleValue = extractString(nested) ?? extractNumber(nested);
+      
+      // Check if this looks like a value wrapper object (has value/valueGBP/valueUSD key as primary data)
+      // These objects typically have: a value key + optional confidence, notes, sourceFootnotes, fiscalPeriod, etc.
+      const hasValueKey = "value" in nested || "valueGBP" in nested || "valueUSD" in nested || 
+                          "valuePercent" in nested || "valueEUR" in nested;
 
-      if (simpleValue !== undefined && Object.keys(nested).length <= 3) {
-        // Simple wrapper - render as single key: value
-        y = renderKeyValue(ctx, label, String(simpleValue), indent, y, confidence);
+      if (simpleValue !== undefined && (hasValueKey || Object.keys(nested).length <= 3)) {
+        // Value wrapper - render as single key: value
+        // Format the value nicely if it's a large number (likely currency)
+        let displayValue = String(simpleValue);
+        const numValue = typeof simpleValue === "number" ? simpleValue : Number.parseFloat(String(simpleValue));
+        if (!Number.isNaN(numValue) && numValue > 1000) {
+          // Determine currency symbol based on the key name
+          const isGBP = "valueGBP" in nested || key.toLowerCase().includes("gbp");
+          const isPercent = "valuePercent" in nested || key.toLowerCase().includes("percent");
+          
+          if (isPercent) {
+            displayValue = `${numValue.toFixed(1)}%`;
+          } else {
+            const symbol = isGBP ? "£" : "$";
+            if (numValue >= 1_000_000_000) {
+              displayValue = `${symbol}${(numValue / 1_000_000_000).toFixed(1)}bn`;
+            } else if (numValue >= 1_000_000) {
+              displayValue = `${symbol}${(numValue / 1_000_000).toFixed(1)}m`;
+            } else if (numValue >= 1_000) {
+              displayValue = `${symbol}${(numValue / 1_000).toFixed(0)}k`;
+            }
+          }
+        }
+        y = renderKeyValue(ctx, label, displayValue, indent, y, confidence);
       } else {
         // Complex nested object - render section header and recurse
         page.drawText(`${label}:`, {
@@ -1031,9 +1062,10 @@ function renderResearch(
     { keys: ["financials", "financial", "financialData"], title: "Financial Data" },
     { keys: ["loyaltyProgramme", "loyaltyProgram", "loyalty"], title: "Loyalty Programme" },
     { keys: ["benchmarks", "categoryBenchmarks"], title: "Category Benchmarks" },
-    { keys: ["techStack", "paidMediaAndChannels", "paidMediaAndTech", "techAndMedia"], title: "Tech & Media Stack" },
-    { keys: ["brandInitiatives", "initiatives"], title: "Brand Initiatives" },
-    { keys: ["loyaltySentiment", "sentiment"], title: "Loyalty Sentiment" },
+    { keys: ["paidMediaChannels", "paidMediaAndChannels", "paidMediaAndTech", "paidMedia"], title: "Paid Media Channels" },
+    { keys: ["techStack", "techAndMedia", "technology"], title: "Tech Stack" },
+    { keys: ["brandSpecificInitiatives", "brandInitiatives", "initiatives"], title: "Brand Initiatives" },
+    { keys: ["loyaltySentimentLast12Months", "loyaltySentiment", "sentiment"], title: "Loyalty Sentiment" },
   ];
 
   for (const section of sections) {
@@ -1200,9 +1232,10 @@ function renderValueCase(
 
     // Table rows
     for (const row of rows) {
-      const area = String(row.areaOfImpact || "");
-      const opp = String(row.opportunityType || "");
-      const uplift = row.estimatedUpliftGM;
+      // Handle both normalized (camelCase) and raw (spaced keys) formats
+      const area = String(row.areaOfImpact || row["Area of Impact"] || "");
+      const opp = String(row.opportunityType || row["Opportunity Type"] || "");
+      const uplift = row.estimatedUpliftGM || row["Estimated Uplift (£GM)"] || row["Estimated Uplift ($GM)"];
       const upliftStr =
         typeof uplift === "number"
           ? `$${uplift.toFixed(1)}M`
@@ -1218,7 +1251,7 @@ function renderValueCase(
       const maxLines = Math.max(areaLines.length, opportunityLines.length, 1);
       const rowHeight = maxLines * lineHeight + 4;
 
-      const methodology = row.assumptionsMethodology as string | undefined;
+      const methodology = (row.assumptionsMethodology || row["Assumptions / Methodology"]) as string | undefined;
       const methodLineHeight = 9;
       const methodLines = methodology
         ? wrapText(methodology, fonts.regular, 7, pageStyles.contentWidth - 20).slice(0, 3)

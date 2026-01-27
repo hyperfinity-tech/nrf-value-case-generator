@@ -383,8 +383,10 @@ export function ABMPackGenerator({
       });
 
       if (!response.ok) {
-        const error = (await response.json()) as { message?: string };
-        throw new Error(error.message || "Failed to generate ABM pack");
+        const error = (await response.json()) as { message?: string; cause?: string };
+        // Prefer cause (actual error) when present so user sees what failed
+        const displayMessage = error.cause ?? error.message ?? "Failed to generate ABM pack";
+        throw new Error(displayMessage);
       }
 
       const data = (await response.json()) as { data: FlexibleResponse };

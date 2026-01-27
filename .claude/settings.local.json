@@ -3,7 +3,8 @@
     "allow": [
       "Bash(find:*)",
       "WebSearch",
-      "Bash(npx ultracite@latest check:*)"
+      "Bash(npx ultracite@latest check:*)",
+      "Bash(wc:*)"
     ]
   }
 }

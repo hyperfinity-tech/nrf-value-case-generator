@@ -11,10 +11,10 @@ const google = createGoogleGenerativeAI({
 
 // Model mapping for direct OpenAI usage
 const modelMap = {
-  "chat-model": "gpt-5.1",
-  "chat-model-reasoning": "gpt-5.1",
+  "chat-model": "gpt-5.2",
+  "chat-model-reasoning": "gpt-5.2",
   "title-model": "gpt-4o-mini",
-  "artifact-model": "gpt-5.1",
+  "artifact-model": "gpt-5.2",
   "deep-research-model": "o4-mini-deep-research",
 } as const;
 

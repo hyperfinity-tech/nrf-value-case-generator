@@ -5,6 +5,7 @@ import { type AbmPackOutput } from "../abm-pack/schema";
 import { generateHtmlReport } from "@/lib/abm/html-report";
 import { renderHtmlToPdf } from "@/lib/abm/html-report/render-to-pdf";
 import { normalizeDataUrl } from "@/lib/abm/html-report/utils";
+import { normalizeAbmPackOutput } from "@/lib/abm/normalize";
 
 const fileNameSanitizePattern = /[^a-z0-9]+/g;
 const fileNameTrimPattern = /(^-|-$)/g;
@@ -84,7 +85,8 @@ export async function POST(request: Request) {
     }
 
     // Cast to AbmPackOutput - we trust structured outputs; rendering handles missing fields gracefully
-    const data = result.data.data as unknown as AbmPackOutput;
+    // Normalize the data to handle various key naming conventions (snake_case, camelCase, spaced keys)
+    const data = normalizeAbmPackOutput(result.data.data as unknown as AbmPackOutput);
     
     // Resolve infographic (handles both base64 and URL paths)
     const infographicDataUrl = await resolveInfographicDataUrl(result.data.infographicBase64 ?? null);

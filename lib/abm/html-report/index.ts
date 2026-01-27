@@ -152,11 +152,16 @@ const fmt = (value: unknown): string => {
 // Extract readable text from an object (looks for common text fields)
 const extractText = (obj: unknown): string => {
   if (!isObject(obj)) return String(obj ?? "");
-  // Common text field names
-  const textKeys = ["quote", "text", "description", "value", "summary", "content", "label", "name", "title"];
+  // Common text field names - include currency/percent variants
+  const textKeys = [
+    "quote", "text", "description", "value", "valueGBP", "valueUSD", "valueEUR", "valuePercent",
+    "summary", "content", "label", "name", "title"
+  ];
   for (const key of textKeys) {
     const val = obj[key];
     if (typeof val === "string" && val.length > 0) return val;
+    // Also handle numeric values for currency fields
+    if (typeof val === "number" && key.startsWith("value")) return String(val);
   }
   // If has value + unit, combine them
   if (typeof obj.value === "number" && typeof obj.unit === "string") {
@@ -211,13 +216,25 @@ const renderCover = (brandIntake: LooseData) => `
 `;
 
 const renderExecutiveSummary = (outputs: LooseData) => {
-  const panel = $obj(outputs, "cfoReadinessPanel");
+  const panel = $anyObj(outputs, "cfoReadinessPanel", "cfoPanelSnapshot");
   const dataConfidence = $obj(panel, "dataConfidence");
   
-  // Try multiple key names for blended GM
-  const blendedGMRaw = $anyStr(panel, "blendedGMPercentUsed", "blendedGmPercentUsed", "blendedGM");
-  const blendedGMNum = $anyNum(panel, "blendedGMPercentUsed", "blendedGmPercentUsed", "blendedGM");
-  const blendedGM = blendedGMNum > 0 ? formatPercentage(blendedGMNum) : blendedGMRaw || "N/A";
+  // Try multiple key names for blended GM - may be a string, number, or nested object with valuePercent/value
+  const blendedGMObj = $(panel, "blendedGMPercentUsed") || $(panel, "blendedGmPercentUsed") || $(panel, "blendedGM");
+  let blendedGM = "N/A";
+  if (typeof blendedGMObj === "number") {
+    blendedGM = formatPercentage(blendedGMObj);
+  } else if (typeof blendedGMObj === "string") {
+    blendedGM = blendedGMObj;
+  } else if (isObject(blendedGMObj)) {
+    // Handle nested value object like { valuePercent: 48.1, ... }
+    const numVal = $anyNum(blendedGMObj, "valuePercent", "value", "percent");
+    if (numVal > 0) {
+      blendedGM = formatPercentage(numVal);
+    } else {
+      blendedGM = $anyStr(blendedGMObj, "valuePercent", "value") || "N/A";
+    }
+  }
 
   return `
     <section class="section">
@@ -287,9 +304,14 @@ const renderInputMetrics = (outputs: LooseData, data: LooseData) => {
   const tableMarkdown = $str(slide1Table, "tableMarkdown");
 
   // Handle array format - could be directly under outputs or nested
+  // Check for both "rows" (normalized) and "table" (raw) keys
   const tableArray = Array.isArray(slide1Table)
     ? slide1Table
-    : $arr(slide1Table, "rows") || $arr(outputs, "slide1InputTable");
+    : $arr(slide1Table, "rows").length > 0 
+      ? $arr(slide1Table, "rows")
+      : $arr(slide1Table, "table").length > 0
+        ? $arr(slide1Table, "table")
+        : $arr(outputs, "slide1InputTable");
 
   // Get notes - try multiple paths (matches UI)
   const slide1Notes = $str(slide1Table, "notes") ||
@@ -323,12 +345,13 @@ const renderInputMetrics = (outputs: LooseData, data: LooseData) => {
   }
 
   // Render array format (matches UI: metric, valueOrEstimate/value, sourceOrLogic/source)
+  // Also handle raw spaced keys from un-normalized data
   if (Array.isArray(tableArray) && tableArray.length > 0) {
     const rows = tableArray.map((row) => {
       if (!isObject(row)) return "";
-      const metric = $str(row, "metric");
-      const value = $anyStr(row, "valueOrEstimate", "value");
-      const source = $anyStr(row, "sourceOrLogic", "source");
+      const metric = $anyStr(row, "metric", "Metric");
+      const value = $anyStr(row, "valueOrEstimate", "value", "Value / Estimate");
+      const source = $anyStr(row, "sourceOrLogic", "source", "Source / Logic");
       return `
         <tr>
           <td>${fmt(metric)}</td>
@@ -388,7 +411,8 @@ const renderResearchFindings = (research: LooseData) => {
   const financials = $anyObj(research, "financials", "financialsAndMargins");
   const loyaltyProgramme = $obj(research, "loyaltyProgramme");
   const benchmarks = $obj(research, "benchmarks");
-  const sentiment = $obj(research, "loyaltySentiment");
+  // Handle both loyaltySentiment and loyaltySentimentLast12Months
+  const sentiment = $anyObj(research, "loyaltySentiment", "loyaltySentimentLast12Months", "sentiment");
   
   // Financials can be nested under latestRevenueGM or direct
   const finDataNested = $obj(financials, "latestRevenueGM");
@@ -406,7 +430,8 @@ const renderResearchFindings = (research: LooseData) => {
       if (patterns.some((p) => normKey.includes(normalizeKey(p)))) {
         if (typeof val === "number" && val > 0) return val;
         if (isObject(val)) {
-          const nested = $anyNum(val, "value", "amount", "total");
+          // Include currency-specific value keys: valueGBP, valueUSD, valueEUR, valuePercent
+          const nested = $anyNum(val, "value", "valueGBP", "valueUSD", "valueEUR", "valuePercent", "amount", "total");
           if (nested > 0) return nested;
         }
       }
@@ -423,8 +448,28 @@ const renderResearchFindings = (research: LooseData) => {
 
   // Get revenue - try multiple paths (handles various naming conventions)
   const getRevenueValue = (): string => {
-    // Try specific paths first
-    const specificPaths = [
+    // Helper to format a revenue value with the appropriate currency symbol
+    const formatRevenue = (val: number, isGBP: boolean): string => {
+      const symbol = isGBP ? "£" : "$";
+      if (val >= 1_000_000_000) return `${symbol}${formatNumber(val / 1_000_000_000)}bn`;
+      if (val >= 1_000_000) return `${symbol}${formatNumber(val / 1_000_000)}m`;
+      return `${symbol}${formatNumber(val)}`;
+    };
+    
+    // Try GBP paths first (e.g., New Look: financials.latestFiledRevenue.valueGBP)
+    const gbpPaths = [
+      () => $num(finData, "latestFiledRevenue", "valueGBP"),
+      () => $num(financials, "latestFiledRevenue", "valueGBP"),
+      () => $num(finData, "revenue", "valueGBP"),
+      () => $num(finData, "totalRevenueGBP"),
+    ];
+    for (const fn of gbpPaths) {
+      const val = fn();
+      if (val > 0) return formatRevenue(val, true);
+    }
+    
+    // Try USD/general paths
+    const usdPaths = [
       // Nested under revenue object (e.g., Ulta: financials.revenue.netSales)
       () => $num(finData, "revenue", "netSales"),
       () => $num(finData, "revenue", "value"),
@@ -439,14 +484,9 @@ const renderResearchFindings = (research: LooseData) => {
       () => $anyNum(finData, "revenue", "totalRevenue", "netSales", "sales"),
       () => $anyNum(financials, "revenue", "totalRevenue", "netSales", "sales"),
     ];
-    for (const fn of specificPaths) {
+    for (const fn of usdPaths) {
       const val = fn();
-      if (val > 0) {
-        // Determine scale (billions, millions, or raw)
-        if (val >= 1_000_000_000) return `$${formatNumber(val / 1_000_000_000)}bn`;
-        if (val >= 1_000_000) return `$${formatNumber(val / 1_000_000)}m`;
-        return `$${formatNumber(val)}`;
-      }
+      if (val > 0) return formatRevenue(val, false);
     }
     
     // Fallback: search for any revenue-like value in financials
@@ -456,9 +496,9 @@ const renderResearchFindings = (research: LooseData) => {
       found = findNumericValue(research, ["revenue", "sales", "netsales"]);
     }
     if (found > 0) {
-      if (found >= 1_000_000_000) return `$${formatNumber(found / 1_000_000_000)}bn`;
-      if (found >= 1_000_000) return `$${formatNumber(found / 1_000_000)}m`;
-      return `$${formatNumber(found)}`;
+      // Check if we're dealing with GBP data by looking for GBP indicators
+      const isGBP = Object.keys(financials).some(k => k.toLowerCase().includes("gbp"));
+      return formatRevenue(found, isGBP);
     }
     
     return "N/A";
@@ -473,6 +513,11 @@ const renderResearchFindings = (research: LooseData) => {
                      $num(finData, "grossMargin", "percent") ||
                      $num(finData, "grossMargin", "value");
     if (nestedGM > 0) return formatPercentage(nestedGM);
+    
+    // Try nested valuePercent paths (e.g., New Look: blendedGrossMarginPercent.valuePercent)
+    const nestedValuePercent = $num(finData, "blendedGrossMarginPercent", "valuePercent") ||
+                               $num(financials, "blendedGrossMarginPercent", "valuePercent");
+    if (nestedValuePercent > 0) return formatPercentage(nestedValuePercent);
     
     // Try direct paths
     const gmVal = $anyNum(finData, 
@@ -502,43 +547,69 @@ const renderResearchFindings = (research: LooseData) => {
   };
   const gmPercent = getGMPercent();
 
-  // Loyalty programme - handle nested structure
-  const progName = $anyStr(loyaltyProgramme, "name", "programmeName");
+  // Loyalty programme - handle nested structure (may be { programmeName: { value: "..." } })
+  const progNameObj = $(loyaltyProgramme, "programmeName");
+  const progName = typeof progNameObj === "string" 
+    ? progNameObj 
+    : isObject(progNameObj) 
+      ? $anyStr(progNameObj, "value", "name") 
+      : $anyStr(loyaltyProgramme, "name", "programmeName");
+  
+  // Launch date - may be nested object or string
+  const launchDateObj = $(loyaltyProgramme, "launchDate");
   const launchEvolution = $(loyaltyProgramme, "launchAndEvolution");
-  const launchText = typeof launchEvolution === "string" 
-    ? launchEvolution 
-    : isObject(launchEvolution) 
-      ? $str(launchEvolution, "initialLaunch", "description") || extractText(launchEvolution)
-      : "";
+  const launchText = typeof launchDateObj === "string"
+    ? launchDateObj
+    : isObject(launchDateObj)
+      ? $anyStr(launchDateObj, "value", "date", "description")
+      : typeof launchEvolution === "string" 
+        ? launchEvolution 
+        : isObject(launchEvolution) 
+          ? $str(launchEvolution, "initialLaunch", "description") || extractText(launchEvolution)
+          : "";
 
-  // Benchmarks - handle different structures  
+  // Benchmarks - handle different structures (including GBP values)
   const aovData = $anyObj(benchmarks, "aov", "AOV");
-  const aovVal = $anyNum(aovData, "estimateUsd", "valueUSD", "value", "estimatedAovUsd") || 
+  const aovVal = $anyNum(aovData, "estimateUsd", "valueUSD", "valueGBP", "value", "estimatedAovUsd") || 
                  $num(aovData, "brandOrCategoryAOV", "value");
-  const freqData = $obj(benchmarks, "purchaseFrequency");
-  const freqVal = $anyNum(freqData, "transactionsPerActiveCustomerPerYear", "valuePerYear", "estimatedFrequencyPerYear", "frequency") || 
+  // Determine if this is GBP data
+  const aovIsGBP = "valueGBP" in aovData || Object.keys(benchmarks).some(k => k.toLowerCase().includes("gbp"));
+  
+  const freqData = $anyObj(benchmarks, "purchaseFrequency", "purchaseFrequencyPerYear");
+  const freqVal = $anyNum(freqData, "transactionsPerActiveCustomerPerYear", "valuePerYear", "estimatedFrequencyPerYear", "frequency", "value") || 
                   $num(freqData, "estimatedAnnualPurchaseFrequencyPerActiveCustomer", "value");
 
   // Sentiment table - handle different field names (matches UI: aspectDisplay, aspectDisplayName, aspect)
   const sentimentTable = $arr(sentiment, "sentimentTable");
   const sentimentRows = sentimentTable.map((row) => {
     if (!isObject(row)) return "";
-    // Match UI field names: aspectDisplay, aspectDisplayName, aspect (plus legacy: aspectLabel, displayName, aspectKey)
-    const aspect = $anyStr(row, "aspectDisplay", "aspectDisplayName", "aspect", "aspectLabel", "displayName", "aspectKey");
-    const summary = $str(row, "sentimentSummary");
+    // Match UI field names: aspectDisplay, aspectDisplayName, aspect (plus spaced: Aspect)
+    const aspect = $anyStr(row, "aspectDisplay", "aspectDisplayName", "aspect", "Aspect", "aspectLabel", "displayName", "aspectKey");
+    // Handle both camelCase and spaced keys for summary
+    const summary = $anyStr(row, "sentimentSummary", "Sentiment Summary");
 
-    // Evidence can be array of strings or array of objects with quote property
+    // Evidence can be array of strings, array of objects with quote property, or a string
     // Match UI: tries "evidence" first, then "evidenceQuotes" for legacy compatibility
+    // Also handle spaced key "Evidence (Quotes & Sources)"
     let evidenceRaw = $arr(row, "evidence");
     if (evidenceRaw.length === 0) {
       evidenceRaw = $arr(row, "evidenceQuotes");
     }
-    const evidenceItems = evidenceRaw.map((e) => {
-      if (typeof e === "string") return e;
-      // Match UI: checks for .quote property on objects
-      if (isObject(e)) return $anyStr(e, "quote", "text", "content") || extractText(e);
-      return String(e);
-    }).filter(Boolean);
+    // If still empty, check for string format in spaced key
+    const evidenceStr = $anyStr(row, "Evidence (Quotes & Sources)");
+    
+    let evidenceItems: string[] = [];
+    if (evidenceRaw.length > 0) {
+      evidenceItems = evidenceRaw.map((e) => {
+        if (typeof e === "string") return e;
+        // Match UI: checks for .quote property on objects
+        if (isObject(e)) return $anyStr(e, "quote", "text", "content") || extractText(e);
+        return String(e);
+      }).filter(Boolean) as string[];
+    } else if (evidenceStr) {
+      // Parse quotes from string like '"Quote1" [1] "Quote2" [2]'
+      evidenceItems = [evidenceStr];
+    }
 
     return `
       <tr>
@@ -549,10 +620,37 @@ const renderResearchFindings = (research: LooseData) => {
     `;
   }).join("");
 
-  // Paid Media & Tech (matches UI: research.paidMediaAndTech)
+  // Paid Media & Tech - handle both combined (paidMediaAndTech) and separate (paidMediaChannels, techStack)
   const paidMediaAndTech = $obj(research, "paidMediaAndTech");
-  const paidMediaChannels = $anyStr(paidMediaAndTech, "paidMediaChannels", "channels");
-  const techStack = $anyStr(paidMediaAndTech, "techStack", "stack");
+  const paidMediaChannelsObj = $anyObj(research, "paidMediaChannels", "paidMedia");
+  const techStackObj = $anyObj(research, "techStack", "technology");
+  
+  // Get paid media channels - may be string, array, or nested object with channels array
+  let paidMediaChannels = $anyStr(paidMediaAndTech, "paidMediaChannels", "channels");
+  if (!paidMediaChannels && Object.keys(paidMediaChannelsObj).length > 0) {
+    const channelsArr = $arr(paidMediaChannelsObj, "channels");
+    if (channelsArr.length > 0) {
+      paidMediaChannels = channelsArr.map(c => typeof c === "string" ? c : extractText(c)).join(", ");
+    } else {
+      paidMediaChannels = extractText(paidMediaChannelsObj);
+    }
+  }
+  
+  // Get tech stack - may be combined string or object with multiple components
+  let techStack = $anyStr(paidMediaAndTech, "techStack", "stack");
+  if (!techStack && Object.keys(techStackObj).length > 0) {
+    // Extract values from each tech stack component (commerce, marketingAutomation, etc.)
+    const techParts: string[] = [];
+    for (const [key, val] of Object.entries(techStackObj)) {
+      if (key === "notes") continue;
+      const valStr = isObject(val) ? $anyStr(val, "value", "name", "description") : String(val);
+      if (valStr) techParts.push(valStr);
+    }
+    techStack = techParts.join("; ");
+  }
+  
+  // Combine for rendering
+  const hasPaidMediaOrTech = paidMediaChannels || techStack || Object.keys(paidMediaAndTech).length > 0;
 
   // Data Confidence Summary (matches UI: research.dataConfidenceSummary)
   const dataConfidenceSummary = $obj(research, "dataConfidenceSummary");
@@ -588,7 +686,7 @@ const renderResearchFindings = (research: LooseData) => {
           <div class="panel">
             <h4>Average Order Value</h4>
             <dl class="kv">
-              <div><dt>AOV</dt><dd>${aovVal ? fmt(`$${formatNumber(aovVal)}`) : "N/A"}</dd></div>
+              <div><dt>AOV</dt><dd>${aovVal ? fmt(`${aovIsGBP ? "£" : "$"}${formatNumber(aovVal)}`) : "N/A"}</dd></div>
             </dl>
           </div>
           <div class="panel">
@@ -620,7 +718,7 @@ const renderResearchFindings = (research: LooseData) => {
         ` : ""}
       </div>
 
-      ${Object.keys(paidMediaAndTech).length > 0 ? `
+      ${hasPaidMediaOrTech ? `
       <div class="subsection">
         <h3>Paid Media & Tech Stack</h3>
         <div class="panel">
@@ -628,7 +726,7 @@ const renderResearchFindings = (research: LooseData) => {
             ${paidMediaChannels ? `<div><dt>Paid Media Channels</dt><dd>${fmt(paidMediaChannels)}</dd></div>` : ""}
             ${techStack ? `<div><dt>Tech Stack</dt><dd>${fmt(techStack)}</dd></div>` : ""}
           </dl>
-          ${!paidMediaChannels && !techStack ? renderKV(paidMediaAndTech) : ""}
+          ${!paidMediaChannels && !techStack && Object.keys(paidMediaAndTech).length > 0 ? renderKV(paidMediaAndTech) : ""}
         </div>
       </div>
       ` : ""}
@@ -681,36 +779,42 @@ const renderValueCase = (outputs: LooseData) => {
     return rows.map((row) => {
       if (!isObject(row)) return "";
 
-      const areaOfImpact = $str(row, "areaOfImpact");
-      const opportunityType = $str(row, "opportunityType");
+      // Handle both normalized (camelCase) and raw (spaced keys) formats
+      const areaOfImpact = $anyStr(row, "areaOfImpact", "Area of Impact");
+      const opportunityType = $anyStr(row, "opportunityType", "Opportunity Type");
 
-      // Match UI: multiple uplift field variants
+      // Match UI: multiple uplift field variants (including spaced GBP keys)
       const uplift = $anyNum(row,
         "estimatedUpliftGM",
         "estimatedUpliftGmUsd",
         "estimatedUpliftGmGbp",
         "estimatedUpliftGMGBP",
-        "estimatedUpliftGm"
+        "estimatedUpliftGm",
+        "Estimated Uplift (£GM)",
+        "Estimated Uplift ($GM)"
       );
       const upliftStr = $anyStr(row,
         "estimatedUpliftGM",
         "estimatedUpliftGmUsd",
         "estimatedUpliftGmGbp",
         "estimatedUpliftGMGBP",
-        "estimatedUpliftGm"
+        "estimatedUpliftGm",
+        "Estimated Uplift (£GM)",
+        "Estimated Uplift ($GM)"
       );
 
-      // Format uplift like UI: $X.XXm
+      // Format uplift like UI: $X.XXm (or use string value if already formatted)
       const upliftFormatted = uplift > 0
         ? `$${formatNumber(uplift, 2)}m`
         : upliftStr || "N/A";
 
-      // Match UI: multiple methodology field variants
+      // Match UI: multiple methodology field variants (including spaced keys)
       const methodology = $anyStr(row,
         "assumptionsMethodology",
         "assumptionsAndMethodology",
         "assumptions",
-        "methodology"
+        "methodology",
+        "Assumptions / Methodology"
       );
 
       return `
@@ -1163,15 +1267,43 @@ const renderAppendices = (appendices: LooseData) => {
       const breakdown = $arr(item, "sixStepBreakdown") as string[];
       const uplift = $anyNum(item, "upliftPointAppliedPct", "upliftPercentApplied", "uplift", "upliftPercentageApplied");
       const totalGM = $anyNum(item, "totalGMUpliftUSD", "totalGMUpliftUSD_m", "totalGM");
+      const estimatedUpliftGM = $str(item, "estimatedUpliftGM");
+      
+      // Check for step-by-step fields (from value case table extraction)
+      const upliftDesc = $str(item, "upliftPointDescription");
+      const rangeSource = $str(item, "credibleRange", "source") || $str(item, "rangeAndSource");
+      const rationale = $str(item, "selectionRationale");
+      const mathsExplain = $str(item, "mathsExplanation");
+      const resultStmt = $str(item, "resultStatement");
+      const reassurance = $str(item, "reassuranceStatement");
+      
+      const hasStepFields = upliftDesc || rangeSource || rationale || mathsExplain || resultStmt || reassurance;
+
+      // Build step-by-step list if we have those fields
+      let stepsHtml = "";
+      if (hasStepFields) {
+        const steps = [
+          upliftDesc ? `<li><strong>Uplift Applied:</strong> ${escapeHtml(upliftDesc)}</li>` : "",
+          rangeSource ? `<li><strong>Range & Source:</strong> ${escapeHtml(rangeSource)}</li>` : "",
+          rationale ? `<li><strong>Why Selected:</strong> ${escapeHtml(rationale)}</li>` : "",
+          mathsExplain ? `<li><strong>Calculation:</strong> ${escapeHtml(mathsExplain)}</li>` : "",
+          resultStmt ? `<li><strong>Result:</strong> ${escapeHtml(resultStmt)}</li>` : "",
+          reassurance ? `<li><strong>Reassurance:</strong> ${escapeHtml(reassurance)}</li>` : "",
+        ].filter(Boolean).join("");
+        stepsHtml = `<ul class="list">${steps}</ul>`;
+      }
 
       return `
         <div class="assumption-item">
           <h4>${escapeHtml(leverName)}</h4>
+          ${estimatedUpliftGM ? `<p><strong>Estimated GM Uplift:</strong> ${escapeHtml(estimatedUpliftGM)}</p>` : ""}
           ${uplift > 0 ? `<p><strong>Uplift Applied:</strong> ${formatNumber(uplift)}%</p>` : ""}
           ${totalGM > 0 ? `<p><strong>Total GM Uplift:</strong> $${formatNumber(totalGM / 1_000_000)}m</p>` : ""}
           ${breakdown.length > 0
             ? `<ul class="list">${breakdown.map((b) => `<li>${escapeHtml(String(b))}</li>`).join("")}</ul>`
-            : renderKV(item)}
+            : hasStepFields 
+              ? stepsHtml
+              : renderKV(item)}
         </div>
       `;
     }).join("");

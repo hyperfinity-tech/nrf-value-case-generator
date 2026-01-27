@@ -1,0 +1,407 @@
+{
+  "brandIntake": {
+    "brand": "LEON Restaurants",
+    "website": "https://leon.co",
+    "registryLink": "",
+    "category": "UK quick-service / fast-casual restaurant (naturally fast food & coffee)",
+    "brandType": "own_brand_only",
+    "contextualNotes": "User provided brand name only; all other fields researched."
+  },
+  "research": {
+    "latestAnnualRevenue": "£62.5m ()",
+    "latestAnnualRevenueSource": "",
+    "blendedGrossMarginPercent": 0,
+    "blendedGrossMarginSource": "",
+    "financials": {
+      "latestFiledRevenue": {
+        "value": 62500000,
+        "currency": "GBP",
+        "confidence": "M",
+        "period": "FY2024 (year ended 31 Dec 2024)",
+        "sourceFootnotes": [
+          1
+        ],
+        "notes": "Trade/legal press summarising Companies House report; Companies House PDF could not be extracted in-tool due to a fetch validation error."
+      },
+      "grossProfit": {
+        "value": 40920000,
+        "currency": "GBP",
+        "confidence": "M",
+        "period": "FY2024 (year ended 31 Dec 2024)",
+        "sourceFootnotes": [
+          1
+        ]
+      },
+      "blendedGrossMarginPct": {
+        "value": 65.5,
+        "confidence": "M",
+        "logic": "Derived from disclosed gross profit and revenue for FY2024: £40.92m / £62.5m ≈ 65.5%.",
+        "sourceFootnotes": [
+          1
+        ]
+      }
+    },
+    "loyaltyProgrammeDetails": "LEON Club (App Loyalty)",
+    "loyaltyProgrammePenetration": "",
+    "loyaltyProgrammeLaunchDate": "2022-02-16",
+    "loyaltyProgrammeBenefits": "",
+    "activeLoyaltyMembers": "",
+    "loyaltyProgramme": {
+      "programmeName": {
+        "value": "LEON Club (App Loyalty)",
+        "confidence": "H",
+        "sourceFootnotes": [
+          2,
+          3
+        ]
+      },
+      "launchDate": {
+        "value": "2022-02-16",
+        "confidence": "H",
+        "sourceFootnotes": [
+          4
+        ]
+      },
+      "coreMechanics": {
+        "value": "100 points per £1; at 3,000 points a reward unlocks for a free selected menu item; points accrued via app/website/kiosks in participating sites; exclusions apply.",
+        "confidence": "H",
+        "sourceFootnotes": [
+          2,
+          3,
+          4
+        ]
+      },
+      "benefitsSummary": {
+        "value": [
+          "Skip the queue / click & collect",
+          "Re-order functionality",
+          "Points-based rewards (3,000 points unlock a free menu item)",
+          "Occasional treats / freebies"
+        ],
+        "confidence": "H",
+        "sourceFootnotes": [
+          2,
+          4
+        ]
+      },
+      "activeLoyaltyMembers": {
+        "value": null,
+        "confidence": "L",
+        "logic": "No public disclosure found for active members; app-store pages show ratings, not active user counts."
+      },
+      "penetrationRate": {
+        "value": 18,
+        "unit": "percent_of_total_revenue",
+        "confidence": "L",
+        "logic": "Proxy assumption for modelling: app/loyalty penetration often sits in the 10–30% range for QSR with established apps; LEON has had the app since 2022 and promotes app ordering prominently, so we anchor at 18% as a conservative mid-low proxy (not disclosed)."
+      },
+      "otherLoyaltyInitiatives": {
+        "roastRewardsSubscription": {
+          "value": "LEON Club Roast Rewards subscription exists; page notes cancellations and that they were not taking new subscribers during a specified period (page states only existing subscribers could continue until 31 December).",
+          "confidence": "M",
+          "sourceFootnotes": [
+            5,
+            3
+          ]
+        }
+      }
+    },
+    "aovBenchmark": "£12",
+    "purchaseFrequencyBenchmark": "8 per year",
+    "benchmarks": {
+      "aov": {
+        "value": 12,
+        "currency": "GBP",
+        "confidence": "L",
+        "logic": "Model proxy anchored to typical UK fast-casual/QSR meal deal price points; LEON loyalty T&Cs reference regular meal deals up to £12 in participating restaurants, which provides a useful reference point for average transaction sizing for a core customer segment.",
+        "sourceFootnotes": [
+          3
+        ]
+      },
+      "purchaseFrequencyPerYear": {
+        "value": 8,
+        "unit": "orders_per_loyal_customer_per_year",
+        "confidence": "L",
+        "logic": "Proxy for an urban fast-casual lunch brand where many customers are occasional users rather than weekly; no public LEON-specific customer frequency disclosure located."
+      }
+    },
+    "techStack": {
+      "commerceOrdering": {
+        "value": "Vita Mojo (digital ordering across kiosks, click & collect, and mobile app) per vendor case study.",
+        "confidence": "M",
+        "sourceFootnotes": [
+          6
+        ]
+      },
+      "loyalty": {
+        "value": "LEON Club App Loyalty (points-based) operated via LEON Club app and web smart order account.",
+        "confidence": "H",
+        "sourceFootnotes": [
+          2,
+          3
+        ]
+      },
+      "crmMarketingAutomation": {
+        "value": "Not publicly confirmed in sources reviewed.",
+        "confidence": "L"
+      }
+    },
+    "techStackFlat": "Vita Mojo (digital ordering across kiosks, click & collect, and mobile app) per vendor case study.; LEON Club App Loyalty (points-based) operated via LEON Club app and web smart order account.; Not publicly confirmed in sources reviewed.",
+    "loyaltySentiment": {
+      "overallSentimentRating": "Mixed",
+      "summaryNarrative": "",
+      "feedbackDominatedBy": "Existing loyalty/app users (members ordering via app; includes subscription users).",
+      "themes": {
+        "likes": [
+          "Convenience of ordering and collecting via the app (implicit in app proposition; limited positive review text surfaced in this run)."
+        ],
+        "dislikes": [
+          "Perceived reduction in subscription usefulness due to participating outlet hours/coverage",
+          "Checkout/payment friction (Apple Pay and card details issues)",
+          "Account/points reliability concerns (logged out/account not found, difficulty redeeming)"
+        ]
+      }
+    },
+    "loyaltySentimentLast12Months": {
+      "overallSentiment": {
+        "value": "Mixed",
+        "confidence": "M",
+        "logic": "App Store reviews show dissatisfaction themes (payments/Apple Pay, account/points issues, subscription access constraints) alongside some positive app utility; the accessible review excerpts skew negative in the last 12 months sample surfaced."
+      },
+      "dominantReviewerType": {
+        "value": "Existing loyalty/app users (members ordering via app; includes subscription users).",
+        "confidence": "M",
+        "logic": "Quoted feedback is from the iOS App Store listing for the LEON Club app."
+      },
+      "themes": {
+        "likes": [
+          "Convenience of ordering and collecting via the app (implicit in app proposition; limited positive review text surfaced in this run)."
+        ],
+        "dislikes": [
+          "Perceived reduction in subscription usefulness due to participating outlet hours/coverage",
+          "Checkout/payment friction (Apple Pay and card details issues)",
+          "Account/points reliability concerns (logged out/account not found, difficulty redeeming)"
+        ]
+      },
+      "quoteEvidence": [
+        {
+          "aspect": "overall_satisfaction",
+          "quote": "“Leon App is no longer fit for purpose”",
+          "sourceFootnote": 8,
+          "date": "2023-02-10",
+          "note": "Older than 12 months; included due to limited recent long-form review text visible in-tool."
+        },
+        {
+          "aspect": "perceived_value",
+          "quote": "“starting to take people’s subscription money & then actively doing what you can to limit people’s access to their coffees is super cynical.”",
+          "sourceFootnote": 8,
+          "date": "2025-03-01"
+        },
+        {
+          "aspect": "ease_of_use_ux",
+          "quote": "“it wouldn’t let me… complete it… Also it wouldn’t complete with Apple Pay.”",
+          "sourceFootnote": 8,
+          "date": "2022-02-23",
+          "note": "Older than 12 months; included due to limited recent long-form UX review text visible in-tool."
+        },
+        {
+          "aspect": "key_pain_points",
+          "quote": "“I finally had enough points to redeem… I apparently no longer have an account… Seems like a big scam… unable to add card details… have to pay in person.”",
+          "sourceFootnote": 8,
+          "date": "2022-12-07",
+          "note": "Older than 12 months; included due to limited recent long-form pain-point review text visible in-tool."
+        }
+      ]
+    },
+    "researchSources": [],
+    "inferenceNotes": ""
+  },
+  "modelling": {
+    "inputsUsed": {
+      "totalRevenue": {
+        "value": 62500000,
+        "currency": "GBP",
+        "confidence": "M",
+        "sourceFootnotes": [
+          1
+        ]
+      },
+      "blendedGmPct": {
+        "value": 65.5,
+        "confidence": "M",
+        "sourceFootnotes": [
+          1
+        ]
+      },
+      "loyaltyRevenueShare": {
+        "value": 18,
+        "unit": "percent",
+        "confidence": "L"
+      },
+      "loyaltyRevenue": {
+        "value": 11250000,
+        "currency": "GBP",
+        "confidence": "L",
+        "logic": "18% of £62.5m (proxy penetration assumption)."
+      }
+    },
+    "credibleRanges": {
+      "personalisedLoyaltyUpliftPctRange": {
+        "min": 5,
+        "max": 25,
+        "confidence": "H",
+        "sourceFootnotes": [
+          9
+        ],
+        "notes": "McKinsey cites typical personalisation lift 10–15% with company-specific spanning 5–25%."
+      },
+      "priceOptimisationUpliftPctRange": {
+        "min": 0.5,
+        "max": 2,
+        "confidence": "M",
+        "sourceFootnotes": [
+          10
+        ],
+        "notes": "Category proxy: McKinsey retail personalisation article references 1–2% total sales lift in grocery from personalisation; used as a conservative analogue for price/markdown discipline impact on total sales/GM in QSR where menu price architecture is a primary lever."
+      }
+    },
+    "midpoints": {
+      "personalisedLoyaltyUpliftPct": 12.5,
+      "priceOptimisationUpliftPct": 1.25
+    },
+    "stretchUpPoints": {
+      "personalisedLoyaltyUpliftPct": 18,
+      "priceOptimisationUpliftPct": 1.7
+    },
+    "baseCaseUsingMidpoints": {
+      "leverGmUplifts": {
+        "personalisedLoyalty": {
+          "upliftPctApplied": 12.5,
+          "upliftOnRevenueBase": "loyaltyRevenue",
+          "estimatedGmUplift": 921094,
+          "currency": "GBP",
+          "calculationLogic": "£11.25m * 12.5% = £1.406m incremental revenue proxy; apply 65.5% blended GM => ~£0.921m GM."
+        },
+        "priceOptimisation": {
+          "upliftPctApplied": 1.25,
+          "upliftOnRevenueBase": "totalRevenue",
+          "estimatedGmUplift": 511719,
+          "currency": "GBP",
+          "calculationLogic": "£62.5m * 1.25% = £0.781m incremental revenue proxy; apply 65.5% blended GM => ~£0.512m GM."
+        }
+      },
+      "totalGmUplift": 1432813,
+      "currency": "GBP"
+    },
+    "thresholdRuleApplied": {
+      "thresholdGm": 2000000,
+      "baseCaseTotalGm": 1432813,
+      "ruleOutcome": "BASE CASE < £2m, so we switch to STRETCH-UP values for ALL levers.",
+      "valueCaseMode": "Stretch-up"
+    },
+    "finalValueCaseUsingStretchUp": {
+      "leverGmUplifts": {
+        "personalisedLoyalty": {
+          "upliftPctApplied": 18,
+          "estimatedGmUplift": 1326375,
+          "currency": "GBP",
+          "calculationLogic": "£11.25m * 18.0% = £2.025m incremental revenue proxy; apply 65.5% blended GM => ~£1.326m GM."
+        },
+        "priceOptimisation": {
+          "upliftPctApplied": 1.7,
+          "estimatedGmUplift": 695938,
+          "currency": "GBP",
+          "calculationLogic": "£62.5m * 1.7% = £1.063m incremental revenue proxy; apply 65.5% blended GM => ~£0.696m GM."
+        }
+      },
+      "totalGmUplift": 2022313,
+      "currency": "GBP"
+    },
+    "ownBrandRule": {
+      "brandType": "own_brand_only",
+      "supplierFundedLoyaltyRowIncluded": false,
+      "reason": "Own-brand only: no supplier-funded loyalty economics assumed; therefore row B omitted."
+    }
+  },
+  "outputs": {
+    "executiveOneLiner": "Headline value (Gross Margin): £2.0m - all figures expressed on a gross-margin basis.",
+    "executiveSummary": "This value case estimates the gross-margin upside from improving LEON’s loyalty personalisation and menu price/markdown discipline, using FY2024 financial scale (£62.5m revenue) and a blended gross margin of ~65.5% derived from disclosed gross profit (£40.92m). [1] We first modelled a midpoint-based base case across levers; because the base case total was below £2.0m GM, we applied the stretch-up rule uniformly across levers (still within evidence-backed ranges). For personalised loyalty, we apply an 18% uplift within McKinsey’s cited 5–25% credible span for personalisation impact. [9] For price optimisation, we apply a conservative 1.7% uplift on total revenue, anchored to a 0.5–2.0% credible proxy range. [10] Strategically, this matters now: LEON’s administration status and challenging trading context increase the urgency of shifting demand to higher-margin, lower-waste repeat behaviour while tightening price architecture to protect margin. [7]",
+    "cfoReadinessPanel": {
+      "blendedGMPercentUsed": 0,
+      "blendedGMSourceOrProxy": "",
+      "brandType": "Own-brand",
+      "valueCaseMode": "Stretch-up (Base case using midpoints was below the £2.0m GM threshold, so the model applies stretch-up points for all levers.)",
+      "valueCaseModeRationale": "",
+      "dataConfidence": {
+        "revenue": "M",
+        "loyalty": "M",
+        "aov": "L",
+        "frequency": "L"
+      }
+    },
+    "slide1InputTable": {
+      "rows": [
+        {
+          "metric": "1. Total Revenue",
+          "valueOrEstimate": "£62.5m (FY2024)",
+          "sourceOrLogic": "Companies House figures summarised in trade press. [1] Confidence: M"
+        },
+        {
+          "metric": "2. Revenue from Loyalty Members",
+          "valueOrEstimate": "£11.25m (18% proxy of total revenue)",
+          "sourceOrLogic": "No public disclosure; modelling proxy for LEON Club penetration. Confidence: L"
+        },
+        {
+          "metric": "3. Active Loyalty Members",
+          "valueOrEstimate": "Not disclosed",
+          "sourceOrLogic": "No public figure found in reviewed sources. Confidence: L"
+        },
+        {
+          "metric": "4. AOV",
+          "valueOrEstimate": "£12 (proxy)",
+          "sourceOrLogic": "Loyalty T&Cs reference regular meal deals up to £12; used as transaction-size anchor. [3] Confidence: L"
+        },
+        {
+          "metric": "5. Purchase Frequency",
+          "valueOrEstimate": "8 orders/year (proxy for loyalty users)",
+          "sourceOrLogic": "No disclosure located; conservative urban QSR proxy. Confidence: L"
+        },
+        {
+          "metric": "6. Paid Media Channels",
+          "valueOrEstimate": "Owned channels (website/app); paid channels not confirmed",
+          "sourceOrLogic": "LEON website/app presence confirmed; no definitive paid media evidence surfaced in this run. [2] Confidence: L"
+        },
+        {
+          "metric": "7. Tech Stack",
+          "valueOrEstimate": "Digital ordering via Vita Mojo; loyalty via LEON Club app/Smart Order account",
+          "sourceOrLogic": "Vita Mojo case study + LEON app pages/T&Cs. [6] [2] [3] Confidence: M/H"
+        }
+      ],
+      "notes": "Key proxies: Loyalty revenue share (18%), AOV (£12), and frequency (8/year) are modelling assumptions due to lack of public disclosure; they are clearly marked as low confidence., Data gap: Active loyalty members not disclosed publicly in sources reviewed., Companies House accounts PDF was identified in the filing history but could not be extracted in-tool due to a fetch validation error; therefore, revenue/GP are treated as medium confidence via reputable secondary reporting. [7] [1]"
+    },
+    "slide4ValueCaseTable": {
+      "rows": [
+        {
+          "areaOfImpact": "A. Personalised Loyalty (incl. offer waste reduction)",
+          "opportunityType": "Incremental GM from better targeting and reduced discount waste",
+          "estimatedUpliftGM": "£1.3m",
+          "assumptionsMethodology": "1. UPLIFT POINT APPLIED: We have applied a 18.0% uplift, which represents the upper-mid stretch of the credible range for this lever.\n2. RANGE & SOURCE: This sits within the credible category range of 5% to 25%, based on McKinsey’s cited personalisation impact spans. [9]\n3. WHY THIS POINT WAS SELECTED: We selected this point because the total value case was below the 2 million pound threshold, which means the model uses the stretch-up rule.\n4. SIMPLE MATHS EXPLANATION: In practice, this means applying the 18.0% uplift to loyalty-customer revenue (modelled at £11.25m), and converting this into gross margin using the blended GM% of 65.5%.\n5. RESULT: This results in an estimated gross margin uplift of £1.3m for this lever.\n6. REASSURANCE: All assumptions sit comfortably within evidence-based bounds and avoid reliance on extreme best-case scenarios."
+        },
+        {
+          "areaOfImpact": "C. Price Optimisation",
+          "opportunityType": "GM uplift from improved price architecture and markdown management",
+          "estimatedUpliftGM": "£0.7m",
+          "assumptionsMethodology": "1. UPLIFT POINT APPLIED: We have applied a 1.7% uplift, which represents the upper-mid stretch of the credible range for this lever.\n2. RANGE & SOURCE: This sits within the credible category range of 0.5% to 2.0%, based on a conservative proxy range anchored to published retail uplift discussions (used here as a QSR analogue for price/offer discipline). [10]\n3. WHY THIS POINT WAS SELECTED: We selected this point because the total value case was below the 2 million pound threshold, which means the model uses the stretch-up rule.\n4. SIMPLE MATHS EXPLANATION: In practice, this means applying the 1.7% uplift to total revenue (£62.5m), and converting this into gross margin using the blended GM% of 65.5%.\n5. RESULT: This results in an estimated gross margin uplift of £0.7m for this lever.\n6. REASSURANCE: All assumptions sit comfortably within evidence-based bounds and avoid reliance on extreme best-case scenarios."
+        },
+        {
+          "areaOfImpact": "D. Total Cumulative Uplift (GM)",
+          "opportunityType": "Sum of A to C",
+          "estimatedUpliftGM": "£2.0m",
+          "assumptionsMethodology": "1. UPLIFT POINT APPLIED: We have applied a uniform stretch-up approach across levers, reflecting the upper-mid stretch of each credible range.\n2. RANGE & SOURCE: Personalised loyalty sits within 5% to 25% (McKinsey). [9] Price optimisation sits within 0.5% to 2.0% (conservative proxy). [10]\n3. WHY THIS POINT WAS SELECTED: We selected these points because the total value case using median midpoints was below the 2 million pound threshold, which means the model uses the stretch-up rule.\n4. SIMPLE MATHS EXPLANATION: In practice, this means combining the gross-margin uplifts from applying the selected uplift points to (i) modelled loyalty revenue and (ii) total revenue, then converting to GM using the blended GM% of 65.5%.\n5. RESULT: This results in an estimated gross margin uplift of £2.0m in total.\n6. REASSURANCE: All assumptions sit comfortably within evidence-based bounds and avoid reliance on extreme best-case scenarios."
+        }
+      ],
+      "notes": ""
+    }
+  },
+  "appendices": {}
+}

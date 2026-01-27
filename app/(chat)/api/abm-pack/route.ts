@@ -849,10 +849,12 @@ export async function POST(request: Request) {
     // Debug: Log raw text to see what the model returned
     console.log(`[${requestId}] 📄 Raw text length:`, text.length);
     
-    // Parse the JSON - OpenAI strict mode guarantees schema compliance
+    // Strip markdown code fences the model may wrap around the JSON
+    const jsonText = text.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?```\s*$/, "");
+
     let object: AbmPackOutput;
     try {
-      object = JSON.parse(text) as AbmPackOutput;
+      object = JSON.parse(jsonText) as AbmPackOutput;
       console.log(`[${requestId}] 📦 Parsed JSON keys:`, Object.keys(object));
       console.log(`[${requestId}] 📦 Has appendices:`, "appendices" in object);
     } catch (parseError) {
@@ -861,7 +863,14 @@ export async function POST(request: Request) {
     }
 
     // Normalize for frontend consumption (handles legacy key variants)
-    object = normalizeAbmPackOutput(object);
+    try {
+      object = normalizeAbmPackOutput(object);
+    } catch (normalizeError) {
+      const msg = normalizeError instanceof Error ? normalizeError.message : String(normalizeError);
+      console.error(`[${requestId}] ❌ Normalization failed:`, msg);
+      console.error(`[${requestId}] Normalization stack:`, normalizeError instanceof Error ? normalizeError.stack : "");
+      throw new ChatSDKError("offline:abm-pack", `Normalization failed: ${msg}`);
+    }
 
     console.log(`[${requestId}] ✅ Object generation completed in ${generationTime}ms`);
 
@@ -929,6 +938,7 @@ export async function POST(request: Request) {
     }
 
     console.error(`[${requestId}] Unexpected error type - returning generic error`);
-    return new ChatSDKError("offline:abm-pack").toResponse();
+    // Include actual error in cause so client can show it (e.g. in dev / for debugging)
+    return new ChatSDKError("offline:abm-pack", errorMessage).toResponse();
   }
 }

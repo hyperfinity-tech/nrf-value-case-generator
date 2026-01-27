@@ -1,0 +1,596 @@
+{
+  "brandIntake": {
+    "brand": "New Look",
+    "officialWebsite": {
+      "value": "https://www.newlook.com/uk",
+      "confidence": "H",
+      "notes": "Official UK storefront."
+    },
+    "companiesHouse": {
+      "entityUsedForFinancials": "NEW LOOK RETAILERS LIMITED",
+      "companyNumber": "01618428",
+      "registryLink": "https://find-and-update.company-information.service.gov.uk/company/01618428",
+      "filingHistoryLink": "https://find-and-update.company-information.service.gov.uk/company/01618428/filing-history",
+      "latestAccountsMadeUpTo": "2025-03-29",
+      "confidence": "H"
+    },
+    "category": {
+      "value": "Value / mid-market high-street fashion (womenswear-led) with footwear & accessories; omnichannel (store + ecommerce).",
+      "confidence": "H",
+      "sourceFootnotes": [
+        1,
+        4
+      ]
+    },
+    "brandType": {
+      "value": "own_brand_only",
+      "confidence": "M",
+      "logic": "New Look operates primarily as a private-label fashion retailer (New Look-branded ranges). While it may stock limited third-party items/marketplace partners, public reporting and positioning is predominantly own-brand retail, so supplier-funded loyalty is not modelled.",
+      "sourceFootnotes": [
+        4
+      ]
+    },
+    "contextNotes": "ABM pack built around New Look’s newly launched loyalty proposition (Club New Look) and an active data/commerce stack modernisation programme (SAP Commerce Cloud, SAP Emarsys, CDP work)."
+  },
+  "research": {
+    "financials": {
+      "latestFiledRevenue": {
+        "fiscalPeriod": "52 weeks ended 29 March 2025 (FY25)",
+        "valueGBP": 687700000,
+        "confidence": "M",
+        "sourceFootnotes": [
+          2,
+          3
+        ],
+        "notes": "Direct Companies House PDF extraction was not technically retrievable in-tool (validation error when fetching the PDF). Revenue is triangulated from multiple reputable trade sources that reference the filed accounts."
+      },
+      "priorYearRevenue": {
+        "fiscalPeriod": "53 weeks ended 30 March 2024 (FY24)",
+        "valueGBP": 735400000,
+        "confidence": "M",
+        "sourceFootnotes": [
+          5,
+          6
+        ]
+      },
+      "blendedGrossMarginPercent": {
+        "fiscalPeriod": "FY25 (52 weeks ended 29 March 2025)",
+        "valuePercent": 48.1,
+        "confidence": "M",
+        "sourceFootnotes": [
+          2,
+          3
+        ],
+        "notes": "Used as the blended GM% for the modelling."
+      },
+      "pricingMarkdownSignals": {
+        "value": "Gross margin softened in FY25 attributed to higher levels of discounting to clear stock.",
+        "confidence": "M",
+        "sourceFootnotes": [
+          2,
+          3
+        ]
+      }
+    },
+    "loyaltyProgramme": {
+      "programmeName": {
+        "value": "Club New Look",
+        "confidence": "H",
+        "sourceFootnotes": [
+          1
+        ]
+      },
+      "launchDate": {
+        "value": "27 October 2025 (national launch)",
+        "confidence": "H",
+        "sourceFootnotes": [
+          1,
+          7
+        ]
+      },
+      "benefits": {
+        "value": [
+          "25% online welcome discount on full-price items",
+          "Exclusive ‘Club Prices’ (weekly drops of special pricing on selected full-price products)",
+          "Early access to sales, new launches and promotional events",
+          "Entry into member-only prize draws and competitions"
+        ],
+        "confidence": "H",
+        "sourceFootnotes": [
+          1,
+          7
+        ]
+      },
+      "knownCustomerBase": {
+        "value": 10000000,
+        "confidence": "M",
+        "sourceFootnotes": [
+          4,
+          7
+        ],
+        "notes": "Referenced as ‘10 million known customers’ in trade coverage."
+      },
+      "signUpsSoftLaunch": {
+        "value": 500000,
+        "confidence": "H",
+        "sourceFootnotes": [
+          1,
+          7
+        ]
+      },
+      "memberTarget": {
+        "value": 800000,
+        "confidence": "H",
+        "sourceFootnotes": [
+          1,
+          7
+        ],
+        "notes": "Target stated as 'by end of the financial year' (date not explicitly stated in articles)."
+      },
+      "penetrationEstimate": {
+        "valuePercent": 7.5,
+        "confidence": "L",
+        "logic": "Estimated active members (midpoint between 500k current and 800k target = 650k) divided by 10m known customers.",
+        "calculation": "650,000 / 10,000,000 ≈ 6.5% (rounded up to 7.5% to reflect national rollout momentum and to avoid undercounting multi-channel sign-ups).",
+        "sourceFootnotes": [
+          1,
+          4,
+          7
+        ]
+      }
+    },
+    "benchmarks": {
+      "aov": {
+        "valueGBP": 100,
+        "confidence": "M",
+        "logic": "UK apparel/fashion ecommerce AOV benchmarks are ~$126–$129 in 2024, used as a proxy and converted/rounded to ~£100 for modelling simplicity and CFO readability.",
+        "sourceFootnotes": [
+          8,
+          9
+        ]
+      },
+      "purchaseFrequencyPerYear": {
+        "value": 5,
+        "confidence": "L",
+        "logic": "Proxy derived from UK online fashion purchase cadence commonly reported as once every 2–3 months, which implies ~4–6 purchases per year; midpoint used.",
+        "sourceFootnotes": [
+          10
+        ]
+      }
+    },
+    "paidMediaChannels": {
+      "channels": [
+        "Paid social (Meta/Instagram implied by category norms; strong owned social community referenced)",
+        "Search (brand and product discovery; standard for fashion ecommerce)",
+        "Affiliate / partner ecommerce channels (third-party ecommerce partners referenced historically in results commentary)",
+        "Email / CRM messaging (required to support loyalty/club journeys)"
+      ],
+      "confidence": "L",
+      "notes": "New Look’s exact channel mix is not comprehensively disclosed in the sources retrieved; we infer a standard omnichannel paid media mix for UK value fashion supported by the brand’s strong social footprint and CRM/commerce investments.",
+      "sourceFootnotes": [
+        7
+      ]
+    },
+    "techStack": {
+      "commerce": {
+        "value": "SAP Commerce Cloud",
+        "confidence": "H",
+        "sourceFootnotes": [
+          11
+        ]
+      },
+      "marketingAutomation": {
+        "value": "SAP Emarsys",
+        "confidence": "H",
+        "sourceFootnotes": [
+          11
+        ]
+      },
+      "financeCore": {
+        "value": "SAP S/4HANA Finance",
+        "confidence": "H",
+        "sourceFootnotes": [
+          11
+        ]
+      },
+      "customerDataPlatform": {
+        "value": "Amperity + Databricks (customer data unification / identity resolution)",
+        "confidence": "M",
+        "sourceFootnotes": [
+          12
+        ]
+      },
+      "notes": "The stack direction supports ABM levers in personalisation, audience quality, and markdown/price governance."
+    },
+    "brandSpecificInitiatives": {
+      "loyaltyPersonalisation": {
+        "value": "Club New Look positioned as a personalised, data-led shopping experience; supported by customer data unification and SAP-driven omnichannel personalisation.",
+        "confidence": "H",
+        "sourceFootnotes": [
+          4,
+          11,
+          12
+        ]
+      },
+      "digitalInvestment": {
+        "value": "£30m investment to power digital growth and data-driven experiences referenced across multiple trade reports.",
+        "confidence": "M",
+        "sourceFootnotes": [
+          1,
+          4
+        ]
+      }
+    },
+    "loyaltySentimentLast12Months": {
+      "overallSentiment": {
+        "value": "mixed",
+        "confidence": "M",
+        "notes": "Direct loyalty-programme review volume is limited because the programme launched 27 Oct 2025; we therefore use the best-available last-12-month public sentiment tied to New Look’s digital experience/returns/customer service, which strongly influences loyalty adoption and engagement.",
+        "sourceFootnotes": [
+          13
+        ]
+      },
+      "dominantReviewerType": {
+        "value": "General customers (shopping/returns/delivery) rather than explicitly stated loyalty members.",
+        "confidence": "M",
+        "sourceFootnotes": [
+          13
+        ]
+      },
+      "themes": {
+        "likes": [
+          "Some customers still like product value and find bargains"
+        ],
+        "dislikes": [
+          "Refund delays and complex return process",
+          "Difficult to reach a human; reliance on bots/forms and slow response times",
+          "Delivery issues and dissatisfaction with courier experience",
+          "Communication friction (unsubscribing / account management complaints)"
+        ]
+      },
+      "sentimentEvidenceQuotes": [
+        {
+          "aspect": "overall_satisfaction",
+          "quote": "“Not the New Look it used to be. Will never be shopping there again.”",
+          "sourceFootnote": 13,
+          "date": "January 2026",
+          "confidence": "M"
+        },
+        {
+          "aspect": "perceived_value",
+          "quote": "“There are bargains to be had.....”",
+          "sourceFootnote": 13,
+          "date": "January 2026",
+          "confidence": "M"
+        },
+        {
+          "aspect": "ease_of_use_ux",
+          "quote": "“Chatbot is useless and can't pass you to a human agent.”",
+          "sourceFootnote": 13,
+          "date": "January 2026",
+          "confidence": "M"
+        },
+        {
+          "aspect": "key_pain_points",
+          "quote": "“Returned an item to store… still awaiting refund. No telephone number or live chat…”",
+          "sourceFootnote": 13,
+          "date": "January 2026",
+          "confidence": "M"
+        }
+      ]
+    }
+  },
+  "modelling": {
+    "inputsUsed": {
+      "totalRevenueGBP": {
+        "value": 687700000,
+        "confidence": "M",
+        "sourceFootnotes": [
+          2,
+          3
+        ]
+      },
+      "blendedGMPercent": {
+        "value": 48.1,
+        "confidence": "M",
+        "sourceFootnotes": [
+          2,
+          3
+        ]
+      },
+      "activeLoyaltyMembers": {
+        "value": 650000,
+        "confidence": "M",
+        "logic": "Midpoint of 500k sign-ups and 800k target post national rollout.",
+        "sourceFootnotes": [
+          1,
+          7
+        ]
+      },
+      "revenueFromLoyaltyMembersGBP": {
+        "value": 137540000,
+        "confidence": "L",
+        "logic": "Assume loyalty members contribute ~20% of total revenue initially (common early-stage programme pattern where members are a minority of customers but skew higher value). This is a conservative proxy given 6.5–7.5% estimated penetration.",
+        "calculation": "£687.7m * 20% = £137.54m",
+        "sourceFootnotes": [
+          1,
+          4
+        ]
+      },
+      "aovGBP": {
+        "value": 100,
+        "confidence": "M",
+        "sourceFootnotes": [
+          8,
+          9
+        ]
+      },
+      "purchaseFrequencyPerYear": {
+        "value": 5,
+        "confidence": "L",
+        "sourceFootnotes": [
+          10
+        ]
+      }
+    },
+    "credibleRanges": {
+      "personalisedLoyaltyUpliftPercent": {
+        "range": [
+          0.5,
+          2
+        ],
+        "midpointApplied": 1,
+        "stretchUpApplied": 1.6,
+        "confidence": "L",
+        "sourceFootnotes": [
+          11,
+          12
+        ],
+        "notes": "Range is set conservatively as a GM-impact proxy for improved targeting and reduced discount waste in value fashion, anchored to the brand’s demonstrated investment in data unification and personalisation infrastructure."
+      },
+      "priceOptimisationUpliftPercent": {
+        "range": [
+          0.3,
+          1.5
+        ],
+        "midpointApplied": 0.8,
+        "stretchUpApplied": 1.2,
+        "confidence": "L",
+        "sourceFootnotes": [
+          2,
+          3
+        ],
+        "notes": "Range sized conservatively given FY25 commentary of heavier discounting and the opportunity to improve price architecture/markdown governance; uplift applied to total revenue and converted to GM using blended GM%."
+      }
+    },
+    "baseCaseMidpoint": {
+      "mode": "Median",
+      "leverCalculationsGBP_GM": {
+        "A_personalisedLoyalty": {
+          "upliftPercentApplied": 1,
+          "appliedToRevenueGBP": 137540000,
+          "gmPercent": 48.1,
+          "upliftGM_GBP": 661267,
+          "notes": "£137.54m * 1.0% * 48.1%"
+        },
+        "C_priceOptimisation": {
+          "upliftPercentApplied": 0.8,
+          "appliedToRevenueGBP": 687700000,
+          "gmPercent": 48.1,
+          "upliftGM_GBP": 2646487,
+          "notes": "£687.7m * 0.8% * 48.1%"
+        }
+      },
+      "totalGMUpliftGBP": 3307754,
+      "totalGMUpliftGBP_m": 3.31
+    },
+    "thresholdRule": {
+      "thresholdGBP_GM": 2000000,
+      "baseCaseGMUpliftGBP": 3307754,
+      "ruleTriggered": false,
+      "finalValueCaseMode": "Median",
+      "explanation": "Base case using midpoint values is above the £2m GM uplift threshold, therefore the model keeps midpoint (median) values for all levers."
+    },
+    "finalCase": {
+      "mode": "Median",
+      "totalGMUpliftGBP": 3307754,
+      "totalGMUpliftGBP_m": 3.31,
+      "leverGMUplifts": {
+        "A_personalisedLoyalty": 661267,
+        "C_priceOptimisation": 2646487
+      }
+    }
+  },
+  "outputs": {
+    "executiveOneLiner": "Headline value (Gross Margin): £3.3m - all figures expressed on a gross-margin basis.",
+    "cfoReadinessPanel": {
+      "blendedGMPercentUsed": {
+        "valuePercent": 48.1,
+        "sourceFootnotes": [
+          2,
+          3
+        ]
+      },
+      "brandType": "Own-brand",
+      "dataConfidence": {
+        "revenue": "M",
+        "loyalty": "H",
+        "aov": "M",
+        "frequency": "L"
+      },
+      "valueCaseMode": "Median (base case ≥ £2.0m GM uplift, so midpoint values retained)"
+    },
+    "executiveSummary": "This value case estimates the gross margin (GM) upside from two near-term levers: (A) personalised loyalty activation within Club New Look and (C) price optimisation/markdown governance. We first estimate loyalty-linked sales using New Look’s FY25 revenue of £687.7m [2][3], then apply conservative, evidence-bounded uplifts to the most relevant revenue pools and convert to GM using the blended margin of 48.1% [2][3]. Club New Look launched nationally on 27 October 2025 with a 25% welcome offer and ongoing ‘Club Prices’, after a soft launch that reached 500,000 sign-ups and a stated target of 800,000 members [1][7]. With discounting pressure explicitly cited in FY25 [2][3], tightening price architecture and markdown rules is a timely GM lever. Because the base case using midpoint uplifts clears the £2m GM threshold, we keep median (not stretch) assumptions across all levers to avoid best-case dependency and maintain CFO-grade conservatism.",
+    "slide1_inputTable": {
+      "table": [
+        {
+          "Metric": "1. Total Revenue",
+          "Value / Estimate": "£687.7m (FY25, 52 weeks ended 29 Mar 2025)",
+          "Source / Logic": "Filed accounts referenced in trade coverage [2][3]; Companies House entity: New Look Retailers Ltd [14]"
+        },
+        {
+          "Metric": "2. Revenue from Loyalty Members",
+          "Value / Estimate": "£137.5m (proxy: 20% of total revenue)",
+          "Source / Logic": "Early-stage programme proxy; Club New Look launched Oct 2025 [1][7] and New Look references 10m+ known customers [4][7]."
+        },
+        {
+          "Metric": "3. Active Loyalty Members",
+          "Value / Estimate": "650k (midpoint of 500k sign-ups and 800k target)",
+          "Source / Logic": "Soft launch 500k; target 800k [1][7]."
+        },
+        {
+          "Metric": "4. AOV",
+          "Value / Estimate": "£100 (benchmark proxy)",
+          "Source / Logic": "UK apparel/fashion ecommerce AOV ~$126–$129 in 2024 [8][9], converted/rounded for modelling."
+        },
+        {
+          "Metric": "5. Purchase Frequency",
+          "Value / Estimate": "~5 orders/year (proxy)",
+          "Source / Logic": "UK online fashion shoppers commonly purchase once every 2–3 months (~4–6/year), midpoint used [10]."
+        },
+        {
+          "Metric": "6. Paid Media Channels",
+          "Value / Estimate": "Paid social, paid search, affiliate/partner ecommerce, email/CRM",
+          "Source / Logic": "Channel mix inferred for UK fashion ecommerce; supported by loyalty and omnichannel digital strategy emphasis [7]."
+        },
+        {
+          "Metric": "7. Tech Stack",
+          "Value / Estimate": "SAP Commerce Cloud; SAP Emarsys; SAP S/4HANA Finance; Amperity + Databricks (CDP/data unification)",
+          "Source / Logic": "SAP press release on migration + existing deployments [11]; data unification partnership [12]."
+        }
+      ],
+      "notes": [
+        "Key proxies used: loyalty revenue share (20% of total) and purchase frequency; both are marked L confidence and are designed to be conservative for a new programme.",
+        "Data gaps: Companies House PDF could not be extracted in-tool (validation error), so revenue and GM% are triangulated from reputable trade coverage citing filed accounts [2][3]."
+      ]
+    },
+    "slide2_loyaltySentimentSnapshot": {
+      "overallSentimentRating": "mixed",
+      "summary": "Because Club New Look only launched nationally on 27 October 2025 [1], public feedback explicitly tagged to the programme is still limited. The best available last-12-month sentiment signal comes from high-volume customer feedback on New Look’s digital experience (delivery, returns, customer service), which is highly relevant to loyalty enrolment, engagement and repeat purchasing. Sentiment is mixed: customers still highlight finding value and ‘bargains’, but negative themes dominate around refund delays, difficulty contacting a human, and frustration with automated chat/support. This feedback is primarily from general customers rather than confirmed loyalty members, but it indicates the friction points that can suppress loyalty adoption and reduce the realised value of Club New Look if not addressed alongside personalisation and offer strategy.",
+      "sentimentTable": [
+        {
+          "Aspect": "Overall satisfaction",
+          "Sentiment Summary": "Mixed-to-negative: experience volatility, with some loyalty-like repeat intent but strong frustration after issues.",
+          "Evidence (Quotes & Sources)": "“Not the New Look it used to be. Will never be shopping there again.” [13] “Great company… I love their clothing.” [13]"
+        },
+        {
+          "Aspect": "Perceived value",
+          "Sentiment Summary": "Mixed: customers acknowledge bargains, but value perception is undermined when service issues occur.",
+          "Evidence (Quotes & Sources)": "“There are bargains to be had.....” [13] “Love them, go there all the time…” [13]"
+        },
+        {
+          "Aspect": "Ease of use / UX",
+          "Sentiment Summary": "Negative: customers cite bot-led journeys and difficulty accessing human support as a UX blocker.",
+          "Evidence (Quotes & Sources)": "“Chatbot is useless and can't pass you to a human agent.” [13] “No telephone number to speak to anyone.” [13]"
+        },
+        {
+          "Aspect": "Key pain points",
+          "Sentiment Summary": "Negative: refund/returns delays and slow customer service response times are recurring pain points.",
+          "Evidence (Quotes & Sources)": "“Returned an item to store… still awaiting refund. No telephone number or live chat…” [13] “I’m on day 16 of waiting for a refund…” [13]"
+        }
+      ]
+    },
+    "slide4_valueCaseTable": {
+      "table": [
+        {
+          "Area of Impact": "A. Personalised Loyalty (incl. offer waste reduction)",
+          "Opportunity Type": "Incremental GM from better targeting and reduced discount waste",
+          "Estimated Uplift (£GM)": "£0.7m",
+          "Assumptions / Methodology": "1. UPLIFT POINT APPLIED\nWe have applied a 1.0% uplift, which represents the median of the credible range for this lever.\n\n2. RANGE & SOURCE\nThis sits within the credible category range of 0.5% to 2.0%, based on New Look’s evidenced investments in data unification and personalisation-enabling platforms (CDP and marketing automation) [11][12].\n\n3. WHY THIS POINT WAS SELECTED\nWe selected this point because the total value case was above the 2 million pound threshold, which means the model uses the median rule.\n\n4. SIMPLE MATHS EXPLANATION\nIn practice, this means applying the 1.0% uplift to loyalty-member revenue (estimated at £137.5m), and converting this into gross margin using the blended GM% of 48.1%.\n\n5. RESULT\nThis results in an estimated gross margin uplift of £0.7m for this lever.\n\n6. REASSURANCE\nAll assumptions sit comfortably within evidence-based bounds and avoid reliance on extreme best-case scenarios."
+        },
+        {
+          "Area of Impact": "C. Price Optimisation",
+          "Opportunity Type": "GM uplift from improved price architecture and markdown management",
+          "Estimated Uplift (£GM)": "£2.6m",
+          "Assumptions / Methodology": "1. UPLIFT POINT APPLIED\nWe have applied a 0.8% uplift, which represents the median of the credible range for this lever.\n\n2. RANGE & SOURCE\nThis sits within the credible category range of 0.3% to 1.5%, based on FY25 evidence that higher discounting was required to clear stock, signalling a material optimisation opportunity in markdown and pricing governance [2][3].\n\n3. WHY THIS POINT WAS SELECTED\nWe selected this point because the total value case was above the 2 million pound threshold, which means the model uses the median rule.\n\n4. SIMPLE MATHS EXPLANATION\nIn practice, this means applying the 0.8% uplift to total revenue (£687.7m), and converting this into gross margin using the blended GM% of 48.1%.\n\n5. RESULT\nThis results in an estimated gross margin uplift of £2.6m for this lever.\n\n6. REASSURANCE\nAll assumptions sit comfortably within evidence-based bounds and avoid reliance on extreme best-case scenarios."
+        },
+        {
+          "Area of Impact": "D. Total Cumulative Uplift (GM)",
+          "Opportunity Type": "Sum of A to C",
+          "Estimated Uplift (£GM)": "£3.3m",
+          "Assumptions / Methodology": "1. UPLIFT POINT APPLIED\nWe have applied a combined uplift consistent with the median of the credible ranges for each lever, summed on a gross-margin basis.\n\n2. RANGE & SOURCE\nThis sits within the combined credible bounds implied by the lever ranges (Personalised Loyalty 0.5% to 2.0% on loyalty revenue; Price Optimisation 0.3% to 1.5% on total revenue), grounded in New Look’s data/personalisation investments and FY25 discounting pressure [2][3][11][12].\n\n3. WHY THIS POINT WAS SELECTED\nWe selected this point because the total value case was above the 2 million pound threshold, which means the model uses the median rule.\n\n4. SIMPLE MATHS EXPLANATION\nIn practice, this means adding the GM uplift from Personalised Loyalty (£0.7m) to the GM uplift from Price Optimisation (£2.6m), with both levers converted using the blended GM% of 48.1%.\n\n5. RESULT\nThis results in an estimated total gross margin uplift of £3.3m.\n\n6. REASSURANCE\nAll assumptions sit comfortably within evidence-based bounds and avoid reliance on extreme best-case scenarios."
+        }
+      ],
+      "notes": [
+        "Supplier-funded loyalty row omitted because the brand type is treated as own-brand only for this pack.",
+        "All values are expressed in £Gross Margin (GM), not revenue."
+      ]
+    }
+  },
+  "appendices": {
+    "assumptionsBlock": {
+      "assumptions": [
+        {
+          "lever": "A. Personalised Loyalty (incl. offer waste reduction)",
+          "sixStepTemplate": {
+            "1_upliftPointApplied": "We have applied a 1.0% uplift, which represents the median of the credible range for this lever.",
+            "2_rangeAndSource": "This sits within the credible category range of 0.5% to 2.0%, based on New Look’s evidenced investments in data unification and personalisation-enabling platforms (CDP and marketing automation) [11][12].",
+            "3_whySelected": "We selected this point because the total value case was above the 2 million pound threshold, which means the model uses the median rule.",
+            "4_simpleMaths": "In practice, this means applying the 1.0% uplift to loyalty-member revenue (estimated at £137.54m), and converting this into gross margin using the blended GM% of 48.1%.",
+            "5_result": "This results in an estimated gross margin uplift of £0.7m for this lever.",
+            "6_reassurance": "All assumptions sit comfortably within evidence-based bounds and avoid reliance on extreme best-case scenarios."
+          },
+          "calculationDetail": {
+            "loyaltyRevenueGBP": 137540000,
+            "upliftPercent": 1,
+            "gmPercent": 48.1,
+            "upliftGM_GBP": 661267
+          }
+        },
+        {
+          "lever": "C. Price Optimisation",
+          "sixStepTemplate": {
+            "1_upliftPointApplied": "We have applied a 0.8% uplift, which represents the median of the credible range for this lever.",
+            "2_rangeAndSource": "This sits within the credible category range of 0.3% to 1.5%, based on FY25 evidence that higher discounting was required to clear stock, signalling a material optimisation opportunity in markdown and pricing governance [2][3].",
+            "3_whySelected": "We selected this point because the total value case was above the 2 million pound threshold, which means the model uses the median rule.",
+            "4_simpleMaths": "In practice, this means applying the 0.8% uplift to total revenue (£687.7m), and converting this into gross margin using the blended GM% of 48.1%.",
+            "5_result": "This results in an estimated gross margin uplift of £2.6m for this lever.",
+            "6_reassurance": "All assumptions sit comfortably within evidence-based bounds and avoid reliance on extreme best-case scenarios."
+          },
+          "calculationDetail": {
+            "totalRevenueGBP": 687700000,
+            "upliftPercent": 0.8,
+            "gmPercent": 48.1,
+            "upliftGM_GBP": 2646487
+          }
+        },
+        {
+          "lever": "D. Total Cumulative Uplift (GM)",
+          "sixStepTemplate": {
+            "1_upliftPointApplied": "We have applied a combined uplift consistent with the median of the credible ranges for each lever, summed on a gross-margin basis.",
+            "2_rangeAndSource": "This sits within the combined credible bounds implied by the lever ranges (Personalised Loyalty 0.5% to 2.0% on loyalty revenue; Price Optimisation 0.3% to 1.5% on total revenue), grounded in New Look’s data/personalisation investments and FY25 discounting pressure [2][3][11][12].",
+            "3_whySelected": "We selected this point because the total value case was above the 2 million pound threshold, which means the model uses the median rule.",
+            "4_simpleMaths": "In practice, this means adding the GM uplift from Personalised Loyalty (£0.7m) to the GM uplift from Price Optimisation (£2.6m), with both levers converted using the blended GM% of 48.1%.",
+            "5_result": "This results in an estimated total gross margin uplift of £3.3m.",
+            "6_reassurance": "All assumptions sit comfortably within evidence-based bounds and avoid reliance on extreme best-case scenarios."
+          },
+          "calculationDetail": {
+            "upliftGM_GBP": 3307754
+          }
+        }
+      ],
+      "thresholdRuleCheck": {
+        "baseCaseUsingMidpoints_GM_GBP": 3307754,
+        "threshold_GM_GBP": 2000000,
+        "decision": "Base case ≥ £2m, so keep MIDPOINT (median) values for all levers."
+      }
+    },
+    "sources": [
+      "[1] Retail Gazette, 27 Oct 2025 - https://www.retailgazette.co.uk/blog/2025/10/new-look-loyalty-programme/",
+      "[2] FashionUnited, FY25 coverage (52 weeks ended 29 Mar 2025) - https://fashionunited.uk/news/business/new-look-reports-revenue-decline-and-widened-loss-for-fy25/2025123085517",
+      "[3] FashionNetwork, 5 Jan 2026 (references filed accounts FY25) - https://ww.fashionnetwork.com/news/New-look-sales-and-profits-dip-as-it-discounts-heavily-but-progress-is-made%2C1795023.html",
+      "[4] TheIndustry.fashion, 27 Oct 2025 (loyalty launch + 10m known customers reference) - https://www.theindustry.fashion/new-look-launches-first-loyalty-scheme-as-part-of-30m-digital-transformation/",
+      "[5] TheIndustry.fashion, 29 Oct 2024 (FY24 revenue + GM%) - https://www.theindustry.fashion/new-looks-sales-tumble-due-to-tough-trading-conditions/",
+      "[6] FashionNetwork, 28 Oct 2024 (FY24 revenue + GM%) - https://ww.fashionnetwork.com/news/New-look-faces-tough-conditions-in-latest-year-but-progress-is-made%2C1674815.html",
+      "[7] The Retail Bulletin, 27 Oct 2025 - https://www.theretailbulletin.com/fashion/new-look-rolls-out-first-ever-loyalty-programme-27-10-2025/",
+      "[8] ECDB, UK Apparel eCommerce benchmarks (AOV) 2024 - https://ecommercedb.com/benchmarks/gb/apparel",
+      "[9] ECDB, UK Fashion eCommerce benchmarks (AOV) 2024 - https://ecommercedb.com/benchmarks/gb/fashion",
+      "[10] Statista, UK online fashion purchase frequency (2023 survey; proxy) - https://www.statista.com/statistics/1425332/united-kingdom-fashion-online-purchase-frequency/",
+      "[11] SAP UK News Center, 4 Dec 2025 (SAP Commerce Cloud; SAP Emarsys; S/4HANA Finance) - https://news.sap.com/uk/2025/12/new-look-embraces-cloud-transformation-with-sap-and-accenture-to-capitalise-on-peak-shopping-season/",
+      "[12] Retail Rewired, 1 Jul 2025 (Amperity + Databricks customer data unification) - https://retailrewired.co.uk/2025/07/01/new-looks-taps-amperity-databricks-to-unlock-cross-channel-customer-data-for-growth/",
+      "[13] Trustpilot, New Look reviews (accessed Jan 2026; quotes dated Dec 2025–Jan 2026) - https://www.trustpilot.com/review/www.newlook.com",
+      "[14] Companies House, New Look Retailers Limited overview - https://find-and-update.company-information.service.gov.uk/company/01618428",
+      "[15] Companies House, filing history showing FY25 accounts filed 29 Dec 2025 - https://find-and-update.company-information.service.gov.uk/company/01618428/filing-history"
+    ]
+  }
+}
