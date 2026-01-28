@@ -152,6 +152,10 @@ const fmt = (value: unknown): string => {
 // Extract readable text from an object (looks for common text fields)
 const extractText = (obj: unknown): string => {
   if (!isObject(obj)) return String(obj ?? "");
+  // Prioritize value+unit combo (e.g., {value: 13816.8, unit: "£m..."} → "13,816.8 £m...")
+  if (typeof obj.value === "number" && typeof obj.unit === "string") {
+    return `${formatNumber(obj.value)} ${obj.unit}`;
+  }
   // Common text field names - include currency/percent variants
   const textKeys = [
     "quote", "text", "description", "value", "valueGBP", "valueUSD", "valueEUR", "valuePercent",
@@ -162,10 +166,6 @@ const extractText = (obj: unknown): string => {
     if (typeof val === "string" && val.length > 0) return val;
     // Also handle numeric values for currency fields
     if (typeof val === "number" && key.startsWith("value")) return String(val);
-  }
-  // If has value + unit, combine them
-  if (typeof obj.value === "number" && typeof obj.unit === "string") {
-    return `${formatNumber(obj.value)} ${obj.unit}`;
   }
   // Fallback: stringify first few keys
   const entries = Object.entries(obj).slice(0, 3);
@@ -457,9 +457,17 @@ const renderResearchFindings = (research: LooseData) => {
     };
     
     // Try GBP paths first (e.g., New Look: financials.latestFiledRevenue.valueGBP)
+    // Also handle M&S synthetic financials where totalRevenue.value is in £m and unit contains "£m"
+    const totalRevObj = $obj(financials, "totalRevenue");
+    const totalRevUnit = $str(totalRevObj, "unit");
+    if ($num(totalRevObj, "value") > 0 && (totalRevUnit.includes("£m") || totalRevUnit.includes("£M"))) {
+      return `£${formatNumber($num(totalRevObj, "value"))}m`;
+    }
     const gbpPaths = [
       () => $num(finData, "latestFiledRevenue", "valueGBP"),
       () => $num(financials, "latestFiledRevenue", "valueGBP"),
+      () => $num(finData, "latestFiledAnnualRevenue", "valueGBP"),
+      () => $num(financials, "latestFiledAnnualRevenue", "valueGBP"),
       () => $num(finData, "revenue", "valueGBP"),
       () => $num(finData, "totalRevenueGBP"),
     ];
@@ -516,7 +524,8 @@ const renderResearchFindings = (research: LooseData) => {
     
     // Try nested valuePercent paths (e.g., New Look: blendedGrossMarginPercent.valuePercent)
     const nestedValuePercent = $num(finData, "blendedGrossMarginPercent", "valuePercent") ||
-                               $num(financials, "blendedGrossMarginPercent", "valuePercent");
+                               $num(financials, "blendedGrossMarginPercent", "valuePercent") ||
+                               $num(financials, "blendedGMPercentUsed", "value");
     if (nestedValuePercent > 0) return formatPercentage(nestedValuePercent);
     
     // Try direct paths
@@ -568,16 +577,30 @@ const renderResearchFindings = (research: LooseData) => {
           ? $str(launchEvolution, "initialLaunch", "description") || extractText(launchEvolution)
           : "";
 
-  // Benchmarks - handle different structures (including GBP values)
-  const aovData = $anyObj(benchmarks, "aov", "AOV");
-  const aovVal = $anyNum(aovData, "estimateUsd", "valueUSD", "valueGBP", "value", "estimatedAovUsd") || 
+  // Benchmarks - handle different structures (including GBP values, descriptive text, and array formats)
+  const aovData = $anyObj(benchmarks, "aov", "AOV", "categoryAOV_benchmark", "categoryAOVBenchmark", "categoryAovBenchmark");
+  const aovVal = $anyNum(aovData, "estimateUsd", "valueUSD", "valueGBP", "value", "estimatedAovUsd") ||
                  $num(aovData, "brandOrCategoryAOV", "value");
   // Determine if this is GBP data
   const aovIsGBP = "valueGBP" in aovData || Object.keys(benchmarks).some(k => k.toLowerCase().includes("gbp"));
-  
-  const freqData = $anyObj(benchmarks, "purchaseFrequency", "purchaseFrequencyPerYear");
-  const freqVal = $anyNum(freqData, "transactionsPerActiveCustomerPerYear", "valuePerYear", "estimatedFrequencyPerYear", "frequency", "value") || 
+  // Fallback: descriptive string (from normalization, single-object value field, or array format)
+  const aovBenchmarksArr = $arr(benchmarks, "aovBenchmarks");
+  const aovDescription = !aovVal
+    ? ($anyStr(aovData, "value") ||
+       $anyStr(research, "aovBenchmark") ||
+       (aovBenchmarksArr.length > 0 ? $anyStr(aovBenchmarksArr[0], "value", "metric") : ""))
+    : "";
+
+  const freqData = $anyObj(benchmarks, "purchaseFrequency", "purchaseFrequencyPerYear", "purchaseFrequency_benchmark", "purchaseFrequencyBenchmark");
+  const freqVal = $anyNum(freqData, "transactionsPerActiveCustomerPerYear", "valuePerYear", "estimatedFrequencyPerYear", "frequency", "value") ||
                   $num(freqData, "estimatedAnnualPurchaseFrequencyPerActiveCustomer", "value");
+  // Fallback: descriptive text for frequency benchmark (including array format)
+  const freqBenchmarksArr = $arr(benchmarks, "purchaseFrequencyBenchmarks");
+  const freqDescription = !freqVal
+    ? ($anyStr(freqData, "value") ||
+       $anyStr(research, "purchaseFrequencyBenchmark") ||
+       (freqBenchmarksArr.length > 0 ? $anyStr(freqBenchmarksArr[0], "value", "metric") : ""))
+    : "";
 
   // Sentiment table - handle different field names (matches UI: aspectDisplay, aspectDisplayName, aspect)
   const sentimentTable = $arr(sentiment, "sentimentTable");
@@ -590,13 +613,16 @@ const renderResearchFindings = (research: LooseData) => {
 
     // Evidence can be array of strings, array of objects with quote property, or a string
     // Match UI: tries "evidence" first, then "evidenceQuotes" for legacy compatibility
-    // Also handle spaced key "Evidence (Quotes & Sources)"
+    // Also handle "evidenceQuotesAndSources" (M&S shape) and spaced key "Evidence (Quotes & Sources)"
     let evidenceRaw = $arr(row, "evidence");
     if (evidenceRaw.length === 0) {
       evidenceRaw = $arr(row, "evidenceQuotes");
     }
-    // If still empty, check for string format in spaced key
-    const evidenceStr = $anyStr(row, "Evidence (Quotes & Sources)");
+    if (evidenceRaw.length === 0) {
+      evidenceRaw = $arr(row, "evidenceQuotesAndSources");
+    }
+    // If still empty, check for string format
+    const evidenceStr = $anyStr(row, "evidenceQuotesAndSources", "Evidence (Quotes & Sources)");
     
     let evidenceItems: string[] = [];
     if (evidenceRaw.length > 0) {
@@ -664,7 +690,7 @@ const renderResearchFindings = (research: LooseData) => {
         <div class="panel">
           <dl class="kv">
             <div><dt>Fiscal Year</dt><dd>${fmt(fiscalYear)}</dd></div>
-            <div><dt>Total Revenue (USD)</dt><dd>${fmt(revenueVal)}</dd></div>
+            <div><dt>Total Revenue</dt><dd>${fmt(revenueVal)}</dd></div>
             <div><dt>Gross Margin %</dt><dd>${fmt(gmPercent)}</dd></div>
           </dl>
         </div>
@@ -686,13 +712,13 @@ const renderResearchFindings = (research: LooseData) => {
           <div class="panel">
             <h4>Average Order Value</h4>
             <dl class="kv">
-              <div><dt>AOV</dt><dd>${aovVal ? fmt(`${aovIsGBP ? "£" : "$"}${formatNumber(aovVal)}`) : "N/A"}</dd></div>
+              <div><dt>AOV</dt><dd>${aovVal ? fmt(`${aovIsGBP ? "£" : "$"}${formatNumber(aovVal)}`) : fmt(aovDescription || "N/A")}</dd></div>
             </dl>
           </div>
           <div class="panel">
             <h4>Purchase Frequency</h4>
             <dl class="kv">
-              <div><dt>Frequency</dt><dd>${freqVal ? fmt(`${formatNumber(freqVal)} per year`) : "N/A"}</dd></div>
+              <div><dt>Frequency</dt><dd>${freqVal ? fmt(`${formatNumber(freqVal)} per year`) : fmt(freqDescription || "N/A")}</dd></div>
             </dl>
           </div>
         </div>
@@ -904,14 +930,23 @@ const renderModelling = (modelling: LooseData, appendices?: LooseData) => {
         reason: $str(modelling, "modeRationale"),
       };
     }
+    // Try thresholdRule.valueCaseModeApplied (M&S shape)
+    const thresholdRule = $obj(modelling, "thresholdRule");
+    const thresholdMode = $anyStr(thresholdRule, "valueCaseModeApplied", "mode");
+    if (thresholdMode) {
+      return {
+        valueCaseMode: thresholdMode,
+        reason: $anyStr(thresholdRule, "ruleCompliance", "baseCaseVsThreshold", "rationale"),
+      };
+    }
     return null;
   };
 
   const modeApplied = getModeApplied();
 
   // Match UI: multiple sources for key inputs
-  const keyInputs = $anyObj(modelling, "keyInputs", "setup");
-  const upliftRanges = $obj(modelling, "upliftRanges");
+  const keyInputs = $anyObj(modelling, "keyInputs", "setup", "baseInputs");
+  const upliftRanges = $anyObj(modelling, "upliftRanges", "credibleRanges");
   const levers = $obj(modelling, "levers");
   const baseCaseMidpoints = $anyObj(modelling, "baseCaseUsingMidpoints") ||
                             $obj(modelling, "calculations", "baseCaseUsingMidpoints");
@@ -921,8 +956,12 @@ const renderModelling = (modelling: LooseData, appendices?: LooseData) => {
   const scopeAndBaseAssumptions = $obj(modelling, "scopeAndBaseAssumptions");
   const upliftRangesAndChosenPoints = $obj(modelling, "upliftRangesAndChosenPoints");
   const detailedCalculations = $obj(modelling, "detailedCalculations");
-  const thresholdRuleApplication = $obj(modelling, "thresholdRuleApplication");
-  const finalUpliftUsingStretchUp = $obj(modelling, "finalUpliftUsingStretchUp");
+  const thresholdRuleApplication = $anyObj(modelling, "thresholdRuleApplication", "thresholdRule");
+  const finalUpliftUsingStretchUp = $anyObj(modelling, "finalUpliftUsingStretchUp", "stretchUpApplied");
+  // M&S-shape: additional modelling sections
+  const midpointsApplied = $obj(modelling, "midpointsApplied");
+  const baseCaseCalcMidpoint = $anyObj(modelling, "baseCaseCalculation_midpoint", "baseCaseCalculationMidpoint");
+  const finalValueCaseMidpoint = $anyObj(modelling, "finalValueCase_midpoint", "finalValueCaseMidpoint");
 
   // Legacy fields
   const assumptions = $anyObj(modelling, "assumptions", "baseAssumptions");
@@ -988,12 +1027,23 @@ const renderModelling = (modelling: LooseData, appendices?: LooseData) => {
     `;
   }
 
-  // Base Case Calculations (matches UI)
-  if (Object.keys(baseCaseMidpoints).length > 0) {
+  // Midpoints Applied (M&S shape)
+  if (Object.keys(midpointsApplied).length > 0) {
+    contentHtml += `
+      <div class="panel">
+        <h3>Midpoints Applied</h3>
+        ${renderKV(midpointsApplied)}
+      </div>
+    `;
+  }
+
+  // Base Case Calculations (matches UI) - also covers baseCaseCalculation_midpoint (M&S shape)
+  const baseCaseToRender = Object.keys(baseCaseMidpoints).length > 0 ? baseCaseMidpoints : baseCaseCalcMidpoint;
+  if (Object.keys(baseCaseToRender).length > 0) {
     contentHtml += `
       <div class="panel">
         <h3>Base Case Calculations (Midpoints)</h3>
-        ${renderKV(baseCaseMidpoints)}
+        ${renderKV(baseCaseToRender)}
       </div>
     `;
   }
@@ -1014,6 +1064,16 @@ const renderModelling = (modelling: LooseData, appendices?: LooseData) => {
       <div class="panel highlight-panel">
         <h3>Final GM Uplifts</h3>
         ${renderKV(finalUpliftsGM)}
+      </div>
+    `;
+  }
+
+  // Final Value Case Midpoint (M&S shape)
+  if (Object.keys(finalValueCaseMidpoint).length > 0) {
+    contentHtml += `
+      <div class="panel highlight-panel">
+        <h3>Final Value Case (Midpoint)</h3>
+        ${renderKV(finalValueCaseMidpoint)}
       </div>
     `;
   }

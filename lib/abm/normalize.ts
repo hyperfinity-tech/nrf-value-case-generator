@@ -3,6 +3,27 @@ import type { AbmPackOutput } from "@/app/(chat)/api/abm-pack/schema";
 type LooseObj = Record<string, unknown>;
 
 /**
+ * Convert a camelCase/snake_case key to a readable title-case label.
+ * e.g. "personalisedLoyalty" → "Personalised Loyalty"
+ *      "blendedGMPercentUsed" → "Blended GM Percent Used"
+ *      "totalGMUplift_£m" → "Total GM Uplift £m"
+ */
+function formatKeyAsLabel(key: string): string {
+  return key
+    // Insert space between consecutive uppercase block and following camelCase word
+    // e.g. "GMPercent" → "GM Percent"
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    // Insert space between lowercase/digit and uppercase
+    // e.g. "blendedGM" → "blended GM", "price3X" → "price 3X"
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    // Replace underscores with spaces
+    .replace(/_/g, " ")
+    .trim()
+    // Capitalise the first letter of each word
+    .replace(/\b[a-z]/g, (c) => c.toUpperCase());
+}
+
+/**
  * Check if a value is a plain object (not null, not array)
  */
 function isObject(val: unknown): val is LooseObj {
@@ -160,14 +181,29 @@ function normalizeResearch(raw: unknown): LooseObj {
   // Benchmarks
   const benchmarks = raw.benchmarks as LooseObj | undefined;
   if (isObject(benchmarks)) {
-    const aov = benchmarks.aov ?? benchmarks.AOV;
-    const aovVal = extractNumber(aov);
-    result.aovBenchmark = aovVal > 0 ? `£${aovVal}` : extractString(aov);
-    
-    const freq = benchmarks.purchaseFrequencyPerYear ?? benchmarks.purchaseFrequency;
-    const freqVal = extractNumber(freq);
-    result.purchaseFrequencyBenchmark = freqVal > 0 ? `${freqVal} per year` : extractString(freq);
-    
+    // AOV: single object or array of benchmark objects
+    const aov = benchmarks.aov ?? benchmarks.AOV ?? benchmarks.categoryAOV_benchmark ?? benchmarks.categoryAovBenchmark;
+    const aovArr = benchmarks.aovBenchmarks;
+    if (aov) {
+      const aovVal = extractNumber(aov);
+      result.aovBenchmark = aovVal > 0 ? `£${aovVal}` : extractString(aov);
+    } else if (Array.isArray(aovArr) && aovArr.length > 0) {
+      // Array format: take the descriptive value from first entry
+      const first = aovArr[0] as LooseObj;
+      result.aovBenchmark = isObject(first) ? extractString(first.value ?? first) : extractString(first);
+    }
+
+    // Frequency: single object or array of benchmark objects
+    const freq = benchmarks.purchaseFrequencyPerYear ?? benchmarks.purchaseFrequency ?? benchmarks.purchaseFrequency_benchmark ?? benchmarks.purchaseFrequencyBenchmark;
+    const freqArr = benchmarks.purchaseFrequencyBenchmarks;
+    if (freq) {
+      const freqVal = extractNumber(freq);
+      result.purchaseFrequencyBenchmark = freqVal > 0 ? `${freqVal} per year` : extractString(freq);
+    } else if (Array.isArray(freqArr) && freqArr.length > 0) {
+      const first = freqArr[0] as LooseObj;
+      result.purchaseFrequencyBenchmark = isObject(first) ? extractString(first.value ?? first) : extractString(first);
+    }
+
     // Keep for renderers
     result.benchmarks = benchmarks;
   }
@@ -314,14 +350,19 @@ function normalizeModelling(raw: unknown): LooseObj {
   // Extract mode applied
   const finalMode = raw.finalCase ?? raw.thresholdRule;
   if (isObject(finalMode)) {
-    result.modeApplied = extractString(finalMode.finalValueCaseMode ?? finalMode.mode) as "median" | "stretch_up" || "median";
-    result.modeRationale = extractString(finalMode.explanation ?? finalMode.rationale);
+    result.modeApplied = extractString(finalMode.finalValueCaseMode ?? finalMode.valueCaseModeApplied ?? finalMode.mode) as "median" | "stretch_up" || "median";
+    result.modeRationale = extractString(finalMode.explanation ?? finalMode.rationale ?? finalMode.ruleCompliance);
   }
-  
-  // Base case GM uplift
-  const baseCase = raw.baseCaseMidpoint ?? raw.baseCase;
+
+  // Base case GM uplift - check multiple key patterns
+  const baseCase = raw.baseCaseMidpoint ?? raw.baseCase ?? raw["baseCaseCalculation_midpoint"] ?? raw.baseCaseCalculationMidpoint;
   if (isObject(baseCase)) {
-    const gmVal = extractNumber(baseCase.totalGMUpliftGBP_m ?? baseCase.totalGMUpliftUSD_m ?? baseCase.totalGMUpliftMillions);
+    const gmVal = extractNumber(
+      baseCase.totalGMUpliftGBP_m ??
+      baseCase["totalGMUplift_£m"] ??
+      baseCase.totalGMUpliftUSD_m ??
+      baseCase.totalGMUpliftMillions
+    );
     result.baseCaseGMUpliftMillions = gmVal;
   }
   
@@ -442,8 +483,8 @@ function normalizeSentimentTable(raw: unknown): LooseObj[] {
     
     const aspect = extractString(rowObj.Aspect ?? rowObj.aspect);
     
-    // Parse evidence from "Evidence (Quotes & Sources)" column
-    const evidenceRaw = rowObj["Evidence (Quotes & Sources)"] ?? rowObj.evidence;
+    // Parse evidence from various key names
+    const evidenceRaw = rowObj["Evidence (Quotes & Sources)"] ?? rowObj.evidenceQuotesAndSources ?? rowObj.evidence;
     let evidence: LooseObj[] = [];
     
     if (typeof evidenceRaw === "string" && evidenceRaw.length > 0) {
@@ -561,6 +602,36 @@ export function normalizeAbmPackOutput(data: AbmPackOutput): AbmPackOutput {
   const raw: LooseObj = JSON.parse(JSON.stringify(data));
 
   const research = normalizeResearch(raw.research);
+
+  // If research.financials is missing, synthesize from modelling.baseInputs
+  const modRaw = raw.modelling as LooseObj | undefined;
+  if (isObject(modRaw)) {
+    const baseInputs = modRaw.baseInputs as LooseObj | undefined;
+    if (isObject(baseInputs) && !isObject((raw.research as LooseObj | undefined)?.financials)) {
+      const revObj = baseInputs.totalRevenue as LooseObj | undefined;
+      if (isObject(revObj) && typeof revObj.value === "number") {
+        const revVal = revObj.value as number;
+        const revUnit = typeof revObj.unit === "string" ? revObj.unit : "";
+        // Format revenue: if unit contains "£m", value is already in millions
+        const formatted = revUnit.includes("£m") || revUnit.includes("£M")
+          ? `£${revVal.toLocaleString("en-GB", { maximumFractionDigits: 1 })}m`
+          : revVal >= 1_000_000
+            ? `£${(revVal / 1_000_000).toFixed(1)}m`
+            : `£${revVal}`;
+        research.latestAnnualRevenue = formatted;
+      }
+      const gmObj = baseInputs.blendedGMPercentUsed as LooseObj | undefined;
+      if (isObject(gmObj) && typeof gmObj.value === "number") {
+        research.blendedGrossMarginPercent = gmObj.value as number;
+      }
+      // Build a synthetic financials object so renderers can find it
+      research.financials = {
+        totalRevenue: baseInputs.totalRevenue,
+        blendedGMPercentUsed: baseInputs.blendedGMPercentUsed,
+      };
+    }
+  }
+
   const outputs = normalizeOutputs(raw.outputs);
   
   // Merge sentiment data from outputs into research if research version is incomplete
@@ -604,16 +675,97 @@ export function normalizeAbmPackOutput(data: AbmPackOutput): AbmPackOutput {
         sentimentTable: tableToUse,
       };
     } else {
-      // Just copy the narrative if missing
+      // Copy any missing fields from outputs into research sentiment
       research.loyaltySentiment = {
         ...researchSentiment,
+        overallSentimentRating: researchSentiment.overallSentimentRating || outputSentiment.overallSentimentRating,
         summaryNarrative: researchSentiment.summaryNarrative || outputSentiment.summaryNarrative,
+        feedbackDominatedBy: researchSentiment.feedbackDominatedBy || outputSentiment.feedbackDominatedBy,
       };
     }
   }
 
+  // 1D. Synthesize slide1InputTable from modelling.baseInputs when missing
+  if (!outputs.slide1InputTable && isObject(modRaw)) {
+    const baseInputs = modRaw.baseInputs as LooseObj | undefined;
+    if (isObject(baseInputs) && Object.keys(baseInputs).length > 0) {
+      const rows: LooseObj[] = [];
+      for (const [key, entry] of Object.entries(baseInputs)) {
+        if (!isObject(entry)) continue;
+        const entryObj = entry as LooseObj;
+        const val = entryObj.value;
+        const unit = typeof entryObj.unit === "string" ? entryObj.unit : "";
+        const confidence = typeof entryObj.confidence === "string" ? entryObj.confidence : "";
+        const source = typeof entryObj.source === "string" ? entryObj.source : "";
+        const logic = typeof entryObj.logic === "string" ? entryObj.logic : "";
+
+        // Format value with unit
+        let valueStr = "";
+        if (typeof val === "number") {
+          valueStr = `${val.toLocaleString("en-GB")}`;
+          if (unit) valueStr += ` ${unit}`;
+        } else if (typeof val === "string") {
+          valueStr = val;
+        }
+
+        // Build source string: combine source ref + logic + confidence
+        const sourceParts: string[] = [];
+        if (source) sourceParts.push(source);
+        if (logic) sourceParts.push(logic);
+        if (confidence) sourceParts.push(`Confidence: ${confidence}`);
+        const sourceStr = sourceParts.join(" — ");
+
+        rows.push({
+          metric: formatKeyAsLabel(key),
+          valueOrEstimate: valueStr,
+          sourceOrLogic: sourceStr,
+        });
+      }
+      if (rows.length > 0) {
+        outputs.slide1InputTable = { rows };
+      }
+    }
+  }
+
+  // 1E. Synthesize slide4ValueCaseTable from modelling.finalValueCase_midpoint when missing
+  if (!outputs.slide4ValueCaseTable && isObject(modRaw)) {
+    const finalVC = (modRaw["finalValueCase_midpoint"] ?? modRaw.finalValueCaseMidpoint) as LooseObj | undefined;
+    if (isObject(finalVC)) {
+      const gmByLever = (finalVC["gmUpliftByLever_£m"] ?? finalVC.gmUpliftByLeverGBP_m) as LooseObj | undefined;
+      if (isObject(gmByLever)) {
+        const rows: LooseObj[] = [];
+        for (const [lever, amount] of Object.entries(gmByLever)) {
+          const amountNum = typeof amount === "number" ? amount : 0;
+          rows.push({
+            areaOfImpact: formatKeyAsLabel(lever),
+            opportunityType: "GM Uplift",
+            estimatedUpliftGM: `£${amountNum.toFixed(2)}m`,
+            assumptionsMethodology: "",
+          });
+        }
+        // Add total row
+        const totalGM = typeof finalVC["totalGMUplift_£m"] === "number"
+          ? finalVC["totalGMUplift_£m"]
+          : typeof finalVC["headlineValue_gm_£m"] === "number"
+            ? finalVC["headlineValue_gm_£m"]
+            : 0;
+        if (typeof totalGM === "number" && totalGM > 0) {
+          rows.push({
+            areaOfImpact: "TOTAL",
+            opportunityType: "Total GM Uplift",
+            estimatedUpliftGM: `£${totalGM.toFixed(2)}m`,
+            assumptionsMethodology: "",
+          });
+        }
+        if (rows.length > 0) {
+          outputs.slide4ValueCaseTable = { rows };
+        }
+      }
+    }
+  }
+
   let appendices = normalizeAppendices(raw.appendices);
-  
+
   // If appendices is empty or has no assumptions, try to build from value case table
   const hasAssumptions = Array.isArray(appendices.assumptionsBlock) && appendices.assumptionsBlock.length > 0;
   if (!hasAssumptions) {
